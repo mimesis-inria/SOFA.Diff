@@ -19,60 +19,29 @@
 *                                                                             *
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
-#include <SofaDiff/config.h>
 
+#include <SofaDiff/GradientDescentController.h>
 #include <sofa/core/ObjectFactory.h>
-using sofa::core::ObjectFactory;
-#include <sofa/helper/system/PluginManager.h>
 
-namespace sofadiff
+namespace sofadiff {
+
+GradientDescentController::GradientDescentController()
 {
-    extern void registerGradientDescentController(sofa::core::ObjectFactory* factory);
+  this->f_listening.setValue(true);
+}
 
-    extern "C" {
-        SOFA_SOFADIFF_API void initExternalModule();
-        SOFA_SOFADIFF_API const char* getModuleName();
-        SOFA_SOFADIFF_API const char* getModuleVersion();
-        SOFA_SOFADIFF_API const char* getModuleLicense();
-        SOFA_SOFADIFF_API const char* getModuleDescription();
-        SOFA_SOFADIFF_API void registerObjects(sofa::core::ObjectFactory* factory);
-    }
+void GradientDescentController::init()
+{
+}
 
-    void initExternalModule()
-    {
-        static bool first = true;
-        if (first)
-        {
-            first = false;
+void GradientDescentController::onEndAnimationStep(const double /*dt*/)
+{
+  std::cout << "SofaDiff::GradientDescentController::onEndAnimationStep" << std::endl;
+}
 
-            // make sure that this plugin is registered into the PluginManager
-            sofa::helper::system::PluginManager::getInstance().registerPlugin(MODULE_NAME);
-        }
-    }
-
-    const char* getModuleName()
-    {
-        return MODULE_NAME;
-    }
-
-    const char* getModuleVersion()
-    {
-        return MODULE_VERSION;
-    }
-
-    const char* getModuleLicense()
-    {
-        return "LGPL";
-    }
-
-    const char* getModuleDescription()
-    {
-        return "A plugin for differentiable physics.";
-    }
-
-    void registerObjects(sofa::core::ObjectFactory* factory)
-    {
-        registerGradientDescentController(factory);
-    }
+void registerGradientDescentController(sofa::core::ObjectFactory* factory)
+{
+  factory->registerObjects(sofa::core::ObjectRegistrationData("Controller that performs gradient descent.").add< GradientDescentController >());
+}
 
 }

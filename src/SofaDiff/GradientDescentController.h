@@ -19,60 +19,43 @@
 *                                                                             *
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
-#include <SofaDiff/config.h>
+#pragma once
 
-#include <sofa/core/ObjectFactory.h>
-using sofa::core::ObjectFactory;
-#include <sofa/helper/system/PluginManager.h>
+#include <SofaDiff/config.h>
+#include <sofa/component/controller/Controller.h>
 
 namespace sofadiff
 {
-    extern void registerGradientDescentController(sofa::core::ObjectFactory* factory);
 
-    extern "C" {
-        SOFA_SOFADIFF_API void initExternalModule();
-        SOFA_SOFADIFF_API const char* getModuleName();
-        SOFA_SOFADIFF_API const char* getModuleVersion();
-        SOFA_SOFADIFF_API const char* getModuleLicense();
-        SOFA_SOFADIFF_API const char* getModuleDescription();
-        SOFA_SOFADIFF_API void registerObjects(sofa::core::ObjectFactory* factory);
-    }
+/**
+ * @brief GradientDescentController Class
+ *
+ * Performs a step of gradient descent at the end of each time step.
+ */
+class GradientDescentController : public sofa::component::controller::Controller
+{
+public:
+    SOFA_CLASS(GradientDescentController, sofa::component::controller::Controller);
+protected:
+    /**
+     * @brief Default Constructor.
+     */
+    GradientDescentController();
 
-    void initExternalModule()
-    {
-        static bool first = true;
-        if (first)
-        {
-            first = false;
+    /**
+     * @brief Default Destructor.
+     */
+    ~GradientDescentController() override = default;
+public:
+    /**
+     * @brief SceneGraph callback initialization method.
+     */
+    void init() override;
 
-            // make sure that this plugin is registered into the PluginManager
-            sofa::helper::system::PluginManager::getInstance().registerPlugin(MODULE_NAME);
-        }
-    }
-
-    const char* getModuleName()
-    {
-        return MODULE_NAME;
-    }
-
-    const char* getModuleVersion()
-    {
-        return MODULE_VERSION;
-    }
-
-    const char* getModuleLicense()
-    {
-        return "LGPL";
-    }
-
-    const char* getModuleDescription()
-    {
-        return "A plugin for differentiable physics.";
-    }
-
-    void registerObjects(sofa::core::ObjectFactory* factory)
-    {
-        registerGradientDescentController(factory);
-    }
+    /**
+     * @brief Begin Animation event callback.
+     */
+    void onEndAnimationStep(double dt) override;
+};
 
 }

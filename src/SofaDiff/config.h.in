@@ -19,60 +19,25 @@
 *                                                                             *
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
-#include <SofaDiff/config.h>
 
-#include <sofa/core/ObjectFactory.h>
-using sofa::core::ObjectFactory;
-#include <sofa/helper/system/PluginManager.h>
+#pragma once
+
+#include <sofa/config.h>
+
+// adding SOFA namespace to ease using SOFA classes within the plugin
+using namespace sofa;
+
+#define SOFADIFF_VERSION @PROJECT_VERSION@
+
+#ifdef SOFA_BUILD_SOFADIFF
+#  define SOFA_TARGET @PROJECT_NAME@
+#  define SOFA_SOFADIFF_API SOFA_EXPORT_DYNAMIC_LIBRARY
+#else
+#  define SOFA_SOFADIFF_API SOFA_IMPORT_DYNAMIC_LIBRARY
+#endif
 
 namespace sofadiff
 {
-    extern void registerGradientDescentController(sofa::core::ObjectFactory* factory);
-
-    extern "C" {
-        SOFA_SOFADIFF_API void initExternalModule();
-        SOFA_SOFADIFF_API const char* getModuleName();
-        SOFA_SOFADIFF_API const char* getModuleVersion();
-        SOFA_SOFADIFF_API const char* getModuleLicense();
-        SOFA_SOFADIFF_API const char* getModuleDescription();
-        SOFA_SOFADIFF_API void registerObjects(sofa::core::ObjectFactory* factory);
-    }
-
-    void initExternalModule()
-    {
-        static bool first = true;
-        if (first)
-        {
-            first = false;
-
-            // make sure that this plugin is registered into the PluginManager
-            sofa::helper::system::PluginManager::getInstance().registerPlugin(MODULE_NAME);
-        }
-    }
-
-    const char* getModuleName()
-    {
-        return MODULE_NAME;
-    }
-
-    const char* getModuleVersion()
-    {
-        return MODULE_VERSION;
-    }
-
-    const char* getModuleLicense()
-    {
-        return "LGPL";
-    }
-
-    const char* getModuleDescription()
-    {
-        return "A plugin for differentiable physics.";
-    }
-
-    void registerObjects(sofa::core::ObjectFactory* factory)
-    {
-        registerGradientDescentController(factory);
-    }
-
+    constexpr const char* MODULE_NAME = "@PROJECT_NAME@";
+    constexpr const char* MODULE_VERSION = "@PROJECT_VERSION@";
 }
