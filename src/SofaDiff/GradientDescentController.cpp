@@ -20,8 +20,10 @@
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
 
-#include <SofaDiff/GradientDescentController.h>
+#include "sofa/core/MechanicalParams.h"
+
 #include <SofaDiff/ComputeCostGradientVisitor.h>
+#include <SofaDiff/GradientDescentController.h>
 
 #include <sofa/core/ObjectFactory.h>
 
@@ -41,9 +43,8 @@ void GradientDescentController::onEndAnimationStep(const double /*dt*/)
   std::cout << "SofaDiff::GradientDescentController::onEndAnimationStep" << std::endl;
 
   core::MechanicalParams mparams;
-  core::MultiVecDerivId result;
   auto* ctx = this->getContext();
-  ComputeCostGradientVisitor(&mparams, result, true).execute(ctx, false);
+  ComputeCostGradientVisitor(sofa::core::mechanicalparams::castToExecParams(&mparams)).execute(ctx, false);
 }
 
 void registerGradientDescentController(sofa::core::ObjectFactory* factory)

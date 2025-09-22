@@ -21,33 +21,29 @@
 ******************************************************************************/
 #pragma once
 
-#include <sofa/simulation/MechanicalVisitor.h>
+#include <sofa/simulation/Visitor.h>
 
 namespace sofadiff
 {
 
 /** Do nothing.
 */
-class SOFA_SIMULATION_CORE_API ComputeCostGradientVisitor : public sofa::simulation::MechanicalVisitor
+class SOFA_SIMULATION_CORE_API ComputeCostGradientVisitor : public sofa::simulation::Visitor
 {
 public:
-    sofa::core::MultiVecDerivId res;
-    bool accumulate; ///< Accumulate everything back to the DOFs through the mappings
-
-    ComputeCostGradientVisitor(const sofa::core::MechanicalParams* mparams,
-                                  sofa::core::MultiVecDerivId res, bool accumulate = true )
-            : MechanicalVisitor(mparams) , res(res), accumulate(accumulate)
+    explicit ComputeCostGradientVisitor(const sofa::core::ExecParams* params)
+            : Visitor(params)
     {
 #ifdef SOFA_DUMP_VISITOR_INFO
         setReadWriteVectors();
 #endif
     }
-    Result fwdMechanicalState(sofa::simulation::Node* /*node*/,sofa::core::behavior::BaseMechanicalState* mm) override;
-    Result fwdMappedMechanicalState(sofa::simulation::Node* /*node*/,sofa::core::behavior::BaseMechanicalState* mm) override;
-    Result fwdForceField(sofa::simulation::Node* /*node*/,sofa::core::behavior::BaseForceField* ff) override;
-    void bwdMechanicalMapping(sofa::simulation::Node* /*node*/, sofa::core::BaseMapping* map) override;
-    void bwdMechanicalState(sofa::simulation::Node* /*node*/,sofa::core::behavior::BaseMechanicalState* mm) override;
 
+    /// Find the cost function and compute its gradient
+    Result processNodeTopDown(sofa::simulation::Node* node) override;
+
+    /// Propagate the gradient to the mechanical degrees of freedom
+    void processNodeBottomUp(sofa::simulation::Node* node) override;
 
     /// Return a class name for this visitor
     /// Only used for debugging / profiling purposes

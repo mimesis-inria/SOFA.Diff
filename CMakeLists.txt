@@ -16,6 +16,7 @@ set(HEADER_FILES
         ${SOFADIFF_SRC_DIR}/config.h.in
         ${SOFADIFF_SRC_DIR}/GradientDescentController.h
         ${SOFADIFF_SRC_DIR}/ComputeCostGradientVisitor.h
+        ${SOFADIFF_SRC_DIR}/CostFunctionMapping.h
 )
 set(HEADER_FILES_TO_MOC
 )
@@ -23,6 +24,7 @@ set(SOURCE_FILES
         ${SOFADIFF_SRC_DIR}/initSofaDiff.cpp
         ${SOFADIFF_SRC_DIR}/GradientDescentController.cpp
         ${SOFADIFF_SRC_DIR}/ComputeCostGradientVisitor.cpp
+        ${SOFADIFF_SRC_DIR}/CostFunctionMapping.cpp
 )
 set(README_FILES
         README.md

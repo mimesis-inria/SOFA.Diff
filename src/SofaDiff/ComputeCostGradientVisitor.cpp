@@ -20,53 +20,27 @@
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
 
-#include <SofaDiff/ComputeCostGradientVisitor.h>
+#include "sofa/simulation/Node.h"
 
-#include <sofa/core/behavior/BaseForceField.h>
+#include <SofaDiff/ComputeCostGradientVisitor.h>
 
 namespace sofadiff
 {
 
-sofa::simulation::Visitor::Result ComputeCostGradientVisitor::fwdMechanicalState(sofa::simulation::Node* /*node*/, sofa::core::behavior::BaseMechanicalState* mm)
+sofa::simulation::Visitor::Result ComputeCostGradientVisitor::processNodeTopDown(sofa::simulation::Node* node)
 {
-    // mm->accumulateForce(this->params, res.getId(mm));
-    std::cout << "ComputeCostGradientVisitor::fwdMechanicalState" << std::endl;
+    std::cout << "ComputeCostGradientVisitor::processNodeTopDown " << node->getName() << std::endl;
     return RESULT_CONTINUE;
 }
 
-
-sofa::simulation::Visitor::Result ComputeCostGradientVisitor::fwdMappedMechanicalState(sofa::simulation::Node* /*node*/, sofa::core::behavior::BaseMechanicalState* mm)
+void ComputeCostGradientVisitor::processNodeBottomUp(sofa::simulation::Node* node)
 {
-    // mm->accumulateForce(this->params, res.getId(mm));
-    return RESULT_CONTINUE;
-}
-
-
-sofa::simulation::Visitor::Result ComputeCostGradientVisitor::fwdForceField(sofa::simulation::Node* /*node*/, sofa::core::behavior::BaseForceField* ff)
-{
-    // ff->addForce(this->mparams, res);
-
-    return RESULT_CONTINUE;
-}
-
-void ComputeCostGradientVisitor::bwdMechanicalMapping(sofa::simulation::Node* /*node*/, sofa::core::BaseMapping* map)
-{
-    // if (accumulate)
-    // {
-    //     map->applyJT(mparams, res, res);
-    // }
-}
-
-void ComputeCostGradientVisitor::bwdMechanicalState(sofa::simulation::Node* , sofa::core::behavior::BaseMechanicalState* mm)
-{
-    SOFA_UNUSED(mm);
+    std::cout << "ComputeCostGradientVisitor::processNodeBottomUp " << node->getName() << std::endl;
 }
 
 std::string ComputeCostGradientVisitor::getInfos() const
 {
-    std::string name=std::string("[")+res.getName()+std::string("]");
-    if (accumulate) name+= " Accumulating";
-    else            name+= " Not Accumulating";
+    auto name = std::string("[xxx]");
     return name;
 }
 
