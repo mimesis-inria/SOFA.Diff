@@ -20,35 +20,54 @@
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
 
-#include <SofaDiff/GradientDescentController.h>
 #include <SofaDiff/ComputeCostGradientVisitor.h>
 
-#include <sofa/core/ObjectFactory.h>
+#include <sofa/core/behavior/BaseForceField.h>
 
-namespace sofadiff {
-
-GradientDescentController::GradientDescentController()
+namespace sofadiff
 {
-  this->f_listening.setValue(true);
+
+sofa::simulation::Visitor::Result ComputeCostGradientVisitor::fwdMechanicalState(sofa::simulation::Node* /*node*/, sofa::core::behavior::BaseMechanicalState* mm)
+{
+    // mm->accumulateForce(this->params, res.getId(mm));
+    std::cout << "ComputeCostGradientVisitor::fwdMechanicalState" << std::endl;
+    return RESULT_CONTINUE;
 }
 
-void GradientDescentController::init()
+
+sofa::simulation::Visitor::Result ComputeCostGradientVisitor::fwdMappedMechanicalState(sofa::simulation::Node* /*node*/, sofa::core::behavior::BaseMechanicalState* mm)
 {
+    // mm->accumulateForce(this->params, res.getId(mm));
+    return RESULT_CONTINUE;
 }
 
-void GradientDescentController::onEndAnimationStep(const double /*dt*/)
-{
-  std::cout << "SofaDiff::GradientDescentController::onEndAnimationStep" << std::endl;
 
-  core::MechanicalParams mparams;
-  core::MultiVecDerivId result;
-  auto* ctx = this->getContext();
-  ComputeCostGradientVisitor(&mparams, result, true).execute(ctx, false);
+sofa::simulation::Visitor::Result ComputeCostGradientVisitor::fwdForceField(sofa::simulation::Node* /*node*/, sofa::core::behavior::BaseForceField* ff)
+{
+    // ff->addForce(this->mparams, res);
+
+    return RESULT_CONTINUE;
 }
 
-void registerGradientDescentController(sofa::core::ObjectFactory* factory)
+void ComputeCostGradientVisitor::bwdMechanicalMapping(sofa::simulation::Node* /*node*/, sofa::core::BaseMapping* map)
 {
-  factory->registerObjects(sofa::core::ObjectRegistrationData("Controller that performs gradient descent.").add< GradientDescentController >());
+    // if (accumulate)
+    // {
+    //     map->applyJT(mparams, res, res);
+    // }
+}
+
+void ComputeCostGradientVisitor::bwdMechanicalState(sofa::simulation::Node* , sofa::core::behavior::BaseMechanicalState* mm)
+{
+    SOFA_UNUSED(mm);
+}
+
+std::string ComputeCostGradientVisitor::getInfos() const
+{
+    std::string name=std::string("[")+res.getName()+std::string("]");
+    if (accumulate) name+= " Accumulating";
+    else            name+= " Not Accumulating";
+    return name;
 }
 
 }
