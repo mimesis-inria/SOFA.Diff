@@ -23,44 +23,22 @@
 
 #include <SofaDiff/config.h>
 
-#include <sofa/simulation/MechanicalVisitor.h>
+#include <sofa/core/Mapping.h>
+
 
 namespace sofadiff
 {
 
-/** Do nothing.
-*/
-class SOFA_SOFADIFF_API ComputeCostGradientVisitor : public simulation::MechanicalVisitor
+/**
+ * @brief CostFunctionMapping Class
+ *
+ * Compute a cost to minimize.
+ */
+template <class TIn>
+class SOFA_SOFADIFF_API CostFunctionMapping : public core::Mapping<TIn, defaulttype::Vec1dTypes>
 {
 public:
-    explicit ComputeCostGradientVisitor(const core::MechanicalParams* params)
-            : MechanicalVisitor(params)
-    {
-#ifdef SOFA_DUMP_VISITOR_INFO
-        setReadWriteVectors();
-#endif
-    }
-
-    /// Compute the gradient of the cost function w.r.t. the degrees of freedom
-    void bwdMechanicalMapping(simulation::Node* /*node*/, core::BaseMapping* map) override;
-
-    /// Return a class name for this visitor
-    /// Only used for debugging / profiling purposes
-    [[nodiscard]] const char* getClassName() const override {return "ComputeCostGradientVisitor";}
-    [[nodiscard]] std::string getInfos() const override;
-
-    /// Specify whether this action can be parallelized.
-    [[nodiscard]] bool isThreadSafe() const override
-    {
-        return true;
-    }
-#ifdef SOFA_DUMP_VISITOR_INFO
-    void setReadWriteVectors() override
-    {
-        addWriteVector(res);
-    }
-#endif
+  SOFA_ABSTRACT_CLASS(SOFA_TEMPLATE(CostFunctionMapping, TIn), SOFA_TEMPLATE2(core::Mapping, TIn, defaulttype::Vec1dTypes));
 };
-
 
 }

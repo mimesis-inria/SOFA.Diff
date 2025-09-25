@@ -19,48 +19,18 @@
  *                                                                             *
  * Contact information: contact@sofa-framework.org                             *
  ******************************************************************************/
-#pragma once
 
 #include <SofaDiff/config.h>
+#include <SofaDiff/CostFunctionMapping.h>
 
-#include <sofa/simulation/MechanicalVisitor.h>
+namespace sofadiff {
 
-namespace sofadiff
-{
+using namespace sofa::defaulttype;
 
-/** Do nothing.
-*/
-class SOFA_SOFADIFF_API ComputeCostGradientVisitor : public simulation::MechanicalVisitor
-{
-public:
-    explicit ComputeCostGradientVisitor(const core::MechanicalParams* params)
-            : MechanicalVisitor(params)
-    {
-#ifdef SOFA_DUMP_VISITOR_INFO
-        setReadWriteVectors();
-#endif
-    }
-
-    /// Compute the gradient of the cost function w.r.t. the degrees of freedom
-    void bwdMechanicalMapping(simulation::Node* /*node*/, core::BaseMapping* map) override;
-
-    /// Return a class name for this visitor
-    /// Only used for debugging / profiling purposes
-    [[nodiscard]] const char* getClassName() const override {return "ComputeCostGradientVisitor";}
-    [[nodiscard]] std::string getInfos() const override;
-
-    /// Specify whether this action can be parallelized.
-    [[nodiscard]] bool isThreadSafe() const override
-    {
-        return true;
-    }
-#ifdef SOFA_DUMP_VISITOR_INFO
-    void setReadWriteVectors() override
-    {
-        addWriteVector(res);
-    }
-#endif
-};
-
+template class SOFA_SOFADIFF_API CostFunctionMapping< Vec3Types >;
+template class SOFA_SOFADIFF_API CostFunctionMapping< Vec2Types >;
+template class SOFA_SOFADIFF_API CostFunctionMapping< Vec6Types >;
+template class SOFA_SOFADIFF_API CostFunctionMapping< Rigid3Types >;
+template class SOFA_SOFADIFF_API CostFunctionMapping< Rigid2Types >;
 
 }

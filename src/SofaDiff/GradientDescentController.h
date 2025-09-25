@@ -22,7 +22,9 @@
 #pragma once
 
 #include <SofaDiff/config.h>
+
 #include <sofa/component/controller/Controller.h>
+
 
 namespace sofadiff
 {
@@ -32,7 +34,7 @@ namespace sofadiff
  *
  * Performs a step of gradient descent at the end of each time step.
  */
-class GradientDescentController : public sofa::component::controller::Controller
+class SOFA_SOFADIFF_API GradientDescentController : public sofa::component::controller::Controller
 {
 public:
     SOFA_CLASS(GradientDescentController, sofa::component::controller::Controller);
