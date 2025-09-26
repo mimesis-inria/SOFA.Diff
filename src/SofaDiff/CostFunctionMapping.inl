@@ -21,27 +21,20 @@
  ******************************************************************************/
 #pragma once
 
-#include <SofaDiff/config.h>
+#include <SofaDiff/CostFunctionMapping.h>
 
-#include <sofa/core/Mapping.h>
+namespace sofadiff {
 
-
-namespace sofadiff
-{
-
-/**
- * @brief CostFunctionMapping Class
- *
- * Compute a cost to minimize.
- */
 template <class TIn>
-class SOFA_SOFADIFF_API CostFunctionMapping : public core::Mapping<TIn, defaulttype::Vec1dTypes>
+void CostFunctionMapping<TIn>::init()
 {
-public:
-  SOFA_ABSTRACT_CLASS(SOFA_TEMPLATE(CostFunctionMapping, TIn), SOFA_TEMPLATE2(core::Mapping, TIn, defaulttype::Vec1dTypes));
-  typedef core::Mapping<TIn,  defaulttype::Vec1dTypes> Inherit;
+    Inherit::init();
 
-  void init() override;
-};
+    // self.output.gradient = 1
+    constexpr core::VecDerivId gradient = core::vec_id::write_access::force; // TODO: replace force by custom VecID "gradient"
+    auto * output = dynamic_cast<core::behavior::MechanicalState< defaulttype::Vec1Types> * > (Inherit::getTo()[0]);
+    helper::WriteAccessor<Data<VecDeriv_t<defaulttype::Vec1Types>> > outputGradient = output->write(gradient);
+    outputGradient[0] = sofa::Deriv_t<defaulttype::Vec1Types> (1);
+}
 
 }

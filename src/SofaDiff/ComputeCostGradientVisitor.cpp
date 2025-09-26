@@ -33,17 +33,7 @@ void ComputeCostGradientVisitor::bwdMechanicalMapping(simulation::Node * /* node
 {
     // TODO: use custom Id (e.g. "gradient") instead of force
     const core::VecDerivId result = core::vec_id::write_access::force;
-    // if map is a CostFunctionMapping, then set the "gradient" of the output to 1
-    if (dynamic_cast<CostFunctionMapping<defaulttype::Vec3Types> *>(map)
-        or dynamic_cast<CostFunctionMapping<defaulttype::Vec2Types> *>(map)
-        or dynamic_cast<CostFunctionMapping<defaulttype::Vec6Types> *>(map)
-        or dynamic_cast<CostFunctionMapping<defaulttype::Rigid3Types> *>(map)
-        or dynamic_cast<CostFunctionMapping<defaulttype::Rigid2Types> *>(map))
-    {
-        auto * output = dynamic_cast<core::behavior::MechanicalState< defaulttype::Vec1Types> * > (map->getTo()[0]);
-        helper::WriteAccessor<Data<VecDeriv_t<defaulttype::Vec1Types>> > outputGradient = output->write(result);
-        outputGradient[0] = sofa::Deriv_t<defaulttype::Vec1Types> (1);
-    }
+    // TODO: initialiser tous les "gradient" à zéro ? --> pendant le fwd
     // propagate gradient with applyJT() (does nothing if "gradient" is not in the output of the mapping)
     map->applyJT(mparams, result, result);
 }

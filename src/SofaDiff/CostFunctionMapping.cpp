@@ -21,7 +21,7 @@
  ******************************************************************************/
 
 #include <SofaDiff/config.h>
-#include <SofaDiff/CostFunctionMapping.h>
+#include <SofaDiff/CostFunctionMapping.inl>
 
 namespace sofadiff {
 
