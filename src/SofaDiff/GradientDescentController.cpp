@@ -41,9 +41,23 @@ void GradientDescentController::onEndAnimationStep(const double /*dt*/)
 {
   std::cout << "SofaDiff::GradientDescentController::onEndAnimationStep" << std::endl;
 
+  // Compute and propagate the gradient of the cost function
   auto* ctx = this->getContext();
   auto* params = core::mechanicalparams::defaultInstance();
   ComputeCostGradientVisitor(params).execute(ctx, false);
+
+  // Solve the (transpose) system to get the "force gradient"
+  auto* linearSolver = l_linearSolver.get();
+  constexpr core::VecDerivId rhs_id = core::vec_id::write_access::force; // TODO: change to gradient
+  constexpr core::VecDerivId lhs_id = core::vec_id::write_access::force; // TODO: change to force gradient
+  // TODO: make it so it does not crash...
+  // linearSolver->setSystemLHVector(rhs_id);
+  // linearSolver->setSystemRHVector(lhs_id);
+  // linearSolver->solveSystem();
+
+  // TODO: Propagate the "force gradient" to the mapped states
+
+  // TODO: Call the "applyJT" of the components with "trainable" parameters
 }
 
 void registerGradientDescentController(core::ObjectFactory* factory)

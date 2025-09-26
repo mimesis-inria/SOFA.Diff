@@ -24,7 +24,7 @@
 #include <SofaDiff/config.h>
 
 #include <sofa/component/controller/Controller.h>
-
+#include <sofa/core/behavior/LinearSolverAccessor.h>
 
 namespace sofadiff
 {
@@ -34,21 +34,18 @@ namespace sofadiff
  *
  * Performs a step of gradient descent at the end of each time step.
  */
-class SOFA_SOFADIFF_API GradientDescentController : public sofa::component::controller::Controller
+class SOFA_SOFADIFF_API GradientDescentController :
+    public component::controller::Controller,
+    public core::behavior::LinearSolverAccessor
 {
 public:
-    SOFA_CLASS(GradientDescentController, sofa::component::controller::Controller);
-protected:
+    SOFA_CLASS2(GradientDescentController, sofa::component::controller::Controller, core::behavior::LinearSolverAccessor);
+
     /**
      * @brief Default Constructor.
      */
     GradientDescentController();
 
-    /**
-     * @brief Default Destructor.
-     */
-    ~GradientDescentController() override = default;
-public:
     /**
      * @brief SceneGraph callback initialization method.
      */
