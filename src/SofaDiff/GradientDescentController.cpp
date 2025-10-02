@@ -39,11 +39,16 @@ void GradientDescentController::init()
 {
     auto* ctx = this->getContext();
     auto* params = core::mechanicalparams::defaultInstance();
-    simulation::common::VectorOperations vop(params, ctx);
 
-    core::behavior::TMultiVec<core::V_DERIV> vec(&vop, m_r1);
-    vec.realloc(&vop, false, true, core::VecIdProperties{"CostFunctionGradient", this->getClassName()});
-    m_r1 = vec.id();
+    simulation::common::VectorOperations vop(params, ctx);
+    core::behavior::TMultiVec<core::V_DERIV> vec(&vop, m_gradientVecId);
+    vec.realloc(&vop, false, true, core::VecIdProperties{"Derivative of the cost w.r.t. position", this->getClassName()});
+    m_gradientVecId = vec.id();
+
+    simulation::common::VectorOperations vop2(params, ctx);
+    core::behavior::TMultiVec<core::V_DERIV> vec2(&vop2, m_forceGradientVecId);
+    vec2.realloc(&vop2, false, true, core::VecIdProperties{"Derivative of the cost w.r.t. force", this->getClassName()});
+    m_forceGradientVecId = vec2.id();
 }
 
 void GradientDescentController::onEndAnimationStep(const double /*dt*/)
@@ -53,15 +58,13 @@ void GradientDescentController::onEndAnimationStep(const double /*dt*/)
   // Compute and propagate the gradient of the cost function
   auto* ctx = this->getContext();
   auto* params = core::mechanicalparams::defaultInstance();
-  ComputeCostGradientVisitor(params, m_r1).execute(ctx, false);
+  ComputeCostGradientVisitor(params, m_gradientVecId).execute(ctx, false);
 
   // Solve the (transpose) system to get the "force gradient"
   auto* linearSolver = l_linearSolver.get();
-  constexpr core::VecDerivId rhs_id = core::vec_id::write_access::force; // TODO: change to gradient
-  constexpr core::VecDerivId lhs_id = core::vec_id::write_access::force; // TODO: change to force gradient
   // TODO: make it so it does not crash...
-  // linearSolver->setSystemLHVector(rhs_id);
-  // linearSolver->setSystemRHVector(lhs_id);
+  // linearSolver->setSystemLHVector(m_forceGradientVecId);
+  // linearSolver->setSystemRHVector(m_gradientVecId);
   // linearSolver->solveSystem();
 
   // TODO: Propagate the "force gradient" to the mapped states
