@@ -34,14 +34,17 @@ namespace sofadiff
  *
  * Compute a cost to minimize.
  */
-template <class TIn>
-class SOFA_SOFADIFF_API CostFunctionMapping : public core::Mapping<TIn, defaulttype::Vec1dTypes>
+template <class In>
+class SOFA_SOFADIFF_API CostFunctionMapping : public core::Mapping<In, defaulttype::Vec1dTypes>
 {
 public:
-  SOFA_ABSTRACT_CLASS(SOFA_TEMPLATE(CostFunctionMapping, TIn), SOFA_TEMPLATE2(core::Mapping, TIn, defaulttype::Vec1dTypes));
-  typedef core::Mapping<TIn,  defaulttype::Vec1dTypes> Inherit;
+    SOFA_ABSTRACT_CLASS(SOFA_TEMPLATE(CostFunctionMapping, In), SOFA_TEMPLATE2(core::Mapping, In, defaulttype::Vec1dTypes));
+    typedef core::Mapping<In,  defaulttype::Vec1dTypes> Inherit;
+    typedef defaulttype::Vec1dTypes Out;
 
-  void init() override;
+    explicit CostFunctionMapping(core::State<In>* from=nullptr, core::State<Out>* to=nullptr);
+
+    void init() override;
 };
 
 }

@@ -25,6 +25,14 @@
 
 namespace sofadiff {
 
+template<class TIn>
+CostFunctionMapping<TIn>::CostFunctionMapping(core::State<TIn> *from, core::State<Out> *to):
+    Inherit(from, to)
+{
+
+}
+
+
 template <class TIn>
 void CostFunctionMapping<TIn>::init()
 {

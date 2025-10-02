@@ -20,61 +20,33 @@
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
 #include <SofaDiff/config.h>
+#include <SofaDiff/DistanceToPlaneCost.inl>
 
+#include <sofa/defaulttype/VecTypes.h>
+#include <sofa/defaulttype/RigidTypes.h>
 #include <sofa/core/ObjectFactory.h>
-using sofa::core::ObjectFactory;
-#include <sofa/helper/system/PluginManager.h>
+#include <sofa/component/mapping/linear/config.h>
 
 namespace sofadiff
 {
-    extern void registerGradientDescentController(sofa::core::ObjectFactory* factory);
-    extern void registerDistanceToPlaneCost(sofa::core::ObjectFactory* factory);
 
-    extern "C" {
-        SOFA_SOFADIFF_API void initExternalModule();
-        SOFA_SOFADIFF_API const char* getModuleName();
-        SOFA_SOFADIFF_API const char* getModuleVersion();
-        SOFA_SOFADIFF_API const char* getModuleLicense();
-        SOFA_SOFADIFF_API const char* getModuleDescription();
-        SOFA_SOFADIFF_API void registerObjects(sofa::core::ObjectFactory* factory);
-    }
+using namespace sofa::defaulttype;
 
-    void initExternalModule()
-    {
-        static bool first = true;
-        if (first)
-        {
-            first = false;
-
-            // make sure that this plugin is registered into the PluginManager
-            sofa::helper::system::PluginManager::getInstance().registerPlugin(MODULE_NAME);
-        }
-    }
-
-    const char* getModuleName()
-    {
-        return MODULE_NAME;
-    }
-
-    const char* getModuleVersion()
-    {
-        return MODULE_VERSION;
-    }
-
-    const char* getModuleLicense()
-    {
-        return "LGPL";
-    }
-
-    const char* getModuleDescription()
-    {
-        return "A plugin for differentiable physics.";
-    }
-
-    void registerObjects(sofa::core::ObjectFactory* factory)
-    {
-        registerGradientDescentController(factory);
-        registerDistanceToPlaneCost(factory);
-    }
-
+void registerDistanceToPlaneCost(core::ObjectFactory* factory)
+{
+    factory->registerObjects(core::ObjectRegistrationData("Cost function that computes the distance to a plane")
+        .add< DistanceToPlaneCost<Vec3Types> >()
+        .add< DistanceToPlaneCost<Vec2Types> >()
+        .add< DistanceToPlaneCost<Vec6Types> >()
+        .add< DistanceToPlaneCost<Rigid3Types> >()
+        // .add< DistanceToPlaneCost<Rigid2Types> >()
+    );
 }
+
+template class SOFA_SOFADIFF_API DistanceToPlaneCost<Vec3Types> ;
+template class SOFA_SOFADIFF_API DistanceToPlaneCost<Vec2Types> ;
+template class SOFA_SOFADIFF_API DistanceToPlaneCost<Vec6Types> ;
+template class SOFA_SOFADIFF_API DistanceToPlaneCost<Rigid3Types>;
+// template class SOFA_SOFADIFF_API DistanceToPlaneCost<Rigid2Types>;
+
+} // namespace sofa::component::mapping::linear
