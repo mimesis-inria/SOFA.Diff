@@ -26,23 +26,14 @@
 
 namespace sofadiff {
 
-template<class TIn>
-CostFunctionMapping<TIn>::CostFunctionMapping(core::State<TIn> *from, core::State<Out> *to):
-    Inherit(from, to)
-{
-
-}
-
-
 template <class TIn>
 void CostFunctionMapping<TIn>::init()
 {
     Inherit::init();
 
-    // self.output.gradient = 1
     if(auto * controller = this->getContext()->getRootContext()->template get<GradientDescentController>())
     {
-        auto * output = dynamic_cast<core::behavior::MechanicalState< defaulttype::Vec1Types> * > (Inherit::getTo()[0]);
+        auto * output = dynamic_cast<core::behavior::MechanicalState<defaulttype::Vec1Types> *> (Inherit::getTo()[0]);
         const core::MultiVecDerivId multi_gradient = controller->getGradientVecId();
         const auto& gradient = multi_gradient.getId(output);
         helper::WriteAccessor<Data<VecDeriv_t<defaulttype::Vec1Types>> > outputGradient = output->write(gradient);

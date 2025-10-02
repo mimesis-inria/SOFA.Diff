@@ -49,4 +49,4 @@ template class SOFA_SOFADIFF_API DistanceToPlaneCost<Vec6Types> ;
 template class SOFA_SOFADIFF_API DistanceToPlaneCost<Rigid3Types>;
 // template class SOFA_SOFADIFF_API DistanceToPlaneCost<Rigid2Types>;
 
-} // namespace sofa::component::mapping::linear
+}

@@ -32,11 +32,8 @@ namespace sofadiff {
 
 GradientDescentController::GradientDescentController()
 {
-  this->f_listening.setValue(true);
-}
+    this->f_listening.setValue(true);
 
-void GradientDescentController::init()
-{
     auto* ctx = this->getContext();
     auto* params = core::mechanicalparams::defaultInstance();
 

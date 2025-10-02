@@ -28,18 +28,13 @@
 namespace sofadiff
 {
 
-/** Do nothing.
+/** Compute the derivative of the loss w.r.t. the position
 */
 class SOFA_SOFADIFF_API ComputeCostGradientVisitor : public simulation::MechanicalVisitor
 {
 public:
-    explicit ComputeCostGradientVisitor(const core::MechanicalParams* params, core::MultiVecDerivId vec_id)
-            : MechanicalVisitor(params), m_vec_id(vec_id)
-    {
-#ifdef SOFA_DUMP_VISITOR_INFO
-        setReadWriteVectors();
-#endif
-    }
+    explicit ComputeCostGradientVisitor(const core::MechanicalParams* params, const core::MultiVecDerivId& vec_id)
+            : MechanicalVisitor(params), m_vec_id(vec_id) {}
 
     /// Compute the gradient of the cost function w.r.t. the degrees of freedom
     void bwdMechanicalMapping(simulation::Node* /*node*/, core::BaseMapping* map) override;
@@ -54,12 +49,6 @@ public:
     {
         return true;
     }
-#ifdef SOFA_DUMP_VISITOR_INFO
-    void setReadWriteVectors() override
-    {
-        // addWriteVector(res);
-    }
-#endif
 
 private:
     core::MultiVecDerivId m_vec_id;

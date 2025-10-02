@@ -23,8 +23,6 @@
 #include <SofaDiff/ComputeCostGradientVisitor.h>
 #include <SofaDiff/CostFunctionMapping.h>
 
-#include <sofa/core/trait/DataTypes.h>
-#include <sofa/core/VecId.h>
 
 namespace sofadiff
 {
@@ -32,7 +30,7 @@ namespace sofadiff
 void ComputeCostGradientVisitor::bwdMechanicalMapping(simulation::Node * /* node */, core::BaseMapping *map)
 {
     std::cout << "ComputeCostGradientVisitor::bwdMechanicalMapping" << std::endl;
-    // TODO: initialiser tous les "gradient" à zéro ? --> pendant le fwd
+    // TODO: initialize all gradients to 0 ? --> during forward
     // propagate gradient with applyJT() (does nothing if "gradient" is not in the output of the mapping)
     map->applyJT(mparams, m_vec_id, m_vec_id);
 }

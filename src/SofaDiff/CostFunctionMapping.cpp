@@ -27,10 +27,10 @@ namespace sofadiff {
 
 using namespace sofa::defaulttype;
 
-template class SOFA_SOFADIFF_API CostFunctionMapping< Vec3Types >;
-template class SOFA_SOFADIFF_API CostFunctionMapping< Vec2Types >;
-template class SOFA_SOFADIFF_API CostFunctionMapping< Vec6Types >;
-template class SOFA_SOFADIFF_API CostFunctionMapping< Rigid3Types >;
-// template class SOFA_SOFADIFF_API CostFunctionMapping< Rigid2Types >; // No Rigid2 -> Vec1 Mapping
+template class SOFA_SOFADIFF_API CostFunctionMapping<Vec3Types>;
+template class SOFA_SOFADIFF_API CostFunctionMapping<Vec2Types>;
+template class SOFA_SOFADIFF_API CostFunctionMapping<Vec6Types>;
+template class SOFA_SOFADIFF_API CostFunctionMapping<Rigid3Types>;
+// template class SOFA_SOFADIFF_API CostFunctionMapping<Rigid2Types>; // No Rigid2 -> Vec1 Mapping
 
 }

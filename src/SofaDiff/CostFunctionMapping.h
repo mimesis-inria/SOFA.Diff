@@ -42,8 +42,6 @@ public:
     typedef core::Mapping<In,  defaulttype::Vec1dTypes> Inherit;
     typedef defaulttype::Vec1dTypes Out;
 
-    explicit CostFunctionMapping(core::State<In>* from=nullptr, core::State<Out>* to=nullptr);
-
     void init() override;
 };
 

@@ -42,17 +42,12 @@ public:
     SOFA_CLASS2(GradientDescentController, sofa::component::controller::Controller, core::behavior::LinearSolverAccessor);
 
     /**
-     * @brief Default Constructor.
+     * @brief Initialize the VecIds for computing and storing the derivatives
      */
     GradientDescentController();
 
     /**
-     * @brief SceneGraph callback initialization method.
-     */
-    void init() override;
-
-    /**
-     * @brief Begin Animation event callback.
+     * @brief Compute the derivatives
      */
     void onEndAnimationStep(double dt) override;
 
@@ -60,8 +55,10 @@ public:
     core::MultiVecDerivId getForceGradientVecId() { return m_forceGradientVecId; }
 
 private:
-    /** VecId for the gradient */
+    /** VecId for the derivative of the loss w.r.t. the position */
     core::MultiVecDerivId m_gradientVecId;
+
+    /** VecId for the derivative of the loss w.r.t. the force */
     core::MultiVecDerivId m_forceGradientVecId;
 };
 
