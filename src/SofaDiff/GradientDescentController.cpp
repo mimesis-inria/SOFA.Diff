@@ -24,6 +24,8 @@
 #include <SofaDiff/ComputeCostGradientVisitor.h>
 
 #include <sofa/core/ObjectFactory.h>
+#include <sofa/simulation/VectorOperations.h>
+#include <sofa/core/behavior/MultiVec.h>
 
 
 namespace sofadiff {
@@ -35,6 +37,13 @@ GradientDescentController::GradientDescentController()
 
 void GradientDescentController::init()
 {
+    auto* ctx = this->getContext();
+    auto* params = core::mechanicalparams::defaultInstance();
+    simulation::common::VectorOperations vop(params, ctx);
+
+    core::behavior::TMultiVec<core::V_DERIV> vec(&vop, m_r1);
+    vec.realloc(&vop, false, true, core::VecIdProperties{"CostFunctionGradient", this->getClassName()});
+    m_r1 = vec.id();
 }
 
 void GradientDescentController::onEndAnimationStep(const double /*dt*/)
@@ -44,7 +53,7 @@ void GradientDescentController::onEndAnimationStep(const double /*dt*/)
   // Compute and propagate the gradient of the cost function
   auto* ctx = this->getContext();
   auto* params = core::mechanicalparams::defaultInstance();
-  ComputeCostGradientVisitor(params).execute(ctx, false);
+  ComputeCostGradientVisitor(params, m_r1).execute(ctx, false);
 
   // Solve the (transpose) system to get the "force gradient"
   auto* linearSolver = l_linearSolver.get();

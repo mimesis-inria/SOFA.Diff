@@ -31,11 +31,10 @@ namespace sofadiff
 
 void ComputeCostGradientVisitor::bwdMechanicalMapping(simulation::Node * /* node */, core::BaseMapping *map)
 {
-    // TODO: use custom Id (e.g. "gradient") instead of force
-    const core::VecDerivId result = core::vec_id::write_access::force;
+    std::cout << "ComputeCostGradientVisitor::bwdMechanicalMapping" << std::endl;
     // TODO: initialiser tous les "gradient" à zéro ? --> pendant le fwd
     // propagate gradient with applyJT() (does nothing if "gradient" is not in the output of the mapping)
-    map->applyJT(mparams, result, result);
+    map->applyJT(mparams, m_vec_id, m_vec_id);
 }
 
 std::string ComputeCostGradientVisitor::getInfos() const

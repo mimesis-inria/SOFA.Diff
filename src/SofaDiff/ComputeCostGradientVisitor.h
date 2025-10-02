@@ -33,8 +33,8 @@ namespace sofadiff
 class SOFA_SOFADIFF_API ComputeCostGradientVisitor : public simulation::MechanicalVisitor
 {
 public:
-    explicit ComputeCostGradientVisitor(const core::MechanicalParams* params)
-            : MechanicalVisitor(params)
+    explicit ComputeCostGradientVisitor(const core::MechanicalParams* params, core::MultiVecDerivId vec_id)
+            : MechanicalVisitor(params), m_vec_id(vec_id)
     {
 #ifdef SOFA_DUMP_VISITOR_INFO
         setReadWriteVectors();
@@ -60,6 +60,9 @@ public:
         addWriteVector(res);
     }
 #endif
+
+private:
+    core::MultiVecDerivId m_vec_id;
 };
 
 

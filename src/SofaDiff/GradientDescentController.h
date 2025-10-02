@@ -55,6 +55,12 @@ public:
      * @brief Begin Animation event callback.
      */
     void onEndAnimationStep(double dt) override;
+
+    core::MultiVecId getGradientVecId() { return m_r1; }
+
+private:
+    /** VecId for the gradient */
+    core::MultiVecDerivId m_r1;
 };
 
 }

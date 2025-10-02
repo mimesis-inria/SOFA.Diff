@@ -22,6 +22,7 @@
 #pragma once
 
 #include <SofaDiff/CostFunctionMapping.h>
+#include <SofaDiff/GradientDescentController.h>
 
 namespace sofadiff {
 
@@ -39,10 +40,15 @@ void CostFunctionMapping<TIn>::init()
     Inherit::init();
 
     // self.output.gradient = 1
-    constexpr core::VecDerivId gradient = core::vec_id::write_access::force; // TODO: replace force by custom VecID "gradient"
-    auto * output = dynamic_cast<core::behavior::MechanicalState< defaulttype::Vec1Types> * > (Inherit::getTo()[0]);
-    helper::WriteAccessor<Data<VecDeriv_t<defaulttype::Vec1Types>> > outputGradient = output->write(gradient);
-    outputGradient[0] = sofa::Deriv_t<defaulttype::Vec1Types> (1);
+    if(auto * controller = this->getContext()->getRootContext()->template get<GradientDescentController>())
+    {
+        auto * output = dynamic_cast<core::behavior::MechanicalState< defaulttype::Vec1Types> * > (Inherit::getTo()[0]);
+        // constexpr core::VecDerivId gradient = core::vec_id::write_access::force; // TODO: replace force by custom VecID "gradient"
+        const core::MultiVecId multi_gradient = controller->getGradientVecId();
+        auto gradient = multi_gradient.getId(output);
+        helper::WriteAccessor<Data<VecDeriv_t<defaulttype::Vec1Types>> > outputGradient = output->write(gradient);
+        outputGradient[0] = sofa::Deriv_t<defaulttype::Vec1Types> (1);
+    }
 }
 
 }
