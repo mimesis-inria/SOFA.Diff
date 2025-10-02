@@ -56,7 +56,7 @@ public:
      */
     void onEndAnimationStep(double dt) override;
 
-    core::MultiVecId getGradientVecId() { return m_r1; }
+    core::MultiVecDerivId getGradientVecId() { return m_r1; }
 
 private:
     /** VecId for the gradient */

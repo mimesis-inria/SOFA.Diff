@@ -44,7 +44,7 @@ void CostFunctionMapping<TIn>::init()
     {
         auto * output = dynamic_cast<core::behavior::MechanicalState< defaulttype::Vec1Types> * > (Inherit::getTo()[0]);
         // constexpr core::VecDerivId gradient = core::vec_id::write_access::force; // TODO: replace force by custom VecID "gradient"
-        const core::MultiVecId multi_gradient = controller->getGradientVecId();
+        const core::MultiVecDerivId multi_gradient = controller->getGradientVecId();
         auto gradient = multi_gradient.getId(output);
         helper::WriteAccessor<Data<VecDeriv_t<defaulttype::Vec1Types>> > outputGradient = output->write(gradient);
         outputGradient[0] = sofa::Deriv_t<defaulttype::Vec1Types> (1);
