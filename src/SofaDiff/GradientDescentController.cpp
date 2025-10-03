@@ -33,7 +33,10 @@ namespace sofadiff {
 GradientDescentController::GradientDescentController()
 {
     this->f_listening.setValue(true);
+}
 
+void GradientDescentController::init()
+{
     auto* ctx = this->getContext();
     auto* params = core::mechanicalparams::defaultInstance();
 
@@ -47,6 +50,7 @@ GradientDescentController::GradientDescentController()
     vec2.realloc(&vop2, false, true, core::VecIdProperties{"Derivative of the cost w.r.t. force", this->getClassName()});
     m_forceGradientVecId = vec2.id();
 }
+
 
 void GradientDescentController::onEndAnimationStep(const double /*dt*/)
 {

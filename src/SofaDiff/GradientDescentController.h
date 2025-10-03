@@ -46,6 +46,8 @@ public:
      */
     GradientDescentController();
 
+    void init() override;
+
     /**
      * @brief Compute the derivatives
      */
