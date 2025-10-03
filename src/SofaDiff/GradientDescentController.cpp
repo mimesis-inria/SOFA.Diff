@@ -25,7 +25,6 @@
 
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/simulation/VectorOperations.h>
-#include <sofa/core/behavior/MultiVec.h>
 
 
 namespace sofadiff {
@@ -37,18 +36,20 @@ GradientDescentController::GradientDescentController()
 
 void GradientDescentController::init()
 {
+    LinearSolverAccessor::init();
+
     auto* ctx = this->getContext();
     auto* params = core::mechanicalparams::defaultInstance();
 
     simulation::common::VectorOperations vop(params, ctx);
-    core::behavior::TMultiVec<core::V_DERIV> vec(&vop, m_gradientVecId);
+    core::behavior::MultiVecDeriv vec(&vop, m_gradientVecId);
     vec.realloc(&vop, false, true, core::VecIdProperties{"Derivative of the cost w.r.t. position", this->getClassName()});
     m_gradientVecId = vec.id();
 
     simulation::common::VectorOperations vop2(params, ctx);
-    core::behavior::TMultiVec<core::V_DERIV> vec2(&vop2, m_forceGradientVecId);
-    vec2.realloc(&vop2, false, true, core::VecIdProperties{"Derivative of the cost w.r.t. force", this->getClassName()});
-    m_forceGradientVecId = vec2.id();
+    core::behavior::MultiVecDeriv vec_2(&vop2, m_forceGradientVecId);
+    vec_2.realloc(&vop2, false, true, core::VecIdProperties{"Derivative of the cost w.r.t. force", this->getClassName()});
+    m_forceGradientVecId = vec_2.id();
 }
 
 
@@ -63,10 +64,9 @@ void GradientDescentController::onEndAnimationStep(const double /*dt*/)
 
   // Solve the (transpose) system to get the "force gradient"
   auto* linearSolver = l_linearSolver.get();
-  // TODO: make it so it does not crash...
-  // linearSolver->setSystemLHVector(m_forceGradientVecId);
-  // linearSolver->setSystemRHVector(m_gradientVecId);
-  // linearSolver->solveSystem();
+  linearSolver->setSystemLHVector(m_forceGradientVecId);
+  linearSolver->setSystemRHVector(m_gradientVecId);
+  linearSolver->solveSystem();
 
   // TODO: Propagate the "force gradient" to the mapped states
 

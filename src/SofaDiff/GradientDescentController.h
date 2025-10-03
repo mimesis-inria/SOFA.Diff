@@ -25,6 +25,7 @@
 
 #include <sofa/component/controller/Controller.h>
 #include <sofa/core/behavior/LinearSolverAccessor.h>
+#include <sofa/core/behavior/MultiVec.h>
 
 namespace sofadiff
 {
