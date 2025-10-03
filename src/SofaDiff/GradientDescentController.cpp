@@ -22,6 +22,7 @@
 
 #include <SofaDiff/GradientDescentController.h>
 #include <SofaDiff/ComputeCostGradientVisitor.h>
+#include <SofaDiff/PropagateForceGradientVisitor.h>
 
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/simulation/VectorOperations.h>
@@ -55,27 +56,29 @@ void GradientDescentController::init()
 
 void GradientDescentController::onEndAnimationStep(const double /*dt*/)
 {
-  std::cout << "SofaDiff::GradientDescentController::onEndAnimationStep" << std::endl;
+    std::cout << "SofaDiff::GradientDescentController::onEndAnimationStep" << std::endl;
 
-  // Compute and propagate the gradient of the cost function
-  auto* ctx = this->getContext();
-  auto* params = core::mechanicalparams::defaultInstance();
-  ComputeCostGradientVisitor(params, m_gradientVecId).execute(ctx, false);
+    // Compute and propagate the gradient of the cost function
+    auto* ctx = this->getContext();
+    auto* params = core::mechanicalparams::defaultInstance();
+    ComputeCostGradientVisitor(params, m_gradientVecId).execute(ctx, false);
 
-  // Solve the (transpose) system to get the "force gradient"
-  auto* linearSolver = l_linearSolver.get();
-  linearSolver->setSystemLHVector(m_forceGradientVecId);
-  linearSolver->setSystemRHVector(m_gradientVecId);
-  linearSolver->solveSystem();
+    // Solve the (transpose) system to get the "force gradient"
+    auto* linearSolver = l_linearSolver.get();
+    linearSolver->setSystemLHVector(m_forceGradientVecId);
+    linearSolver->setSystemRHVector(m_gradientVecId);
+    linearSolver->solveSystem();
+    // TODO: take the opposite of the solution for m_forceGradientVecId
 
-  // TODO: Propagate the "force gradient" to the mapped states
+    // Propagate the "force gradient" to the mapped states
+    PropagateForceGradientVisitor(params, m_forceGradientVecId).execute(ctx, false);
 
-  // TODO: Call the "applyJT" of the components with "trainable" parameters
+    // TODO: Call the "applyJT" of the components with "trainable" parameters
 }
 
 void registerGradientDescentController(core::ObjectFactory* factory)
 {
-  factory->registerObjects(core::ObjectRegistrationData("Controller that performs gradient descent.").add< GradientDescentController >());
+    factory->registerObjects(core::ObjectRegistrationData("Controller that performs gradient descent.").add< GradientDescentController >());
 }
 
 }

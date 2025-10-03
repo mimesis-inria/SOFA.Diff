@@ -21,6 +21,7 @@ set(HEADER_FILES
         ${SOFADIFF_SRC_DIR}/CostFunctionMapping.inl
         ${SOFADIFF_SRC_DIR}/DistanceToPlaneCost.h
         ${SOFADIFF_SRC_DIR}/DistanceToPlaneCost.inl
+        ${SOFADIFF_SRC_DIR}/PropagateForceGradientVisitor.h
 )
 set(HEADER_FILES_TO_MOC
 )
@@ -30,6 +31,7 @@ set(SOURCE_FILES
         ${SOFADIFF_SRC_DIR}/ComputeCostGradientVisitor.cpp
         ${SOFADIFF_SRC_DIR}/CostFunctionMapping.cpp
         ${SOFADIFF_SRC_DIR}/DistanceToPlaneCost.cpp
+        ${SOFADIFF_SRC_DIR}/PropagateForceGradientVisitor.cpp
 )
 set(README_FILES
         README.md
