@@ -68,7 +68,8 @@ void GradientDescentController::onEndAnimationStep(const double /*dt*/)
     linearSolver->setSystemLHVector(m_forceGradientVecId);
     linearSolver->setSystemRHVector(m_gradientVecId);
     linearSolver->solveSystem();
-    // TODO: take the opposite of the solution for m_forceGradientVecId
+    simulation::common::VectorOperations vop(params, ctx);
+    vop.v_eq(m_forceGradientVecId, m_forceGradientVecId, -1.0);
 
     // Propagate the "force gradient" to the mapped states
     PropagateForceGradientVisitor(params, m_forceGradientVecId).execute(ctx, false);
