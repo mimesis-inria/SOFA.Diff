@@ -29,6 +29,7 @@ namespace sofadiff
 {
     extern void registerGradientDescentController(sofa::core::ObjectFactory* factory);
     extern void registerDistanceToPlaneCost(sofa::core::ObjectFactory* factory);
+    extern void registerParameterizedSpringForceField(sofa::core::ObjectFactory* factory);
 
     extern "C" {
         SOFA_SOFADIFF_API void initExternalModule();
@@ -75,6 +76,7 @@ namespace sofadiff
     {
         registerGradientDescentController(factory);
         registerDistanceToPlaneCost(factory);
+        registerParameterizedSpringForceField(factory);
     }
 
 }

@@ -16,7 +16,7 @@
 
     <DefaultAnimationLoop/>
     <VisualStyle displayFlags="showBehavior showBehaviorModels showForceFields showMappings"/>
-    <GradientDescentController name="controller" trainableParameters="Objects/implicit.name Objects/uniformMass.totalMass"/>
+    <GradientDescentController name="controller" trainableParameters="Objects/spring.name"/>
 
     <Node name="FixedTop">
         <MechanicalObject template="Vec3d" name="fixed" position="0 2 0"/>
@@ -37,6 +37,7 @@
         <!-- <MechanicalObject template="Rigid3d" name="dofs" position="1.5 0 0  0 0 0 1"/> -->
         <MechanicalObject template="Rigid3d" name="dofs" position="0.893734 -0.488142 0 0 0 0.073713 0.997280"/>
         <UniformMass template="Rigid3d" name="uniformMass" totalMass="1.0"/>
+        <ParameterizedSpringForceField name="spring"/>
 
         <Node name="Top">
             <MechanicalObject template="Vec3d" name="top" position="0 0.5 0"/>
