@@ -63,6 +63,12 @@ private:
 
     /** VecId for the derivative of the loss w.r.t. the force */
     core::MultiVecDerivId m_forceGradientVecId;
+
+    Data<type::vector<std::string>> d_trainableParameters;
+
+    std::map<BaseObject::SPtr, core::objectmodel::BaseData*> getObjectDataMap();
+
+    std::map<BaseObject::SPtr, core::objectmodel::BaseData*> m_parametersMap;
 };
 
 }

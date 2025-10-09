@@ -30,7 +30,8 @@
 
 namespace sofadiff {
 
-GradientDescentController::GradientDescentController()
+GradientDescentController::GradientDescentController():
+    d_trainableParameters(initData(&d_trainableParameters, "trainableParameters", "List of links to the parameters to optimize"))
 {
     this->f_listening.setValue(true);
 }
@@ -51,6 +52,44 @@ void GradientDescentController::init()
     core::behavior::MultiVecDeriv vec_2(&vop2, m_forceGradientVecId);
     vec_2.realloc(&vop2, false, true, core::VecIdProperties{"Derivative of the cost w.r.t. force", this->getClassName()});
     m_forceGradientVecId = vec_2.id();
+
+    m_parametersMap = getObjectDataMap();
+}
+
+
+std::map<core::objectmodel::BaseObject::SPtr, core::objectmodel::BaseData*> GradientDescentController::getObjectDataMap()
+{
+    std::map<BaseObject::SPtr, core::objectmodel::BaseData*> outputMap;
+    for (auto& link : d_trainableParameters.getValue())
+    {
+        const size_t index = link.find_last_of('.');
+        if (index >= link.size() - 1)
+        {
+            msg_error() << "Bad link specified: " << link;
+            continue;
+        }
+
+        const std::string objectPath = link.substr(0, index);
+        const std::string dataName = link.substr(index + 1);
+
+        BaseObject::SPtr objectPtr = nullptr;
+        this->getContext()->get(objectPtr, objectPath);
+        if (objectPtr == nullptr)
+        {
+            msg_error() << "Can't find object " << objectPath;
+            continue;
+        }
+
+        core::objectmodel::BaseData* dataPtr = objectPtr->findData(dataName);
+        if (dataPtr == nullptr)
+        {
+            msg_error() << "Can't find data " << dataName;
+            continue;
+        }
+
+        outputMap[objectPtr] = dataPtr;
+    }
+    return outputMap;
 }
 
 
@@ -59,12 +98,12 @@ void GradientDescentController::onEndAnimationStep(const double /*dt*/)
     std::cout << "SofaDiff::GradientDescentController::onEndAnimationStep" << std::endl;
 
     // Compute and propagate the gradient of the cost function
-    auto* ctx = this->getContext();
-    auto* params = core::mechanicalparams::defaultInstance();
+    auto *ctx = this->getContext();
+    auto *params = core::mechanicalparams::defaultInstance();
     ComputeCostGradientVisitor(params, m_gradientVecId).execute(ctx, false);
 
     // Solve the (transpose) system to get the "force gradient"
-    auto* linearSolver = l_linearSolver.get();
+    auto *linearSolver = l_linearSolver.get();
     linearSolver->setSystemLHVector(m_forceGradientVecId);
     linearSolver->setSystemRHVector(m_gradientVecId);
     linearSolver->solveSystem();
@@ -74,7 +113,11 @@ void GradientDescentController::onEndAnimationStep(const double /*dt*/)
     // Propagate the "force gradient" to the mapped states
     PropagateForceGradientVisitor(params, m_forceGradientVecId).execute(ctx, false);
 
-    // TODO: Call the "applyJT" of the components with "trainable" parameters
+    // TODO: Call the "applyCustomJacobianTranspose()" of the components with "trainable" parameters
+    for (auto const &[key, val]: m_parametersMap)
+    {
+        std::cout << key->getPathName() << "." << val->getName() << std::endl;
+    }
 }
 
 void registerGradientDescentController(core::ObjectFactory* factory)
