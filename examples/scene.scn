@@ -16,7 +16,7 @@
 
     <DefaultAnimationLoop/>
     <VisualStyle displayFlags="showBehavior showBehaviorModels showForceFields showMappings"/>
-    <GradientDescentController name="controller" trainableParameters="Objects/spring.name"/>
+    <GradientDescentController name="controller" trainableParameters="Objects/spring1.name Objects/spring2.name"/>
 
     <Node name="FixedTop">
         <MechanicalObject template="Vec3d" name="fixed" position="0 2 0"/>
@@ -27,30 +27,29 @@
     </Node>
 
     <Node name="Objects">
-        <!--
         <NewtonRaphsonSolver name="newton" maxNbIterationsNewton="100" maxNbIterationsLineSearch="1" warnWhenLineSearchFails="false"/>
         <StaticSolver newtonSolver="@newton" name="static"/>
-        -->
+        <!--
         <EulerImplicitSolver name="implicit"/>
+        -->
         <CGLinearSolver template="GraphScattered" name="linear solver" printLog="0" iterations="1000" tolerance="1e-5" threshold="1e-5"/>
 
-        <!-- <MechanicalObject template="Rigid3d" name="dofs" position="1.5 0 0  0 0 0 1"/> -->
-        <MechanicalObject template="Rigid3d" name="dofs" position="0.893734 -0.488142 0 0 0 0.073713 0.997280"/>
+        <MechanicalObject template="Rigid3d" name="dofs" position="1.5 0 0  0 0 0 1"/>
+        <!-- <MechanicalObject template="Rigid3d" name="dofs" position="0.893734 -0.488142 0 0 0 0.073713 0.997280"/> -->
         <UniformMass template="Rigid3d" name="uniformMass" totalMass="1.0"/>
-        <ParameterizedSpringForceField name="spring"/>
 
         <Node name="Top">
             <MechanicalObject template="Vec3d" name="top" position="0 0.5 0"/>
             <RigidMapping input="@.."/>
             <ConstantForceField forces="0.00 0 0"/>
         </Node>
-        <SpringForceField object1="@../FixedTop" object2="@Top" indices1="0" indices2="0" length="2" stiffness="100"/>
+        <ParameterizedSpringForceField name="spring1" object1="@../FixedTop" object2="@Top" indices1="0" indices2="0" length="2" stiffness="100"/>
 
         <Node name="Right">
             <MechanicalObject template="Vec3d" name="top" position="0.5 0 0"/>
             <RigidMapping/>
         </Node>
-        <SpringForceField object1="@../FixedRight" object2="@Right" indices1="0" indices2="0" length="2" stiffness="100"/>
+        <ParameterizedSpringForceField name="spring2" object1="@../FixedRight" object2="@Right" indices1="0" indices2="0" length="2" stiffness="100"/>
 
         <Node name="Bottom">
             <MechanicalObject template="Vec3d" name="bottom" position="0 -0.5 0"/>

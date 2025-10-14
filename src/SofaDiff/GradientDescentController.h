@@ -22,6 +22,7 @@
 #pragma once
 
 #include <SofaDiff/config.h>
+#include <SofaDiff/ParameterizedForceField.h>
 
 #include <sofa/component/controller/Controller.h>
 #include <sofa/core/behavior/LinearSolverAccessor.h>
@@ -66,9 +67,9 @@ private:
 
     Data<type::vector<std::string>> d_trainableParameters;
 
-    std::map<BaseObject::SPtr, core::objectmodel::BaseData*> getObjectDataMap();
+    std::map<ParameterizedForceField*, core::objectmodel::BaseData*> getObjectDataMap();
 
-    std::map<BaseObject::SPtr, core::objectmodel::BaseData*> m_parametersMap;
+    std::map<ParameterizedForceField*, core::objectmodel::BaseData*> m_parametersMap;
 };
 
 }

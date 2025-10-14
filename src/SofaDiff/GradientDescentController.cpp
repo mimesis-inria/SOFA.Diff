@@ -20,9 +20,11 @@
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
 
+#include <ranges>
 #include <SofaDiff/GradientDescentController.h>
 #include <SofaDiff/ComputeCostGradientVisitor.h>
 #include <SofaDiff/PropagateForceGradientVisitor.h>
+#include <SofaDiff/ParameterizedForceField.h>
 
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/simulation/VectorOperations.h>
@@ -57,9 +59,9 @@ void GradientDescentController::init()
 }
 
 
-std::map<core::objectmodel::BaseObject::SPtr, core::objectmodel::BaseData*> GradientDescentController::getObjectDataMap()
+std::map<ParameterizedForceField*, core::objectmodel::BaseData*> GradientDescentController::getObjectDataMap()
 {
-    std::map<BaseObject::SPtr, core::objectmodel::BaseData*> outputMap;
+    std::map<ParameterizedForceField*, core::objectmodel::BaseData*> outputMap;
     for (auto& link : d_trainableParameters.getValue())
     {
         const size_t index = link.find_last_of('.');
@@ -80,6 +82,13 @@ std::map<core::objectmodel::BaseObject::SPtr, core::objectmodel::BaseData*> Grad
             continue;
         }
 
+        auto * parameterizedComponent = dynamic_cast<ParameterizedForceField*>(objectPtr.get());
+        if (parameterizedComponent == nullptr)
+        {
+            msg_error() << "Object " << objectPath << " is not a ParameterizedForceField";
+            continue;
+        }
+
         core::objectmodel::BaseData* dataPtr = objectPtr->findData(dataName);
         if (dataPtr == nullptr)
         {
@@ -87,7 +96,7 @@ std::map<core::objectmodel::BaseObject::SPtr, core::objectmodel::BaseData*> Grad
             continue;
         }
 
-        outputMap[objectPtr] = dataPtr;
+        outputMap[parameterizedComponent] = dataPtr;
     }
     return outputMap;
 }
@@ -113,11 +122,13 @@ void GradientDescentController::onEndAnimationStep(const double /*dt*/)
     // Propagate the "force gradient" to the mapped states
     PropagateForceGradientVisitor(params, m_forceGradientVecId).execute(ctx, false);
 
-    // TODO: Call the "applyCustomJacobianTranspose()" of the components with "trainable" parameters
-    for (auto const &[key, val]: m_parametersMap)
+    // Call the "applyCustomJacobianTranspose()" of the components with "trainable" parameters
+    for (const auto &forceField: m_parametersMap | std::views::keys)
     {
-        std::cout << key->getPathName() << "." << val->getName() << std::endl;
+        forceField->applyParametersJacobianTranspose(params, m_forceGradientVecId);
     }
+
+    // TODO: Apply the gradient
 }
 
 void registerGradientDescentController(core::ObjectFactory* factory)

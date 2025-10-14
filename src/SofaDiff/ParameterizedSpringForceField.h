@@ -26,21 +26,28 @@
 
 #include <sofa/core/behavior/StateAccessor.h>
 #include <sofa/core/MultiVecId.h>
+#include <sofa/component/solidmechanics/spring/SpringForceField.h>
+#include <sofa/defaulttype/VecTypes.h>
+#include <sofa/core/behavior/MultiVec.h>
 
 
 namespace sofadiff
 {
-class ParameterizedSpringForceField : public ParameterizedForceField
+
+using namespace sofa::component::solidmechanics::spring;
+using namespace sofa::defaulttype;
+
+class ParameterizedSpringForceField :
+    public ParameterizedForceField,
+    public SpringForceField<Vec3Types>
 {
 public:
-    SOFA_CLASS(ParameterizedSpringForceField, ParameterizedForceField);
+    SOFA_CLASS2(ParameterizedSpringForceField, ParameterizedForceField, SpringForceField<Vec3Types>);
 
-    void addForce(const core::MechanicalParams* mparams, core::MultiVecDerivId fId) override;
-    void addDForce(const core::MechanicalParams* mparams, core::MultiVecDerivId dfId) override;
-    void addKToMatrix(const core::MechanicalParams* mparams, const core::behavior::MultiMatrixAccessor* matrix) override;
-    SReal getPotentialEnergy(const core::MechanicalParams* mparams = core::mechanicalparams::defaultInstance()) const override;
+    void applyParametersJacobianTranspose(const core::MechanicalParams* mparams, core::MultiVecDerivId vecId) override;
 
-    void applyParametersJacobianTranspose() override;
+private:
+    Real m_derivative;
 };
 
 }

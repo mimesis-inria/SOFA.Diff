@@ -23,7 +23,9 @@
 
 #include <SofaDiff/config.h>
 
-#include <sofa/core/behavior/BaseForceField.h>
+#include <sofa/core/objectmodel/BaseObject.h>
+#include <sofa/core/behavior/MultiVec.h>
+
 
 namespace sofadiff
 {
@@ -31,13 +33,13 @@ namespace sofadiff
 /**
  *  \brief ParameterizedForceField is a ForceField that can be differentiated w.r.t. its data.
  */
-class SOFA_SOFADIFF_API ParameterizedForceField : public core::behavior::BaseForceField
+class SOFA_SOFADIFF_API ParameterizedForceField: virtual public core::objectmodel::BaseObject
 {
 public:
-    SOFA_ABSTRACT_CLASS(ParameterizedForceField, BaseForceField);
+    // SOFA_ABSTRACT_CLASS(ParameterizedForceField, BaseForceField);
     // SOFA_BASE_CAST_IMPLEMENTATION(ParameterizedForceField);
 
-    virtual void applyParametersJacobianTranspose() = 0;
+    virtual void applyParametersJacobianTranspose(const core::MechanicalParams* mparams, core::MultiVecDerivId vecId) = 0;
 };
 
 }
