@@ -42,7 +42,7 @@ class ParameterizedSpringForceField :
     public SpringForceField<Vec3Types>
 {
 public:
-    SOFA_CLASS2(ParameterizedSpringForceField, ParameterizedForceField, SpringForceField<Vec3Types>);
+    SOFA_CLASS(ParameterizedSpringForceField, SpringForceField<Vec3Types>);
 
     void applyParametersJacobianTranspose(const core::MechanicalParams* mparams, core::MultiVecDerivId vecId) override;
 

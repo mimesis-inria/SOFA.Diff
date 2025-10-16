@@ -33,7 +33,7 @@ namespace sofadiff
 /**
  *  \brief ParameterizedForceField is a ForceField that can be differentiated w.r.t. its data.
  */
-class SOFA_SOFADIFF_API ParameterizedForceField: virtual public core::objectmodel::BaseObject
+class SOFA_SOFADIFF_API ParameterizedForceField//: virtual public core::objectmodel::BaseObject
 {
 public:
     // SOFA_ABSTRACT_CLASS(ParameterizedForceField, BaseForceField);
