@@ -30,7 +30,11 @@ template <class TIn>
 void CostFunctionMapping<TIn>::init()
 {
     Inherit::init();
+}
 
+template<class In>
+void CostFunctionMapping<In>::resetOutputGradient()
+{
     if(auto * controller = this->getContext()->getRootContext()->template get<GradientDescentController>())
     {
         auto * output = dynamic_cast<core::behavior::MechanicalState<defaulttype::Vec1Types> *> (Inherit::getTo()[0]);
@@ -40,5 +44,6 @@ void CostFunctionMapping<TIn>::init()
         outputGradient[0] = sofa::Deriv_t<defaulttype::Vec1Types> (1);
     }
 }
+
 
 }

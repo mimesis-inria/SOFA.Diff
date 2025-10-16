@@ -30,7 +30,6 @@ namespace sofadiff
 void ComputeCostGradientVisitor::bwdMechanicalMapping(simulation::Node * /* node */, core::BaseMapping *map)
 {
     std::cout << "ComputeCostGradientVisitor::bwdMechanicalMapping" << std::endl;
-    // TODO: initialize all gradients to 0 ? --> during forward
     // propagate gradient with applyJT() (does nothing if "gradient" is not in the output of the mapping)
     map->applyJT(mparams, m_vec_id, m_vec_id);
 }

@@ -43,6 +43,7 @@ public:
     typedef defaulttype::Vec1dTypes Out;
 
     void init() override;
+    void resetOutputGradient();
 };
 
 }

@@ -28,11 +28,13 @@
 
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/simulation/VectorOperations.h>
+#include <sofa/simulation/mechanicalvisitor/MechanicalResetForceVisitor.h>
 
 
 namespace sofadiff {
 
 GradientDescentController::GradientDescentController():
+    d_parameterGradient(initData(&d_parameterGradient, "parameterGradient", "The gradient of the parameters")),
     d_trainableParameters(initData(&d_trainableParameters, "trainableParameters", "List of links to the parameters to optimize"))
 {
     this->f_listening.setValue(true);
@@ -106,9 +108,14 @@ void GradientDescentController::onEndAnimationStep(const double /*dt*/)
 {
     std::cout << "SofaDiff::GradientDescentController::onEndAnimationStep" << std::endl;
 
-    // Compute and propagate the gradient of the cost function
     auto *ctx = this->getContext();
     auto *params = core::mechanicalparams::defaultInstance();
+
+    // Reset the gradient data
+    simulation::mechanicalvisitor::MechanicalResetForceVisitor(params, m_gradientVecId).execute(ctx, false);
+    simulation::mechanicalvisitor::MechanicalResetForceVisitor(params, m_forceGradientVecId).execute(ctx, false);
+
+    // Compute and propagate the gradient of the cost function
     ComputeCostGradientVisitor(params, m_gradientVecId).execute(ctx, false);
 
     // Solve the (transpose) system to get the "force gradient"
