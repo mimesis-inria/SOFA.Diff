@@ -69,6 +69,9 @@ protected:
     virtual ~DistanceToPlaneCost() {};
 
     linearalgebra::EigenSparseMatrix<TIn, TOut> J;
+
+private:
+    bool m_isInFront;
 };
 
 

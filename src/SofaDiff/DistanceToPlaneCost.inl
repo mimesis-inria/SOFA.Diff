@@ -97,7 +97,17 @@ void DistanceToPlaneCost<TIn>::apply(const core::MechanicalParams *mparams, Data
 
     for ( unsigned i = 0; i<readIn.size(); i++ )
     {
-        writeOut[i] = type::dot(TIn::getCPos(readIn[i]),planeNormal) - planeDistanceToOrigin;
+        const auto signedDistance = type::dot(TIn::getCPos(readIn[i]),planeNormal) - planeDistanceToOrigin;
+        if (signedDistance < 0)
+        {
+            writeOut[i] = -signedDistance;
+            m_isInFront = false;
+        }
+        else
+        {
+            writeOut[i] = signedDistance;
+            m_isInFront = true;
+        }
     }
 }
 
@@ -115,7 +125,10 @@ void DistanceToPlaneCost<TIn>::applyJ(const core::MechanicalParams *mparams, Dat
 
     for ( unsigned i = 0; i<readIn.size(); i++ )
     {
-        writeOut[i] = type::dot(TIn::getDPos(readIn[i]),planeNormal);
+        if (m_isInFront)
+            writeOut[i] = type::dot(TIn::getDPos(readIn[i]),planeNormal);
+        else
+            writeOut[i] = -type::dot(TIn::getDPos(readIn[i]),planeNormal);
     }
 }
 
@@ -123,6 +136,8 @@ template <class TIn>
 void DistanceToPlaneCost<TIn>::applyJT(const core::MechanicalParams *mparams, Data<VecDeriv_t<TIn>>& out, const Data<VecDeriv_t<TOut>>& in)
 {
     SOFA_UNUSED(mparams);
+
+    this->resetOutputGradient();
 
     if (this-> d_componentState.getValue() != sofa::core::objectmodel::ComponentState::Valid)
         return;
@@ -134,7 +149,10 @@ void DistanceToPlaneCost<TIn>::applyJT(const core::MechanicalParams *mparams, Da
 
     for ( unsigned i = 0; i<readIn.size(); i++ )
     {
-        TIn::setDPos(writeOut[i], TIn::getDPos(writeOut[i]) + planeNormal * readIn[i][0]) ;
+        if (m_isInFront)
+            TIn::setDPos(writeOut[i], TIn::getDPos(writeOut[i]) + planeNormal * readIn[i][0]);
+        else
+            TIn::setDPos(writeOut[i], -TIn::getDPos(writeOut[i]) - planeNormal * readIn[i][0]);
     }
 }
 
