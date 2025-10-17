@@ -22,6 +22,8 @@ set(HEADER_FILES
         ${SOFADIFF_SRC_DIR}/CostFunctionMapping.inl
         ${SOFADIFF_SRC_DIR}/DistanceToPlaneCost.h
         ${SOFADIFF_SRC_DIR}/DistanceToPlaneCost.inl
+        ${SOFADIFF_SRC_DIR}/DistanceToPointCost.h
+        ${SOFADIFF_SRC_DIR}/DistanceToPointCost.inl
         ${SOFADIFF_SRC_DIR}/PropagateForceGradientVisitor.h
         ${SOFADIFF_SRC_DIR}/ParameterizedForceField.h
         ${SOFADIFF_SRC_DIR}/ParameterizedSpringForceField.h
@@ -34,6 +36,7 @@ set(SOURCE_FILES
         ${SOFADIFF_SRC_DIR}/ComputeCostGradientVisitor.cpp
         ${SOFADIFF_SRC_DIR}/CostFunctionMapping.cpp
         ${SOFADIFF_SRC_DIR}/DistanceToPlaneCost.cpp
+        ${SOFADIFF_SRC_DIR}/DistanceToPointCost.cpp
         ${SOFADIFF_SRC_DIR}/PropagateForceGradientVisitor.cpp
         ${SOFADIFF_SRC_DIR}/ParameterizedForceField.cpp
         ${SOFADIFF_SRC_DIR}/ParameterizedSpringForceField.cpp

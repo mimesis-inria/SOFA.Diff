@@ -55,5 +55,8 @@
     <Node name="Error">
         <MechanicalObject template="Vec1d" name="error" position="0"/>
         <DistanceToPlaneCost template="Vec3d" input="@../Objects/Bottom" planeNormal="0.60 2.32 0" planePoint="2.32 -0.60 0.00"/>
+        <!--
+        <DistanceToPointCost template="Vec3d" input="@../Objects/Bottom" planeNormal="0.60 2.32 0" planePoint="2.32 -0.60 0.43"/>
+        -->
     </Node>
 </Node>
