@@ -62,11 +62,11 @@ void GradientDescentController::init()
 }
 
 
-std::vector<std::pair<ParameterizedForceField *, Data<type::vector<SReal>> *>> GradientDescentController::getParametersMap()
+std::map<ParameterizedForceField *, std::vector<Data<type::vector<SReal>> *>> GradientDescentController::getParametersMap()
 {
     const auto & parametersStrings = d_trainableParameters.getValue();
 
-    std::vector<std::pair<ParameterizedForceField *, Data<type::vector<SReal>> *>> parametersMap;
+    std::map<ParameterizedForceField *, std::vector<Data<type::vector<SReal>> *>> parametersMap;
 
     for (auto& link : parametersStrings)
     {
@@ -109,7 +109,9 @@ std::vector<std::pair<ParameterizedForceField *, Data<type::vector<SReal>> *>> G
             continue;
         }
 
-        parametersMap.emplace_back(parameterizedComponent, dataPtr);
+        if (!parametersMap.contains(parameterizedComponent))
+            parametersMap[parameterizedComponent] = std::vector<Data<type::vector<SReal>> *> ();
+        parametersMap.at(parameterizedComponent).push_back(dataPtr);
     }
     return parametersMap;
 }
@@ -118,10 +120,13 @@ std::vector<std::pair<ParameterizedForceField *, Data<type::vector<SReal>> *>> G
 std::vector<double> GradientDescentController::gatherParameters()
 {
     std::vector<double> parametersVector;
-    for (const auto &data: m_parametersMap | std::views::values)
+    for (const auto &dataVector: m_parametersMap | std::views::values)
     {
-        for (const auto parameters = data->getValue(); const auto& parameter : parameters)
-            parametersVector.push_back(parameter);
+        for (const auto & data: dataVector)
+        {
+            for (const auto& parameters = data->getValue(); const auto& parameter : parameters)
+                parametersVector.push_back(parameter);
+        }
     }
     return parametersVector;
 }
@@ -130,11 +135,14 @@ std::vector<double> GradientDescentController::gatherParameters()
 std::vector<double> GradientDescentController::gatherParametersGradient()
 {
     std::vector<double> parametersGradientVector;
-    for (const auto &[component, data]: m_parametersMap)
+    for (const auto &[component, dataVector]: m_parametersMap)
     {
-        const auto & derivatives = component->getParameterGradient(data->getName());
-        for (const auto & derivative : derivatives)
-            parametersGradientVector.push_back(derivative);
+        for (const auto & data: dataVector)
+        {
+            const auto & derivatives = component->getParameterGradient(data->getName());
+            for (const auto & derivative : derivatives)
+                parametersGradientVector.push_back(derivative);
+        }
     }
     return parametersGradientVector;
 }
@@ -143,16 +151,19 @@ std::vector<double> GradientDescentController::gatherParametersGradient()
 void GradientDescentController::scatterParameters(const std::vector<double> &parametersVector)
 {
     unsigned int currentIndex = 0;
-    for (const auto &data: m_parametersMap | std::views::values)
+    for (const auto &dataVector: m_parametersMap | std::views::values)
     {
-        const auto size = data->getValue().size();
-        auto parameters = std::vector<double>(size);
-        for (unsigned int i = 0; i < size; ++i)
+        for (const auto & data: dataVector)
         {
-            parameters[i] = parametersVector[currentIndex + i];
+            const auto size = data->getValue().size();
+            auto parameters = std::vector<double>(size);
+            for (unsigned int i = 0; i < size; ++i)
+            {
+                parameters[i] = parametersVector[currentIndex + i];
+            }
+            currentIndex += size;
+            data->setValue(parameters);
         }
-        currentIndex += size;
-        data->setValue(parameters);
     }
 }
 
@@ -186,7 +197,7 @@ void GradientDescentController::onEndAnimationStep(const double /*dt*/)
     // Call the "applyCustomJacobianTranspose()" of the components with "trainable" parameters
     for (const auto &forceField: m_parametersMap | std::views::keys)
     {
-        forceField->applyParametersJacobianTranspose(params, m_forceGradientVecId);
+        forceField->applyParametersJacobianTranspose(params, m_forceGradientVecId, m_parametersMap[forceField]);
     }
 
     // Apply the gradient: p = p - lr * grad

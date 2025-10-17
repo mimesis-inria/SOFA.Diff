@@ -75,8 +75,8 @@ private:
     Data<double> d_learningRate;
     Data<type::vector<double>> d_parameterGradient;
 
-    std::vector<std::pair<ParameterizedForceField *, Data<type::vector<SReal>> *>> getParametersMap();
-    std::vector<std::pair<ParameterizedForceField *, Data<type::vector<SReal>> *>> m_parametersMap;
+    std::map<ParameterizedForceField *, std::vector<Data<type::vector<SReal>> *>> getParametersMap();
+    std::map<ParameterizedForceField *, std::vector<Data<type::vector<SReal>> *>> m_parametersMap;
 };
 
 }

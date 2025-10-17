@@ -45,7 +45,7 @@ public:
         return m_gradientMap[dataName];
     }
 
-    virtual void applyParametersJacobianTranspose(const core::MechanicalParams* mparams, core::MultiVecDerivId vecId) = 0;
+    virtual void applyParametersJacobianTranspose(const core::MechanicalParams* mparams, core::MultiVecDerivId vecId, std::vector<Data<type::vector<SReal>> *> dataVector) = 0;
 
 protected:
     std::map<std::string, std::vector<double>> m_gradientMap;
