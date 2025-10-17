@@ -58,6 +58,12 @@ public:
     core::MultiVecDerivId getGradientVecId() { return m_gradientVecId; }
     core::MultiVecDerivId getForceGradientVecId() { return m_forceGradientVecId; }
 
+    std::vector<double> gatherParameters();
+    std::vector<double> gatherParametersGradient();
+    void scatterParameters(const std::vector<double> &parametersVector);
+
+    virtual std::vector<double> getUpdatedParameters(const std::vector<double> & parameters, const std::vector<double> & gradient);
+
 private:
     /** VecId for the derivative of the loss w.r.t. the position */
     core::MultiVecDerivId m_gradientVecId;
@@ -66,10 +72,11 @@ private:
     core::MultiVecDerivId m_forceGradientVecId;
 
     Data<type::vector<std::string>> d_trainableParameters;
+    Data<double> d_learningRate;
+    Data<type::vector<double>> d_parameterGradient;
 
-    std::map<ParameterizedForceField*, core::objectmodel::BaseData*> getObjectDataMap();
-
-    std::map<ParameterizedForceField*, core::objectmodel::BaseData*> m_parametersMap;
+    std::vector<std::pair<ParameterizedForceField *, Data<type::vector<SReal>> *>> getParametersMap();
+    std::vector<std::pair<ParameterizedForceField *, Data<type::vector<SReal>> *>> m_parametersMap;
 };
 
 }

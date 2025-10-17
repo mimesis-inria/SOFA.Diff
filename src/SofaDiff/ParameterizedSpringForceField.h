@@ -45,9 +45,6 @@ public:
     SOFA_CLASS(ParameterizedSpringForceField, SpringForceField<Vec3Types>);
 
     void applyParametersJacobianTranspose(const core::MechanicalParams* mparams, core::MultiVecDerivId vecId) override;
-
-private:
-    Real m_derivative;
 };
 
 }

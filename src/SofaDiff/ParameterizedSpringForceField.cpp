@@ -11,7 +11,8 @@ namespace sofadiff
 void ParameterizedSpringForceField::applyParametersJacobianTranspose(const core::MechanicalParams* mparams, const core::MultiVecDerivId vecId)
 {
     std::cout << "ParameterizedSpringForceField::applyParametersJacobianTranspose" << std::endl;
-    m_derivative = 0.0;
+    std::vector<double> stiffnessGradient = {};
+    std::vector<double> lengthGradient = {};
 
     // Get the mstates involved
     const auto state1 = this->mstate1.get(); // From PairInteractionForceField::addForce()
@@ -34,8 +35,9 @@ void ParameterizedSpringForceField::applyParametersJacobianTranspose(const core:
     const auto x2 = mparams->readX(state2)->getValue();
 
     const type::vector<Spring>& _springs = this->d_springs.getValue(); // Adapted from SpringForceField::addForce()
-    for (const auto & spring : _springs)
+    for (unsigned int i=0; i < _springs.size(); i++)
     {
+        const Spring spring = _springs[i];
         const Index a = spring.m1;
         const Index b = spring.m2;
 
@@ -48,11 +50,19 @@ void ParameterizedSpringForceField::applyParametersJacobianTranspose(const core:
             // (dF/dk_s)^T @ v = (l-l_0).dot(U, v)
             u /= d;
             const Real elongation = d - spring.initpos;
-            m_derivative += elongation * dot(u, DataTypes::getDPos(v1[a]) - DataTypes::getDPos(v2[b]));
+            const auto grad = elongation * dot(u, DataTypes::getDPos(v1[a]) - DataTypes::getDPos(v2[b]));
+            stiffnessGradient.push_back(grad);
+            const auto lengthGrad = -spring.ks * dot(u, DataTypes::getDPos(v1[a]) - DataTypes::getDPos(v2[b]));
+            lengthGradient.push_back(lengthGrad);
+        }
+        else
+        {
+            stiffnessGradient.push_back(0.0);
+            lengthGradient.push_back(0.0);
         }
     }
-
-    std::cout << "Derivative:" << m_derivative << std::endl;
+    m_gradientMap[d_ks.getName()] = stiffnessGradient;
+    m_gradientMap[d_lengths.getName()] = lengthGradient;
 }
 
 void registerParameterizedSpringForceField(core::ObjectFactory* factory)

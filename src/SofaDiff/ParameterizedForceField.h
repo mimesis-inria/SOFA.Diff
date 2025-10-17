@@ -39,7 +39,16 @@ public:
     // SOFA_ABSTRACT_CLASS(ParameterizedForceField, BaseForceField);
     // SOFA_BASE_CAST_IMPLEMENTATION(ParameterizedForceField);
 
+    const std::vector<double> & getParameterGradient(const std::string & dataName)
+    {
+        // No need to check for existence of key because we check that the data exists in GradientDescentController
+        return m_gradientMap[dataName];
+    }
+
     virtual void applyParametersJacobianTranspose(const core::MechanicalParams* mparams, core::MultiVecDerivId vecId) = 0;
+
+protected:
+    std::map<std::string, std::vector<double>> m_gradientMap;
 };
 
 }

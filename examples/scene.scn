@@ -5,6 +5,7 @@
         <RequiredPlugin name="SofaDiff" pluginName="SofaDiff"/>
         <RequiredPlugin name="Sofa.Component.Visual"/> <!-- Needed to use components [VisualStyle] -->
         <RequiredPlugin name="Sofa.Component.LinearSolver.Iterative"/> <!-- Needed to use components [CGLinearSolver] -->
+        <RequiredPlugin name="Sofa.Component.LinearSolver.Direct"/> <!-- Needed to use components [SparseLDLSolver] -->
         <RequiredPlugin name="Sofa.Component.ODESolver.Backward"/> <!-- Needed to use components [NewtonRaphsonSolver, StaticSolver] -->
         <RequiredPlugin name="Sofa.Component.StateContainer"/> <!-- Needed to use components [MechanicalObject] -->
         <RequiredPlugin name="Sofa.Component.Mass"/> <!-- Needed to use components [UniformMass] -->
@@ -17,7 +18,7 @@
     <DefaultAnimationLoop/>
     <VisualStyle displayFlags="showBehavior showBehaviorModels showForceFields showMappings"/>
 
-    <GradientDescentController name="controller" trainableParameters="Objects/springs.name"/>
+    <GradientDescentController name="controller" trainableParameters="Objects/springs.length Objects/springs.stiffness" learningRate="0.01"/>
 
     <Node name="Fixed">
         <MechanicalObject template="Vec3d" name="fixed" position="-10 0 0  10 0 0  0 -10 0  0 10 0  0 0 -10  0 0 10"/>
@@ -28,6 +29,10 @@
         <StaticSolver newtonSolver="@newton" name="static"/>
         <!--
         <EulerImplicitSolver name="implicit"/>
+        -->
+
+        <!--
+        <SparseLDLSolver template="CompressedRowSparseMatrixd"/>
         -->
         <CGLinearSolver template="GraphScattered" name="linear solver" printLog="0" iterations="1000" tolerance="1e-5" threshold="1e-5"/>
 

@@ -21,6 +21,7 @@
 ******************************************************************************/
 
 #include <ranges>
+#include <boost/parameter/parameters.hpp>
 #include <SofaDiff/GradientDescentController.h>
 #include <SofaDiff/ComputeCostGradientVisitor.h>
 #include <SofaDiff/PropagateForceGradientVisitor.h>
@@ -33,9 +34,10 @@
 
 namespace sofadiff {
 
-GradientDescentController::GradientDescentController():
-    d_parameterGradient(initData(&d_parameterGradient, "parameterGradient", "The gradient of the parameters")),
-    d_trainableParameters(initData(&d_trainableParameters, "trainableParameters", "List of links to the parameters to optimize"))
+GradientDescentController::GradientDescentController()
+: d_trainableParameters(initData(&d_trainableParameters, "trainableParameters", "List of links to the parameters to optimize"))
+, d_learningRate(initData(&d_learningRate, "learningRate", "The learning rate for the gradient descent"))
+, d_parameterGradient(initData(&d_parameterGradient, "parameterGradient", "The gradient of the parameters"))
 {
     this->f_listening.setValue(true);
 }
@@ -52,19 +54,21 @@ void GradientDescentController::init()
     vec.realloc(&vop, false, true, core::VecIdProperties{"Derivative of the cost w.r.t. position", this->getClassName()});
     m_gradientVecId = vec.id();
 
-    simulation::common::VectorOperations vop2(params, ctx);
-    core::behavior::MultiVecDeriv vec_2(&vop2, m_forceGradientVecId);
-    vec_2.realloc(&vop2, false, true, core::VecIdProperties{"Derivative of the cost w.r.t. force", this->getClassName()});
+    core::behavior::MultiVecDeriv vec_2(&vop, m_forceGradientVecId);
+    vec_2.realloc(&vop, false, true, core::VecIdProperties{"Derivative of the cost w.r.t. force", this->getClassName()});
     m_forceGradientVecId = vec_2.id();
 
-    m_parametersMap = getObjectDataMap();
+    m_parametersMap = getParametersMap();
 }
 
 
-std::map<ParameterizedForceField*, core::objectmodel::BaseData*> GradientDescentController::getObjectDataMap()
+std::vector<std::pair<ParameterizedForceField *, Data<type::vector<SReal>> *>> GradientDescentController::getParametersMap()
 {
-    std::map<ParameterizedForceField*, core::objectmodel::BaseData*> outputMap;
-    for (auto& link : d_trainableParameters.getValue())
+    const auto & parametersStrings = d_trainableParameters.getValue();
+
+    std::vector<std::pair<ParameterizedForceField *, Data<type::vector<SReal>> *>> parametersMap;
+
+    for (auto& link : parametersStrings)
     {
         const size_t index = link.find_last_of('.');
         if (index >= link.size() - 1)
@@ -91,17 +95,67 @@ std::map<ParameterizedForceField*, core::objectmodel::BaseData*> GradientDescent
             continue;
         }
 
-        core::objectmodel::BaseData* dataPtr = objectPtr->findData(dataName);
-        if (dataPtr == nullptr)
+        auto * baseDataPtr = objectPtr->findData(dataName);
+        if (baseDataPtr == nullptr)
         {
             msg_error() << "Can't find data " << dataName;
             continue;
         }
 
-        outputMap[parameterizedComponent] = dataPtr;
+        auto * dataPtr = dynamic_cast<Data<type::vector<SReal>>*>(baseDataPtr);
+        if (dataPtr == nullptr)
+        {
+            msg_error() << "Data " << dataName << " is not a Data<vector<SReal>>";
+            continue;
+        }
+
+        parametersMap.emplace_back(parameterizedComponent, dataPtr);
     }
-    return outputMap;
+    return parametersMap;
 }
+
+
+std::vector<double> GradientDescentController::gatherParameters()
+{
+    std::vector<double> parametersVector;
+    for (const auto &data: m_parametersMap | std::views::values)
+    {
+        for (const auto parameters = data->getValue(); const auto& parameter : parameters)
+            parametersVector.push_back(parameter);
+    }
+    return parametersVector;
+}
+
+
+std::vector<double> GradientDescentController::gatherParametersGradient()
+{
+    std::vector<double> parametersGradientVector;
+    for (const auto &[component, data]: m_parametersMap)
+    {
+        const auto & derivatives = component->getParameterGradient(data->getName());
+        for (const auto & derivative : derivatives)
+            parametersGradientVector.push_back(derivative);
+    }
+    return parametersGradientVector;
+}
+
+
+void GradientDescentController::scatterParameters(const std::vector<double> &parametersVector)
+{
+    unsigned int currentIndex = 0;
+    for (const auto &data: m_parametersMap | std::views::values)
+    {
+        const auto size = data->getValue().size();
+        auto parameters = std::vector<double>(size);
+        for (unsigned int i = 0; i < size; ++i)
+        {
+            parameters[i] = parametersVector[currentIndex + i];
+        }
+        currentIndex += size;
+        data->setValue(parameters);
+    }
+}
+
 
 
 void GradientDescentController::onEndAnimationStep(const double /*dt*/)
@@ -113,7 +167,7 @@ void GradientDescentController::onEndAnimationStep(const double /*dt*/)
 
     // Reset the gradient data
     simulation::mechanicalvisitor::MechanicalResetForceVisitor(params, m_gradientVecId).execute(ctx, false);
-    simulation::mechanicalvisitor::MechanicalResetForceVisitor(params, m_forceGradientVecId).execute(ctx, false);
+    // simulation::mechanicalvisitor::MechanicalResetForceVisitor(params, m_forceGradientVecId).execute(ctx, false);
 
     // Compute and propagate the gradient of the cost function
     ComputeCostGradientVisitor(params, m_gradientVecId).execute(ctx, false);
@@ -124,7 +178,7 @@ void GradientDescentController::onEndAnimationStep(const double /*dt*/)
     linearSolver->setSystemRHVector(m_gradientVecId);
     linearSolver->solveSystem();
     simulation::common::VectorOperations vop(params, ctx);
-    vop.v_eq(m_forceGradientVecId, m_forceGradientVecId, -1.0);
+    // vop.v_eq(m_forceGradientVecId, m_forceGradientVecId, -1.0);
 
     // Propagate the "force gradient" to the mapped states
     PropagateForceGradientVisitor(params, m_forceGradientVecId).execute(ctx, false);
@@ -135,7 +189,24 @@ void GradientDescentController::onEndAnimationStep(const double /*dt*/)
         forceField->applyParametersJacobianTranspose(params, m_forceGradientVecId);
     }
 
-    // TODO: Apply the gradient
+    // Apply the gradient: p = p - lr * grad
+    const auto & parameters = gatherParameters();
+    const auto & gradient = gatherParametersGradient();
+    d_parameterGradient.setValue(gatherParametersGradient());
+    const auto updatedParameters = getUpdatedParameters(parameters, gradient);
+    scatterParameters(updatedParameters);
+}
+
+
+std::vector<double> GradientDescentController::getUpdatedParameters(const std::vector<double> & parameters, const std::vector<double> & gradient)
+{
+    auto updatedParameters = std::vector<double>(parameters.size());
+    const auto learningRate = d_learningRate.getValue();
+    for (unsigned int i = 0; i < parameters.size(); ++i)
+    {
+        updatedParameters[i] = parameters[i] - learningRate * gradient[i];
+    }
+    return updatedParameters;
 }
 
 void registerGradientDescentController(core::ObjectFactory* factory)
