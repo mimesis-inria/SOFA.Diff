@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<Node name="Root" gravity="0 -9.8 0" time="0" animate="0" bbox="-2 -4 -4 42 4 4" dt="0.001">
+
+    <Node name="Plugins">
+        <RequiredPlugin name="SofaDiff" pluginName="SofaDiff"/>
+        <RequiredPlugin name="Sofa.Component.Visual"/> <!-- Needed to use components [VisualStyle] -->
+        <RequiredPlugin name="Sofa.Component.LinearSolver.Iterative"/> <!-- Needed to use components [CGLinearSolver] -->
+        <RequiredPlugin name="Sofa.Component.LinearSolver.Direct"/> <!-- Needed to use components [SparseLDLSolver] -->
+        <RequiredPlugin name="Sofa.Component.ODESolver.Backward"/> <!-- Needed to use components [NewtonRaphsonSolver, StaticSolver] -->
+        <RequiredPlugin name="Sofa.Component.StateContainer"/> <!-- Needed to use components [MechanicalObject] -->
+        <RequiredPlugin name="Sofa.Component.Mass"/> <!-- Needed to use components [UniformMass] -->
+        <RequiredPlugin name="Sofa.Component.MechanicalLoad"/> <!-- Needed to use components [ConstantForceField] -->
+        <RequiredPlugin name="Sofa.Component.Constraint.Projective"/> <!-- Needed to use components [FixedProjectiveConstraint] -->
+        <RequiredPlugin name="Sofa.Component.SolidMechanics.Spring"/> <!-- Needed to use components [SpringForceField] -->
+        <RequiredPlugin name="Sofa.Component.Topology.Container.Grid"/> <!-- Needed to use components [RegularGridTopology] -->
+        <RequiredPlugin name="Sofa.Component.Engine.Select"/> <!-- Needed to use components [BoxROI] -->
+        <RequiredPlugin name="Sofa.Component.SolidMechanics.FEM.Elastic"/> <!-- Needed to use components [HexahedronFEMForceField] -->
+        <RequiredPlugin name="Sofa.Component.Mapping.Linear"/> <!-- Needed to use components [BarycentricMapping] -->
+    </Node>
+
+    <DefaultAnimationLoop/>
+    <VisualStyle displayFlags="showBehavior showBehaviorModels showForceFields showMappings"/>
+
+    <GradientDescentController name="controller" trainableParameters="Beam/spring.length" learningRate="0.01"/>
+
+    <Node name="Fixed">
+        <MechanicalObject template="Vec3d" name="fixed" position="0 16 0"/>
+    </Node>
+
+    <Node name="Beam">
+        <NewtonRaphsonSolver name="newton" maxNbIterationsNewton="100" maxNbIterationsLineSearch="1" warnWhenLineSearchFails="false"/>
+        <StaticSolver newtonSolver="@newton" name="static"/>
+        <SparseLDLSolver template="CompressedRowSparseMatrixd"/>
+
+        <RegularGridTopology name="grid" min="0 -2 -2" max="40 2 2" n="31 4 4"/>
+        <MechanicalObject template="Vec3d" name="state" position="@grid.position"/>
+        <HexahedronFEMForceField name="elasticity" youngModulus="80000" poissonRatio="0.45"/>
+        <UniformMass template="Vec3d" name="mass" totalMass="600"/>
+
+        <Node name="Left">
+            <BoxROI name="region" box="-0.1 -10 -10 0.1 10 10"/>
+            <FixedProjectiveConstraint indices="@region.indices"/>
+        </Node>
+
+        <Node name="Top">
+            <MechanicalObject template="Vec3d" name="state" position="12 2 0"/>
+            <BarycentricMapping/>
+        </Node>
+
+        <Node name="Front">
+            <MechanicalObject template="Vec3d" name="state" position="40 0 0"/>
+            <BarycentricMapping/>
+        </Node>
+
+        <ParameterizedSpringForceField name="spring" object1="@../Fixed" object2="@Top" indices1="0" indices2="0" length="20" stiffness="100000" damping="0"/>
+    </Node>
+
+    <Node name="Optimization">
+        <MechanicalObject template="Vec1d" name="error" position="0"/>
+        <DistanceToPointCost template="Vec3d" input="@../Beam/Front" planeNormal="0.60 2.32 0" planePoint="38.87 7.77 0"/>
+    </Node>
+
+</Node>
