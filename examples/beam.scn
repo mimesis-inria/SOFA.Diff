@@ -21,7 +21,8 @@
     <DefaultAnimationLoop/>
     <VisualStyle displayFlags="showBehavior showBehaviorModels showForceFields showMappings"/>
 
-    <GradientDescentController name="controller" trainableParameters="Beam/spring.length" learningRate="0.01"/>
+    <!-- lr=100 for stiffness, lr=0.01 for length -->
+    <GradientDescentController name="controller" trainableParameters="Beam/spring.stiffness Beam/spring.length" learningRate="0.01"/>
 
     <Node name="Fixed">
         <MechanicalObject template="Vec3d" name="fixed" position="0 16 0"/>
@@ -53,6 +54,10 @@
         </Node>
 
         <ParameterizedSpringForceField name="spring" object1="@../Fixed" object2="@Top" indices1="0" indices2="0" length="20" stiffness="100000" damping="0"/>
+    </Node>
+
+    <Node name="Target">
+        <MechanicalObject template="Vec3d" name="target" position="38.87 7.77 0"/>
     </Node>
 
     <Node name="Optimization">
