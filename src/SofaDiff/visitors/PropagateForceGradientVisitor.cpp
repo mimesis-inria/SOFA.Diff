@@ -20,19 +20,19 @@
  * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
 
-#include <SofaDiff/ComputeCostGradientVisitor.h>
+#include <SofaDiff/visitors/PropagateForceGradientVisitor.h>
 
 
 namespace sofadiff
 {
 
-void ComputeCostGradientVisitor::bwdMechanicalMapping(simulation::Node * /* node */, core::BaseMapping *map)
+simulation::Visitor::Result PropagateForceGradientVisitor::fwdMechanicalMapping(VisitorContext* /*ctx*/, core::BaseMapping* map)
 {
-    // propagate gradient with applyJT() (does nothing if "gradient" is not in the output of the mapping)
-    map->applyJT(mparams, m_vec_id, m_vec_id);
+    map->applyJ(mparams, m_vec_id, m_vec_id);
+    return RESULT_CONTINUE;
 }
 
-std::string ComputeCostGradientVisitor::getInfos() const
+std::string PropagateForceGradientVisitor::getInfos() const
 {
     auto name = std::string("[xxx]");
     return name;

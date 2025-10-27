@@ -23,8 +23,8 @@
 #include <ranges>
 #include <boost/parameter/parameters.hpp>
 #include <SofaDiff/GradientDescentController.h>
-#include <SofaDiff/ComputeCostGradientVisitor.h>
-#include <SofaDiff/PropagateForceGradientVisitor.h>
+#include <SofaDiff/visitors/ComputeCostGradientVisitor.h>
+#include <SofaDiff/visitors/PropagateForceGradientVisitor.h>
 #include <SofaDiff/ParameterizedForceField.h>
 
 #include <sofa/core/ObjectFactory.h>

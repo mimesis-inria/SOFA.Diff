@@ -17,8 +17,8 @@ set(SOFADIFF_SRC_DIR src/SofaDiff)
 set(HEADER_FILES
         ${SOFADIFF_SRC_DIR}/config.h.in
         ${SOFADIFF_SRC_DIR}/GradientDescentController.h
-        ${SOFADIFF_SRC_DIR}/ComputeCostGradientVisitor.h
-        ${SOFADIFF_SRC_DIR}/PropagateForceGradientVisitor.h
+        ${SOFADIFF_SRC_DIR}/visitors/ComputeCostGradientVisitor.h
+        ${SOFADIFF_SRC_DIR}/visitors/PropagateForceGradientVisitor.h
         ${SOFADIFF_SRC_DIR}/ParameterizedForceField.h
         ${SOFADIFF_SRC_DIR}/ParameterizedSpringForceField.h
 )
@@ -27,8 +27,8 @@ set(HEADER_FILES_TO_MOC
 set(SOURCE_FILES
         ${SOFADIFF_SRC_DIR}/initSofaDiff.cpp
         ${SOFADIFF_SRC_DIR}/GradientDescentController.cpp
-        ${SOFADIFF_SRC_DIR}/ComputeCostGradientVisitor.cpp
-        ${SOFADIFF_SRC_DIR}/PropagateForceGradientVisitor.cpp
+        ${SOFADIFF_SRC_DIR}/visitors/ComputeCostGradientVisitor.cpp
+        ${SOFADIFF_SRC_DIR}/visitors/PropagateForceGradientVisitor.cpp
         ${SOFADIFF_SRC_DIR}/ParameterizedForceField.cpp
         ${SOFADIFF_SRC_DIR}/ParameterizedSpringForceField.cpp
 )
