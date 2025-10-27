@@ -21,7 +21,6 @@
 ******************************************************************************/
 
 #include <SofaDiff/ComputeCostGradientVisitor.h>
-#include <SofaDiff/CostFunctionMapping.h>
 
 
 namespace sofadiff

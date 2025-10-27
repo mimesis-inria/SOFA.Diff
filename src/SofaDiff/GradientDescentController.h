@@ -43,16 +43,10 @@ class SOFA_SOFADIFF_API GradientDescentController :
 public:
     SOFA_CLASS2(GradientDescentController, sofa::component::controller::Controller, core::behavior::LinearSolverAccessor);
 
-    /**
-     * @brief Initialize the VecIds for computing and storing the derivatives
-     */
     GradientDescentController();
 
     void init() override;
 
-    /**
-     * @brief Compute the derivatives
-     */
     void onEndAnimationStep(double dt) override;
 
     core::MultiVecDerivId getGradientVecId() { return m_gradientVecId; }
@@ -63,6 +57,10 @@ public:
     void scatterParameters(const std::vector<double> &parametersVector);
 
     virtual std::vector<double> getUpdatedParameters(const std::vector<double> & parameters, const std::vector<double> & gradient);
+
+protected:
+    void resetGradient(core::objectmodel::BaseContext *context, const core::MechanicalParams * params) const;
+    SingleLink<GradientDescentController, core::State<defaulttype::Vec1dTypes>, BaseLink::FLAG_STOREPATH|BaseLink::FLAG_STRONGLINK> l_loss;
 
 private:
     /** VecId for the derivative of the loss w.r.t. the position */

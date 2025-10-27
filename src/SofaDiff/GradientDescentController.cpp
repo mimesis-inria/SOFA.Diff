@@ -35,7 +35,8 @@
 namespace sofadiff {
 
 GradientDescentController::GradientDescentController()
-: d_trainableParameters(initData(&d_trainableParameters, "trainableParameters", "List of links to the parameters to optimize"))
+: l_loss(initLink("loss", "Mechanical object (vec1) with the loss to minimize"))
+, d_trainableParameters(initData(&d_trainableParameters, "trainableParameters", "List of links to the parameters to optimize"))
 , d_learningRate(initData(&d_learningRate, "learningRate", "The learning rate for the gradient descent"))
 , d_parameterGradient(initData(&d_parameterGradient, "parameterGradient", "The gradient of the parameters"))
 {
@@ -168,15 +169,23 @@ void GradientDescentController::scatterParameters(const std::vector<double> &par
 }
 
 
+void GradientDescentController::resetGradient(core::objectmodel::BaseContext *context, const core::MechanicalParams * params) const
+{
+    simulation::mechanicalvisitor::MechanicalResetForceVisitor(params, m_gradientVecId).execute(context, false);
+    auto * loss = l_loss.get();
+    // TODO: check loss exists? here or in init?
+    const auto& gradient = m_gradientVecId.getId(loss);
+    helper::WriteAccessor<Data<VecDeriv_t<defaulttype::Vec1Types>> > lossGradient = loss->write(gradient);
+    lossGradient[0] = sofa::Deriv_t<defaulttype::Vec1Types> (1);
+}
+
 
 void GradientDescentController::onEndAnimationStep(const double /*dt*/)
 {
     auto *ctx = this->getContext();
     auto *params = core::mechanicalparams::defaultInstance();
 
-    // Reset the gradient data
-    simulation::mechanicalvisitor::MechanicalResetForceVisitor(params, m_gradientVecId).execute(ctx, false);
-    // simulation::mechanicalvisitor::MechanicalResetForceVisitor(params, m_forceGradientVecId).execute(ctx, false);
+    resetGradient(ctx, params);
 
     // Compute and propagate the gradient of the cost function
     ComputeCostGradientVisitor(params, m_gradientVecId).execute(ctx, false);

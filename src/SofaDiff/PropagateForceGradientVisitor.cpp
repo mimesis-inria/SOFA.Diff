@@ -21,7 +21,6 @@
 ******************************************************************************/
 
 #include <SofaDiff/PropagateForceGradientVisitor.h>
-#include <SofaDiff/CostFunctionMapping.h>
 
 
 namespace sofadiff

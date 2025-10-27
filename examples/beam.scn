@@ -16,13 +16,11 @@
         <RequiredPlugin name="Sofa.Component.Engine.Select"/> <!-- Needed to use components [BoxROI] -->
         <RequiredPlugin name="Sofa.Component.SolidMechanics.FEM.Elastic"/> <!-- Needed to use components [HexahedronFEMForceField] -->
         <RequiredPlugin name="Sofa.Component.Mapping.Linear"/> <!-- Needed to use components [BarycentricMapping] -->
+        <RequiredPlugin name="Sofa.Component.Mapping.NonLinear"/> <!-- Needed to use components [DistanceFromTargetMapping,SquareMapping] -->
     </Node>
 
     <DefaultAnimationLoop/>
     <VisualStyle displayFlags="showBehavior showBehaviorModels showForceFields showMappings"/>
-
-    <!-- lr=100 for stiffness, lr=0.01 for length -->
-    <GradientDescentController name="controller" trainableParameters="Beam/spring.stiffness Beam/spring.length" learningRate="0.01"/>
 
     <Node name="Fixed">
         <MechanicalObject template="Vec3d" name="fixed" position="0 16 0"/>
@@ -57,12 +55,20 @@
     </Node>
 
     <Node name="Target">
-        <MechanicalObject template="Vec3d" name="target" position="38.87 7.77 0"/>
+        <MechanicalObject template="Vec3d" name="target" position="38.87 7.77 0" showObject="true"/>
     </Node>
 
-    <Node name="Optimization">
-        <MechanicalObject template="Vec1d" name="error" position="0"/>
-        <DistanceToPointCost template="Vec3d" input="@../Beam/Front" planeNormal="0.60 2.32 0" planePoint="38.87 7.77 0"/>
+    <Node name="Loss">
+        <Node name="Distance">
+            <MechanicalObject template="Vec1d" name="output" position="0"/>
+            <DistanceFromTargetMapping input="@/Beam/Front" targetPositions="38.87 7.77 0"/>
+            <Node name="Squared">
+                <MechanicalObject template="Vec1d" name="output" position="0"/>
+                <SquareMapping input="@.."/>
+            </Node>
+        </Node>
     </Node>
+    <!-- lr=100 for stiffness, lr=0.01 for length -->
+    <GradientDescentController name="optimizer" loss="@Loss/Distance/Squared" trainableParameters="Beam/spring.stiffness Beam/spring.length" learningRate="0.01"/>
 
 </Node>

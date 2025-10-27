@@ -21,7 +21,6 @@
  ******************************************************************************/
 #pragma once
 
-#include <SofaDiff/CostFunctionMapping.h>
 #include <SofaDiff/ParameterizedForceField.h>
 
 #include <sofa/core/behavior/StateAccessor.h>
