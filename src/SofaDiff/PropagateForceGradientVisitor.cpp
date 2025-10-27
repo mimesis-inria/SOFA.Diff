@@ -29,9 +29,7 @@ namespace sofadiff
 
 simulation::Visitor::Result PropagateForceGradientVisitor::fwdMechanicalMapping(VisitorContext* /*ctx*/, core::BaseMapping* map)
 {
-    std::cout << "PropagateForceGradientVisitor::fwdMechanicalMapping" << std::endl;
     map->applyJ(mparams, m_vec_id, m_vec_id);
-
     return RESULT_CONTINUE;
 }
 

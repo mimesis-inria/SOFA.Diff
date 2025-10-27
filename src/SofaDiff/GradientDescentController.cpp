@@ -171,8 +171,6 @@ void GradientDescentController::scatterParameters(const std::vector<double> &par
 
 void GradientDescentController::onEndAnimationStep(const double /*dt*/)
 {
-    std::cout << "SofaDiff::GradientDescentController::onEndAnimationStep" << std::endl;
-
     auto *ctx = this->getContext();
     auto *params = core::mechanicalparams::defaultInstance();
 

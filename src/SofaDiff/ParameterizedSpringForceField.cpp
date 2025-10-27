@@ -1,8 +1,7 @@
 #include <SofaDiff/ParameterizedSpringForceField.h>
 
+#include <sofa/core/MechanicalParams.h>
 #include <sofa/core/ObjectFactory.h>
-
-#include "sofa/core/MechanicalParams.h"
 
 
 namespace sofadiff
@@ -10,7 +9,6 @@ namespace sofadiff
 
 void ParameterizedSpringForceField::applyParametersJacobianTranspose(const core::MechanicalParams* mparams, const core::MultiVecDerivId vecId, std::vector<Data<type::vector<SReal>> *> dataVector)
 {
-    std::cout << "ParameterizedSpringForceField::applyParametersJacobianTranspose" << std::endl;
     std::vector<double> stiffnessGradient = {};
     std::vector<double> lengthGradient = {};
 
