@@ -30,22 +30,18 @@
 namespace sofadiff
 {
 
-/**
- *  \brief ParameterizedForceField is a ForceField that can be differentiated w.r.t. its data.
- */
-class SOFA_SOFADIFF_API ParameterizedForceField//: virtual public core::objectmodel::BaseObject
+class SOFA_SOFADIFF_API ParameterizedForceField
 {
 public:
-    // SOFA_ABSTRACT_CLASS(ParameterizedForceField, BaseForceField);
-    // SOFA_BASE_CAST_IMPLEMENTATION(ParameterizedForceField);
+    virtual ~ParameterizedForceField() = default;
 
-    const std::vector<double> & getParameterGradient(const std::string & dataName)
-    {
-        // No need to check for existence of key because we check that the data exists in GradientDescentController
-        return m_gradientMap[dataName];
-    }
+    const std::vector<double> & getParameterGradient(const std::string & dataName);
 
-    virtual void applyParametersJacobianTranspose(const core::MechanicalParams* mparams, core::MultiVecDerivId vecId, std::vector<Data<type::vector<SReal>> *> dataVector) = 0;
+    virtual void applyParametersJacobianTranspose(
+        const core::MechanicalParams* mparams,
+        core::MultiVecDerivId vecId,
+        std::vector<Data<type::vector<SReal>> *> dataVector
+    ) = 0;
 
 protected:
     std::map<std::string, std::vector<double>> m_gradientMap;
