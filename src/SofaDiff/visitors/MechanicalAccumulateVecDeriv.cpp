@@ -26,15 +26,37 @@
 namespace sofadiff
 {
 
-void MechanicalAccumulateVecDeriv::bwdMechanicalMapping(simulation::Node * /* node */, core::BaseMapping *map)
+MechanicalAccumulateVecDeriv::MechanicalAccumulateVecDeriv(const core::MechanicalParams* params, const core::MultiVecDerivId& vecId)
+: MechanicalVisitor(params),
+m_vecId(vecId)
+{}
+
+void MechanicalAccumulateVecDeriv::bwdMechanicalMapping(simulation::Node * node, core::BaseMapping *map)
 {
-    // propagate gradient with applyJT() (does nothing if "gradient" is not in the output of the mapping)
-    map->applyJT(mparams, m_vec_id, m_vec_id);
+    // TODO: remove timing with begin() and end()?
+    const ctime_t t0 = begin(node, map);
+    map->applyJT(mparams, m_vecId, m_vecId);
+    end(node, map, t0);
 }
 
+bool MechanicalAccumulateVecDeriv::stopAtMechanicalMapping(simulation::Node*, core::BaseMapping*)
+{
+    // This visitor must go through all mechanical mappings, even if isMechanical flag is disabled
+    return false;
+}
+
+bool MechanicalAccumulateVecDeriv::isThreadSafe() const
+{
+    return false; // TODO: false?
+}
+
+const char* MechanicalAccumulateVecDeriv::getClassName() const
+{
+    return "MechanicalAccumulateVecDeriv";
+}
 std::string MechanicalAccumulateVecDeriv::getInfos() const
 {
-    auto name = std::string("[xxx]");
+    std::string name="["+m_vecId.getName()+"]";
     return name;
 }
 

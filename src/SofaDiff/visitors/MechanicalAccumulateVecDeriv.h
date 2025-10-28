@@ -25,39 +25,26 @@
 
 #include <sofa/simulation/MechanicalVisitor.h>
 
+
 namespace sofadiff
 {
 
-// TODO: rename as AccumulateVecDerivVisitor?
-/** Compute the derivative of the loss w.r.t. the position
-*/
 class SOFA_SOFADIFF_API MechanicalAccumulateVecDeriv : public simulation::MechanicalVisitor
 {
 public:
-    explicit MechanicalAccumulateVecDeriv(const core::MechanicalParams* params, const core::MultiVecDerivId& vec_id)
-            : MechanicalVisitor(params), m_vec_id(vec_id) {}
+    // TODO: change signature to core::MultiVecDerivId (not const &)?
+    MechanicalAccumulateVecDeriv(const core::MechanicalParams* params, const core::MultiVecDerivId& vecId);
 
-    /// Compute the gradient of the cost function w.r.t. the degrees of freedom
-    void bwdMechanicalMapping(simulation::Node* /*node*/, core::BaseMapping* map) override;
+    void bwdMechanicalMapping(simulation::Node* node, core::BaseMapping* map) override;
+    bool stopAtMechanicalMapping(simulation::Node*, core::BaseMapping*) override;
 
-    bool stopAtMechanicalMapping(simulation::Node* /*node*/, sofa::core::BaseMapping* /*map*/) override
-    {
-        return false; // !map->isMechanical();
-    }
+    bool isThreadSafe() const override;
 
-    /// Return a class name for this visitor
-    /// Only used for debugging / profiling purposes
-    [[nodiscard]] const char* getClassName() const override {return "ComputeCostGradientVisitor";}
-    [[nodiscard]] std::string getInfos() const override;
-
-    /// Specify whether this action can be parallelized.
-    [[nodiscard]] bool isThreadSafe() const override
-    {
-        return true;
-    }
+    const char* getClassName() const override;
+    std::string getInfos() const override;
 
 private:
-    core::MultiVecDerivId m_vec_id;
+    core::MultiVecDerivId m_vecId; // TODO: rename res? m_res? (isn’t "res" a weird name?)
 };
 
 

@@ -26,15 +26,37 @@
 namespace sofadiff
 {
 
+MechanicalPropagateVecDeriv::MechanicalPropagateVecDeriv(const core::MechanicalParams* params, const core::MultiVecDerivId& vecId)
+: MechanicalVisitor(params)
+, m_vecId(vecId)
+{}
+
 simulation::Visitor::Result MechanicalPropagateVecDeriv::fwdMechanicalMapping(VisitorContext* /*ctx*/, core::BaseMapping* map)
 {
-    map->applyJ(mparams, m_vec_id, m_vec_id);
+    // TODO: add timing with begin() and end()?
+    map->applyJ(mparams, m_vecId, m_vecId);
     return RESULT_CONTINUE;
+}
+
+bool MechanicalPropagateVecDeriv::stopAtMechanicalMapping(simulation::Node*, core::BaseMapping*)
+{
+    // This visitor must go through all mechanical mappings, even if isMechanical flag is disabled
+    return false;
+}
+
+bool MechanicalPropagateVecDeriv::isThreadSafe() const
+{
+    return false; // TODO: false?
+}
+
+const char* MechanicalPropagateVecDeriv::getClassName() const
+{
+    return "MechanicalPropagateVecDeriv";
 }
 
 std::string MechanicalPropagateVecDeriv::getInfos() const
 {
-    auto name = std::string("[xxx]");
+    std::string name="["+m_vecId.getName()+"]";
     return name;
 }
 
