@@ -57,7 +57,7 @@ protected:
     core::MultiVecDerivId m_physicalGradientId;
     std::map<ParameterizedForceField *, std::vector<Data<type::vector<SReal>> *>> m_parametersMap;
 
-    virtual std::vector<double> getUpdatedParameters(const std::vector<double> & parameters, const std::vector<double> & gradient);
+    virtual void updateParameters(std::vector<double> & parameters, const std::vector<double> & gradient);
 
 private:
     void initializeLossGradientToOne() const;

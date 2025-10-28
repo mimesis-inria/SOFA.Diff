@@ -82,23 +82,19 @@ void GradientDescentController::onEndAnimationStep(const double /*dt*/)
         forceField->applyParametersJacobianTranspose(params, m_physicalGradientId, m_parametersMap[forceField]);
 
     // Update the parameters with a step of gradient descent
-    const auto & parameters = gatherParameters();
+    auto parameters = gatherParameters();
     const auto & gradient = gatherParametersGradient();
-    const auto updatedParameters = getUpdatedParameters(parameters, gradient);
-    scatterParameters(updatedParameters);
+    updateParameters(parameters, gradient);
+    scatterParameters(parameters);
     d_parameterGradient.setValue(gradient);
 }
 
 
-std::vector<double> GradientDescentController::getUpdatedParameters(const std::vector<double> & parameters, const std::vector<double> & gradient)
+void GradientDescentController::updateParameters(std::vector<double> &parameters, const std::vector<double> & gradient)
 {
-    auto updatedParameters = std::vector<double>(parameters.size());
     const auto learningRate = d_learningRate.getValue();
     for (unsigned int i = 0; i < parameters.size(); ++i)
-    {
-        updatedParameters[i] = parameters[i] - learningRate * gradient[i];
-    }
-    return updatedParameters;
+        parameters[i] -= learningRate * gradient[i];
 }
 
 
