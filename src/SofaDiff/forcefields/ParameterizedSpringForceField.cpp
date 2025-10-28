@@ -1,4 +1,4 @@
-#include <SofaDiff/ParameterizedSpringForceField.h>
+#include <SofaDiff/forcefields/ParameterizedSpringForceField.h>
 
 #include <sofa/core/MechanicalParams.h>
 #include <sofa/core/ObjectFactory.h>
