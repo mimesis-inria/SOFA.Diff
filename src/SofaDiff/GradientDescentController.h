@@ -44,37 +44,30 @@ public:
     SOFA_CLASS2(GradientDescentController, sofa::component::controller::Controller, core::behavior::LinearSolverAccessor);
 
     GradientDescentController();
-
     void init() override;
-
     void onEndAnimationStep(double dt) override;
 
-    core::MultiVecDerivId getGradientVecId() { return m_gradientVecId; }
-    core::MultiVecDerivId getForceGradientVecId() { return m_forceGradientVecId; }
+    SingleLink<GradientDescentController, core::State<defaulttype::Vec1dTypes>, BaseLink::FLAG_STOREPATH|BaseLink::FLAG_STRONGLINK> l_loss;
+    Data<type::vector<std::string>> d_trainableParameters;
+    Data<double> d_learningRate;
+
+protected:
+    Data<type::vector<double>> d_parameterGradient;
+    core::MultiVecDerivId m_geometricGradientId;
+    core::MultiVecDerivId m_physicalGradientId;
+    std::map<ParameterizedForceField *, std::vector<Data<type::vector<SReal>> *>> m_parametersMap;
+
+    virtual std::vector<double> getUpdatedParameters(const std::vector<double> & parameters, const std::vector<double> & gradient);
+
+private:
+    void initializeLossGradientToOne() const;
+    void solveForPhysicalGradient() const;
 
     std::vector<double> gatherParameters();
     std::vector<double> gatherParametersGradient();
     void scatterParameters(const std::vector<double> &parametersVector);
 
-    virtual std::vector<double> getUpdatedParameters(const std::vector<double> & parameters, const std::vector<double> & gradient);
-
-protected:
-    void resetGradient(core::objectmodel::BaseContext *context, const core::MechanicalParams * params) const;
-    SingleLink<GradientDescentController, core::State<defaulttype::Vec1dTypes>, BaseLink::FLAG_STOREPATH|BaseLink::FLAG_STRONGLINK> l_loss;
-
-private:
-    /** VecId for the derivative of the loss w.r.t. the position */
-    core::MultiVecDerivId m_gradientVecId;
-
-    /** VecId for the derivative of the loss w.r.t. the force */
-    core::MultiVecDerivId m_forceGradientVecId;
-
-    Data<type::vector<std::string>> d_trainableParameters;
-    Data<double> d_learningRate;
-    Data<type::vector<double>> d_parameterGradient;
-
     std::map<ParameterizedForceField *, std::vector<Data<type::vector<SReal>> *>> getParametersMap();
-    std::map<ParameterizedForceField *, std::vector<Data<type::vector<SReal>> *>> m_parametersMap;
 };
 
 }
