@@ -28,16 +28,17 @@
 namespace sofadiff
 {
 
+// TODO: rename as PropagateVecDerivVisitor?
 /** Compute the derivative of the loss w.r.t. the position
 */
-class SOFA_SOFADIFF_API ComputeCostGradientVisitor : public simulation::MechanicalVisitor
+class SOFA_SOFADIFF_API MechanicalPropagateVecDeriv : public simulation::MechanicalVisitor
 {
 public:
-    explicit ComputeCostGradientVisitor(const core::MechanicalParams* params, const core::MultiVecDerivId& vec_id)
+    explicit MechanicalPropagateVecDeriv(const core::MechanicalParams* params, const core::MultiVecDerivId& vec_id)
             : MechanicalVisitor(params), m_vec_id(vec_id) {}
 
     /// Compute the gradient of the cost function w.r.t. the degrees of freedom
-    void bwdMechanicalMapping(simulation::Node* /*node*/, core::BaseMapping* map) override;
+    Result fwdMechanicalMapping(VisitorContext* ctx, core::BaseMapping* map) override;
 
     /// Return a class name for this visitor
     /// Only used for debugging / profiling purposes

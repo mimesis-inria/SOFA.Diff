@@ -18,24 +18,47 @@
  * Authors: The SOFA Team and external contributors (see Authors.txt)          *
  *                                                                             *
  * Contact information: contact@sofa-framework.org                             *
-******************************************************************************/
+ ******************************************************************************/
+#pragma once
 
-#include <SofaDiff/visitors/ComputeCostGradientVisitor.h>
+#include <SofaDiff/config.h>
 
+#include <sofa/simulation/MechanicalVisitor.h>
 
 namespace sofadiff
 {
 
-void ComputeCostGradientVisitor::bwdMechanicalMapping(simulation::Node * /* node */, core::BaseMapping *map)
+// TODO: rename as AccumulateVecDerivVisitor?
+/** Compute the derivative of the loss w.r.t. the position
+*/
+class SOFA_SOFADIFF_API MechanicalAccumulateVecDeriv : public simulation::MechanicalVisitor
 {
-    // propagate gradient with applyJT() (does nothing if "gradient" is not in the output of the mapping)
-    map->applyJT(mparams, m_vec_id, m_vec_id);
-}
+public:
+    explicit MechanicalAccumulateVecDeriv(const core::MechanicalParams* params, const core::MultiVecDerivId& vec_id)
+            : MechanicalVisitor(params), m_vec_id(vec_id) {}
 
-std::string ComputeCostGradientVisitor::getInfos() const
-{
-    auto name = std::string("[xxx]");
-    return name;
-}
+    /// Compute the gradient of the cost function w.r.t. the degrees of freedom
+    void bwdMechanicalMapping(simulation::Node* /*node*/, core::BaseMapping* map) override;
+
+    bool stopAtMechanicalMapping(simulation::Node* /*node*/, sofa::core::BaseMapping* /*map*/) override
+    {
+        return false; // !map->isMechanical();
+    }
+
+    /// Return a class name for this visitor
+    /// Only used for debugging / profiling purposes
+    [[nodiscard]] const char* getClassName() const override {return "ComputeCostGradientVisitor";}
+    [[nodiscard]] std::string getInfos() const override;
+
+    /// Specify whether this action can be parallelized.
+    [[nodiscard]] bool isThreadSafe() const override
+    {
+        return true;
+    }
+
+private:
+    core::MultiVecDerivId m_vec_id;
+};
+
 
 }

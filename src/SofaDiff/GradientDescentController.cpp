@@ -20,11 +20,11 @@
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
 
-#include <ranges>
-#include <boost/parameter/parameters.hpp>
+#include <ranges>  // for iterating on maps with std::views
+
 #include <SofaDiff/GradientDescentController.h>
-#include <SofaDiff/visitors/ComputeCostGradientVisitor.h>
-#include <SofaDiff/visitors/PropagateForceGradientVisitor.h>
+#include <SofaDiff/visitors/MechanicalAccumulateVecDeriv.h>
+#include <SofaDiff/visitors/MechanicalPropagateVecDeriv.h>
 #include <SofaDiff/ParameterizedForceField.h>
 
 #include <sofa/core/ObjectFactory.h>
@@ -49,8 +49,8 @@ void GradientDescentController::init()
 
     auto* ctx = this->getContext();
     auto* params = core::mechanicalparams::defaultInstance();
-
     simulation::common::VectorOperations vop(params, ctx);
+
     core::behavior::MultiVecDeriv vec(&vop, m_gradientVecId);
     vec.realloc(&vop, false, true, core::VecIdProperties{"Derivative of the cost w.r.t. position", this->getClassName()});
     m_gradientVecId = vec.id();
@@ -188,7 +188,7 @@ void GradientDescentController::onEndAnimationStep(const double /*dt*/)
     resetGradient(ctx, params);
 
     // Compute and propagate the gradient of the cost function
-    ComputeCostGradientVisitor(params, m_gradientVecId).execute(ctx, false);
+    MechanicalAccumulateVecDeriv(params, m_gradientVecId).execute(ctx, false);
 
     // Solve the (transpose) system to get the "force gradient"
     auto *linearSolver = l_linearSolver.get();
@@ -199,7 +199,7 @@ void GradientDescentController::onEndAnimationStep(const double /*dt*/)
     // vop.v_eq(m_forceGradientVecId, m_forceGradientVecId, -1.0);
 
     // Propagate the "force gradient" to the mapped states
-    PropagateForceGradientVisitor(params, m_forceGradientVecId).execute(ctx, false);
+    MechanicalPropagateVecDeriv(params, m_forceGradientVecId).execute(ctx, false);
 
     // Call the "applyCustomJacobianTranspose()" of the components with "trainable" parameters
     for (const auto &forceField: m_parametersMap | std::views::keys)

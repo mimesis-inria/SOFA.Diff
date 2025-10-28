@@ -20,19 +20,19 @@
  * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
 
-#include <SofaDiff/visitors/PropagateForceGradientVisitor.h>
+#include <SofaDiff/visitors/MechanicalAccumulateVecDeriv.h>
 
 
 namespace sofadiff
 {
 
-simulation::Visitor::Result PropagateForceGradientVisitor::fwdMechanicalMapping(VisitorContext* /*ctx*/, core::BaseMapping* map)
+void MechanicalAccumulateVecDeriv::bwdMechanicalMapping(simulation::Node * /* node */, core::BaseMapping *map)
 {
-    map->applyJ(mparams, m_vec_id, m_vec_id);
-    return RESULT_CONTINUE;
+    // propagate gradient with applyJT() (does nothing if "gradient" is not in the output of the mapping)
+    map->applyJT(mparams, m_vec_id, m_vec_id);
 }
 
-std::string PropagateForceGradientVisitor::getInfos() const
+std::string MechanicalAccumulateVecDeriv::getInfos() const
 {
     auto name = std::string("[xxx]");
     return name;

@@ -18,41 +18,24 @@
  * Authors: The SOFA Team and external contributors (see Authors.txt)          *
  *                                                                             *
  * Contact information: contact@sofa-framework.org                             *
- ******************************************************************************/
-#pragma once
+******************************************************************************/
 
-#include <SofaDiff/config.h>
+#include <SofaDiff/visitors/MechanicalPropagateVecDeriv.h>
 
-#include <sofa/simulation/MechanicalVisitor.h>
 
 namespace sofadiff
 {
 
-/** Compute the derivative of the loss w.r.t. the position
-*/
-class SOFA_SOFADIFF_API PropagateForceGradientVisitor : public simulation::MechanicalVisitor
+simulation::Visitor::Result MechanicalPropagateVecDeriv::fwdMechanicalMapping(VisitorContext* /*ctx*/, core::BaseMapping* map)
 {
-public:
-    explicit PropagateForceGradientVisitor(const core::MechanicalParams* params, const core::MultiVecDerivId& vec_id)
-            : MechanicalVisitor(params), m_vec_id(vec_id) {}
+    map->applyJ(mparams, m_vec_id, m_vec_id);
+    return RESULT_CONTINUE;
+}
 
-    /// Compute the gradient of the cost function w.r.t. the degrees of freedom
-    Result fwdMechanicalMapping(VisitorContext* ctx, core::BaseMapping* map) override;
-
-    /// Return a class name for this visitor
-    /// Only used for debugging / profiling purposes
-    [[nodiscard]] const char* getClassName() const override {return "ComputeCostGradientVisitor";}
-    [[nodiscard]] std::string getInfos() const override;
-
-    /// Specify whether this action can be parallelized.
-    [[nodiscard]] bool isThreadSafe() const override
-    {
-        return true;
-    }
-
-private:
-    core::MultiVecDerivId m_vec_id;
-};
-
+std::string MechanicalPropagateVecDeriv::getInfos() const
+{
+    auto name = std::string("[xxx]");
+    return name;
+}
 
 }
