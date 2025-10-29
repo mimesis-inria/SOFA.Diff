@@ -30,6 +30,7 @@ namespace sofadiff
 template<class T>
 TrainableParameter<T>::TrainableParameter()
 : d_value(initData(&d_value, "value", "Value of the parameter"))
+, d_gradient(initData(&d_gradient, "gradient", "Gradient of the parameter"))
 {
 
 }

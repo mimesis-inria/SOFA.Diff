@@ -35,6 +35,7 @@ public:
     TrainableParameter();
 
     Data<T> d_value;
+    Data<T> d_gradient;
 };
 
 

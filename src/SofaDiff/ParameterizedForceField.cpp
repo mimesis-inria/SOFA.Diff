@@ -21,6 +21,7 @@
 ******************************************************************************/
 
 #include <SofaDiff/ParameterizedForceField.h>
+#include <SofaDiff/TrainableParameter.h>
 
 
 namespace sofadiff
@@ -31,5 +32,19 @@ const std::vector<double> & ParameterizedForceField::getParameterGradient(const 
     // No need to check for existence of key because we check that the data exists in GradientDescentController
     return m_gradientMap[dataName];
 }
+
+void ParameterizedForceField::setDataGradient(const Data<type::vector<SReal> > &data, const std::vector<double> &gradient)
+{
+    const auto * dataPtr = data.getParent();
+    if (dataPtr == nullptr)
+        return;
+
+    auto * parameterPtr = dynamic_cast<TrainableParameterVector *>(dataPtr->getOwner());
+    if (parameterPtr == nullptr)
+        return;
+
+    parameterPtr->d_gradient.setValue(gradient);
+}
+
 
 }

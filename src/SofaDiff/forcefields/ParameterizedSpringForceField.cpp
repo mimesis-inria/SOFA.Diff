@@ -3,6 +3,8 @@
 #include <sofa/core/MechanicalParams.h>
 #include <sofa/core/ObjectFactory.h>
 
+#include "SofaDiff/TrainableParameter.h"
+
 
 namespace sofadiff
 {
@@ -59,6 +61,10 @@ void ParameterizedSpringForceField::applyParametersJacobianTranspose(const core:
             lengthGradient.push_back(0.0);
         }
     }
+
+    setDataGradient(d_ks, stiffnessGradient);
+    setDataGradient(d_lengths, lengthGradient);
+
     m_gradientMap[d_ks.getName()] = stiffnessGradient;
     m_gradientMap[d_lengths.getName()] = lengthGradient;
 }

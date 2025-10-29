@@ -45,6 +45,7 @@ public:
 
 protected:
     std::map<std::string, std::vector<double>> m_gradientMap;
+    static void setDataGradient(const Data<type::vector<SReal>> &data, const std::vector<double> & gradient);
 };
 
 }
