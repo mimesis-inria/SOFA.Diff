@@ -60,7 +60,7 @@ protected:
     virtual void updateParameters(std::vector<double> & parameters, const std::vector<double> & gradient);
 
 private:
-    void initializeLossGradientToOne() const;
+    void initializeLossGradientToOne();
     void solveForPhysicalGradient() const;
 
     std::vector<double> gatherParameters();

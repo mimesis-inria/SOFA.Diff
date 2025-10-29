@@ -32,7 +32,6 @@ namespace sofadiff
 class SOFA_SOFADIFF_API MechanicalAccumulateVecDeriv : public simulation::MechanicalVisitor
 {
 public:
-    // TODO: change signature to core::MultiVecDerivId (not const &)?
     MechanicalAccumulateVecDeriv(const core::MechanicalParams* params, const core::MultiVecDerivId& vecId);
 
     void bwdMechanicalMapping(simulation::Node* node, core::BaseMapping* map) override;
@@ -44,7 +43,7 @@ public:
     std::string getInfos() const override;
 
 private:
-    core::MultiVecDerivId m_vecId; // TODO: rename res? m_res? (isn’t "res" a weird name?)
+    core::MultiVecDerivId m_vecId;
 };
 
 

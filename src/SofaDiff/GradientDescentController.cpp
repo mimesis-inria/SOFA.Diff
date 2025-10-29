@@ -58,14 +58,10 @@ void GradientDescentController::init()
     core::behavior::MultiVecDeriv geometricGradient(&vop, m_geometricGradientId);
     geometricGradient.realloc(&vop, false, true, core::VecIdProperties{"Geometric gradient of the loss", this->getClassName()});
     m_geometricGradientId = geometricGradient.id();
-    // TODO: Make it so that m_geometricGradientId.getName() returns something more useful?
-    //       For now it returns "{null(V_DERIV)[*],9[state,state,state,state,state,state,output,output]}"
 
     core::behavior::MultiVecDeriv physicalGradient(&vop, m_physicalGradientId);
     physicalGradient.realloc(&vop, false, true, core::VecIdProperties{"Physical gradient of the loss", this->getClassName()});
     m_physicalGradientId = physicalGradient.id();
-    // TODO: Make it so that m_physicalGradientId.getName() returns something more useful?
-    //       For now it returns "{null(V_DERIV)[*],10[state,state,state,state,state,state,output,output]}"
 
     m_parametersMap = getParametersMap();
 }
@@ -98,14 +94,19 @@ void GradientDescentController::updateParameters(std::vector<double> &parameters
 {
     const auto learningRate = d_learningRate.getValue();
     for (unsigned int i = 0; i < parameters.size(); ++i)
-        parameters[i] -= learningRate * gradient[i];
+        parameters[i] -= learningRate * gradient[i]; // TODO: Use learning rate defined in TrainableParameter
 }
 
 
-void GradientDescentController::initializeLossGradientToOne() const
+void GradientDescentController::initializeLossGradientToOne()
 {
-    auto * loss = l_loss.get();
-    // TODO: check loss exists? here or in init?
+    const auto loss = l_loss.get();
+    if (loss == nullptr)
+    {
+        msg_error() << "Bad link to the loss object";
+        this->d_componentState.setValue(core::objectmodel::ComponentState::Invalid);
+        return;
+    }
     const auto& gradient = m_geometricGradientId.getId(loss);
     helper::WriteAccessor<Data<VecDeriv_t<defaulttype::Vec1Types>> > lossGradient = loss->write(gradient);
     lossGradient[0] = sofa::Deriv_t<defaulttype::Vec1Types> (1);
