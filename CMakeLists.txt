@@ -18,6 +18,8 @@ set(HEADER_FILES
         ${SOFADIFF_SRC_DIR}/config.h.in
         ${SOFADIFF_SRC_DIR}/GradientDescentController.h
         ${SOFADIFF_SRC_DIR}/ParameterizedForceField.h
+        ${SOFADIFF_SRC_DIR}/TrainableParameter.h
+        ${SOFADIFF_SRC_DIR}/TrainableParameter.inl
         ${SOFADIFF_SRC_DIR}/visitors/MechanicalAccumulateVecDeriv.h
         ${SOFADIFF_SRC_DIR}/visitors/MechanicalPropagateVecDeriv.h
         ${SOFADIFF_SRC_DIR}/forcefields/ParameterizedSpringForceField.h
@@ -28,6 +30,7 @@ set(SOURCE_FILES
         ${SOFADIFF_SRC_DIR}/initSofaDiff.cpp
         ${SOFADIFF_SRC_DIR}/GradientDescentController.cpp
         ${SOFADIFF_SRC_DIR}/ParameterizedForceField.cpp
+        ${SOFADIFF_SRC_DIR}/TrainableParameter.cpp
         ${SOFADIFF_SRC_DIR}/visitors/MechanicalAccumulateVecDeriv.cpp
         ${SOFADIFF_SRC_DIR}/visitors/MechanicalPropagateVecDeriv.cpp
         ${SOFADIFF_SRC_DIR}/forcefields/ParameterizedSpringForceField.cpp

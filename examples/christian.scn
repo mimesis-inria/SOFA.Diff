@@ -22,6 +22,11 @@
     <DefaultAnimationLoop/>
     <VisualStyle displayFlags="showBehavior showBehaviorModels showForceFields showMappings"/>
 
+    <Node name="Parameters">
+        <TrainableParameterVector name="springLength" value="20"/>
+        <TrainableParameterVector name="springStiffness" value="100000"/>
+    </Node>
+
     <Node name="Physics">
         <NewtonRaphsonSolver name="newton" maxNbIterationsNewton="100" maxNbIterationsLineSearch="1" warnWhenLineSearchFails="false"/>
         <StaticSolver newtonSolver="@newton" name="static"/>
@@ -66,7 +71,14 @@
         </Node>
 
         <Node name="Spring">
-            <ParameterizedSpringForceField name="force" object1="@../VerticalBeam/SpringAttachPoint" object2="@../HorizontalBeam/SpringAttachPoint" indices1="0" indices2="0" length="20" stiffness="100000" damping="0"/>
+            <ParameterizedSpringForceField
+                    name="force"
+                    object1="@../VerticalBeam/SpringAttachPoint" indices1="0"
+                    object2="@../HorizontalBeam/SpringAttachPoint" indices2="0"
+                    length="@/Parameters/springLength.value"
+                    stiffness="@/Parameters/springStiffness.value"
+                    damping="0"
+            />
         </Node>
     </Node>
 
