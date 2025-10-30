@@ -28,13 +28,13 @@ namespace sofadiff
 {
 
 template<class T>
-TrainableParameter<T>::TrainableParameter()
+TrainableParameterTemplated<T>::TrainableParameterTemplated()
 : d_value(initData(&d_value, "value", "Value of the parameter"))
 , d_gradient(initData(&d_gradient, "gradient", "Gradient of the parameter"))
 {}
 
 template<class T>
-void TrainableParameter<T>::init()
+void TrainableParameterTemplated<T>::init()
 {
     // TODO: is it the right way of doing this? Should I be doing this? (goal: allowing accumulation from ParameterizedForceField)
     auto gradientAccessor = helper::getWriteOnlyAccessor(d_gradient);

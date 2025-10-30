@@ -35,16 +35,12 @@ class SOFA_SOFADIFF_API ParameterizedForceField
 public:
     virtual ~ParameterizedForceField() = default;
 
-    const std::vector<double> & getParameterGradient(const std::string & dataName);
-
     virtual void applyParametersJacobianTranspose(
         const core::MechanicalParams* mparams,
-        core::MultiVecDerivId vecId,
-        std::vector<Data<type::vector<SReal>> *> dataVector
+        core::MultiVecDerivId vecId
     ) = 0;
 
 protected:
-    std::map<std::string, std::vector<double>> m_gradientMap;
     static void addToDataGradient(const Data<type::vector<SReal>> &data, const std::vector<double> & gradient);
 };
 

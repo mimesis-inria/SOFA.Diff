@@ -9,7 +9,7 @@
 namespace sofadiff
 {
 
-void ParameterizedSpringForceField::applyParametersJacobianTranspose(const core::MechanicalParams* mparams, const core::MultiVecDerivId vecId, std::vector<Data<type::vector<SReal>> *> dataVector)
+void ParameterizedSpringForceField::applyParametersJacobianTranspose(const core::MechanicalParams* mparams, const core::MultiVecDerivId vecId)
 {
     std::vector<double> stiffnessGradient = {};
     std::vector<double> lengthGradient = {};
@@ -64,9 +64,6 @@ void ParameterizedSpringForceField::applyParametersJacobianTranspose(const core:
 
     addToDataGradient(d_ks, stiffnessGradient);
     addToDataGradient(d_lengths, lengthGradient);
-
-    m_gradientMap[d_ks.getName()] = stiffnessGradient;
-    m_gradientMap[d_lengths.getName()] = lengthGradient;
 }
 
 void registerParameterizedSpringForceField(core::ObjectFactory* factory)

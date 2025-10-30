@@ -23,10 +23,12 @@
 
 #include <SofaDiff/config.h>
 #include <SofaDiff/ParameterizedForceField.h>
+#include <SofaDiff/TrainableParameter.h>
 
 #include <sofa/component/controller/Controller.h>
 #include <sofa/core/behavior/LinearSolverAccessor.h>
 #include <sofa/core/behavior/MultiVec.h>
+
 
 namespace sofadiff
 {
@@ -48,26 +50,24 @@ public:
     void onEndAnimationStep(double dt) override;
 
     SingleLink<GradientDescentController, core::State<defaulttype::Vec1dTypes>, BaseLink::FLAG_STOREPATH|BaseLink::FLAG_STRONGLINK> l_loss;
-    Data<type::vector<std::string>> d_trainableParameters;
     Data<double> d_learningRate;
 
 protected:
-    Data<type::vector<double>> d_parameterGradient;
     core::MultiVecDerivId m_geometricGradientId;
     core::MultiVecDerivId m_physicalGradientId;
-    std::map<ParameterizedForceField *, std::vector<Data<type::vector<SReal>> *>> m_parametersMap;
+    std::vector<TrainableParameter *> m_trainableParameters;
+    std::vector<ParameterizedForceField *> m_parameterizedForceFields;
 
     virtual void updateParameters(std::vector<double> & parameters, const std::vector<double> & gradient);
 
 private:
     void initializeLossGradientToOne();
+    void resetParametersGradient() const;
     void solveForPhysicalGradient() const;
 
-    std::vector<double> gatherParameters();
-    std::vector<double> gatherParametersGradient();
-    void scatterParameters(const std::vector<double> &parametersVector);
-
-    std::map<ParameterizedForceField *, std::vector<Data<type::vector<SReal>> *>> getParametersMap();
+    std::vector<double> gatherParametersValues() const;
+    std::vector<double> gatherParametersGradients() const;
+    void scatterParametersValues(const std::vector<double> &parametersVector) const;
 };
 
 }

@@ -28,11 +28,23 @@
 namespace sofadiff
 {
 
-template <class T>
 class SOFA_SOFADIFF_API TrainableParameter: public core::objectmodel::BaseObject
 {
 public:
-    TrainableParameter();
+    virtual void resetGradient() = 0;
+    virtual void appendValueTo(std::vector<SReal> & vector) = 0;
+    virtual void appendGradientTo(std::vector<SReal> & vector) = 0;
+
+    virtual void setValueFrom(const std::vector<SReal> & vector, unsigned long index) = 0;
+    virtual unsigned long getSize() = 0;
+};
+
+
+template <class T>
+class SOFA_SOFADIFF_API TrainableParameterTemplated: public TrainableParameter
+{
+public:
+    TrainableParameterTemplated();
     void init() override;
 
     Data<T> d_value;
@@ -40,6 +52,39 @@ public:
 };
 
 
-class SOFA_SOFADIFF_API TrainableParameterVector: public TrainableParameter<type::vector<SReal>> {};
+class SOFA_SOFADIFF_API TrainableParameterVector: public TrainableParameterTemplated<type::vector<SReal>>
+{
+public:
+    void resetGradient() override
+    {
+        auto gradientAccessor = helper::getWriteAccessor(d_gradient);
+        for (auto & v: gradientAccessor)
+            v = 0;
+    }
+    void appendValueTo(std::vector<SReal> & vector) override
+    {
+        for (const auto & v : d_value.getValue())
+            vector.push_back(v);
+    }
+    void appendGradientTo(std::vector<SReal> & vector) override
+    {
+        for (const auto & v : d_gradient.getValue())
+            vector.push_back(v);
+    }
+
+    void setValueFrom(const std::vector<SReal> & vector, unsigned long index) override
+    {
+        auto valueAccessor = helper::getWriteAccessor(d_value);
+        for (unsigned long i = 0; i < valueAccessor.size(); i++)
+        {
+            valueAccessor[i] = vector[index + i];
+        }
+    }
+
+    unsigned long getSize() override
+    {
+        return d_value.getValue().size();
+    }
+};
 
 }

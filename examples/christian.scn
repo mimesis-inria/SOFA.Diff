@@ -96,5 +96,5 @@
         </Node>
     </Node>
     <!-- lr=100 for stiffness, lr=0.01 for length -->
-    <GradientDescentController name="optimizer" loss="@Loss/Distance/Squared/output" trainableParameters="Physics/Spring/force.length" learningRate="0.01"/>
+    <GradientDescentController name="optimizer" loss="@Loss/Distance/Squared/output" learningRate="0.01"/>
 </Node>
