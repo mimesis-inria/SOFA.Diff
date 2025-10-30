@@ -33,7 +33,7 @@ const std::vector<double> & ParameterizedForceField::getParameterGradient(const 
     return m_gradientMap[dataName];
 }
 
-void ParameterizedForceField::setDataGradient(const Data<type::vector<SReal> > &data, const std::vector<double> &gradient)
+void ParameterizedForceField::addToDataGradient(const Data<type::vector<SReal> > &data, const std::vector<double> &gradient)
 {
     const auto * dataPtr = data.getParent();
     if (dataPtr == nullptr)
@@ -43,7 +43,16 @@ void ParameterizedForceField::setDataGradient(const Data<type::vector<SReal> > &
     if (parameterPtr == nullptr)
         return;
 
-    parameterPtr->d_gradient.setValue(gradient);
+    // TODO: optimize things below?
+    auto dataGradientAccessor = helper::getWriteAccessor(parameterPtr->d_gradient);
+    if (dataGradientAccessor.size() != gradient.size())
+    {
+        // TODO: use msg_error()? (unaccessible here, maybe because we are not a BaseObject?)
+        std::cout << "Size mismatch in gradient for TrainableParameter from ParameterizedForceField: " << dataGradientAccessor.size() << " != " << gradient.size() << std::endl;
+        return;
+    }
+    for (unsigned int i = 0; i < gradient.size(); ++i)
+        dataGradientAccessor[i] += gradient[i];
 }
 
 

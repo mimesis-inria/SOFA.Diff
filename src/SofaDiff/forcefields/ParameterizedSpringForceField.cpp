@@ -62,8 +62,8 @@ void ParameterizedSpringForceField::applyParametersJacobianTranspose(const core:
         }
     }
 
-    setDataGradient(d_ks, stiffnessGradient);
-    setDataGradient(d_lengths, lengthGradient);
+    addToDataGradient(d_ks, stiffnessGradient);
+    addToDataGradient(d_lengths, lengthGradient);
 
     m_gradientMap[d_ks.getName()] = stiffnessGradient;
     m_gradientMap[d_lengths.getName()] = lengthGradient;

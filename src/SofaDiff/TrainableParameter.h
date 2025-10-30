@@ -33,6 +33,7 @@ class SOFA_SOFADIFF_API TrainableParameter: public core::objectmodel::BaseObject
 {
 public:
     TrainableParameter();
+    void init() override;
 
     Data<T> d_value;
     Data<T> d_gradient;
