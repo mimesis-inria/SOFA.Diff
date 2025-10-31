@@ -23,8 +23,8 @@
     <VisualStyle displayFlags="showBehavior showBehaviorModels showForceFields showMappings"/>
 
     <Node name="Parameters">
-        <TrainableParameterVector name="springLength" value="20" learningRate="0.01"/>
-        <TrainableParameterVector name="springStiffness" value="100000" learningRate="100"/>
+        <TrainableParameterVector name="springLength" value="5" learningRate="0.01"/>
+        <TrainableParameterVector name="springStiffness" value="1000" learningRate="100"/>
     </Node>
 
     <Node name="Physics">
@@ -84,11 +84,11 @@
 
     <Node name="Loss">
         <Node name="Target">
-            <MechanicalObject template="Vec3d" name="state" position="34.76 22.19 0" showObject="true"/>
+            <MechanicalObject template="Vec3d" name="state" position="50 0 0" showObject="true"/>
         </Node>
         <Node name="Distance">
             <MechanicalObject template="Vec1d" name="output" position="0"/>
-            <DistanceFromTargetMapping input="@/Physics/HorizontalBeam/TargetPoint" targetPositions="34.76 22.19 0"/>
+            <DistanceFromTargetMapping input="@/Physics/HorizontalBeam/TargetPoint" targetPositions="50 0 0"/>
             <Node name="Squared">
                 <MechanicalObject template="Vec1d" name="output" position="0"/>
                 <SquareMapping input="@.."/>
@@ -96,5 +96,5 @@
         </Node>
     </Node>
     <!-- lr=100 for stiffness, lr=0.01 for length -->
-    <GradientDescentController name="optimizer" loss="@Loss/Distance/Squared/output" learningRate="0.01"/>
+    <GradientDescentController name="optimizer" loss="@Loss/Distance/Squared/output"/>
 </Node>

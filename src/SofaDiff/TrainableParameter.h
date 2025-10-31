@@ -34,10 +34,9 @@ public:
     TrainableParameter();
 
     virtual void resetGradient() = 0;
-    virtual void appendValueTo(std::vector<SReal> & vector) = 0;
-    virtual void appendGradientTo(std::vector<SReal> & vector) = 0;
-
-    virtual void setValueFrom(const std::vector<SReal> & vector, unsigned long index) = 0;
+    virtual const type::vector<SReal> & getValueVector() = 0;
+    virtual const type::vector<SReal> & getGradientVector() = 0;
+    virtual void setValueVector(const type::vector<SReal> & vector) = 0;
     virtual unsigned long getSize() = 0;
 
     Data<SReal> d_learningRate;
@@ -65,24 +64,20 @@ public:
         for (auto & v: gradientAccessor)
             v = 0;
     }
-    void appendValueTo(std::vector<SReal> & vector) override
+
+    const type::vector<SReal> & getValueVector() override
     {
-        for (const auto & v : d_value.getValue())
-            vector.push_back(v);
-    }
-    void appendGradientTo(std::vector<SReal> & vector) override
-    {
-        for (const auto & v : d_gradient.getValue())
-            vector.push_back(v);
+        return d_value.getValue();
     }
 
-    void setValueFrom(const std::vector<SReal> & vector, unsigned long index) override
+    const type::vector<SReal> & getGradientVector() override
     {
-        auto valueAccessor = helper::getWriteAccessor(d_value);
-        for (unsigned long i = 0; i < valueAccessor.size(); i++)
-        {
-            valueAccessor[i] = vector[index + i];
-        }
+        return d_gradient.getValue();
+    }
+
+    void setValueVector(const type::vector<SReal> & vector) override
+    {
+        d_value.setValue(vector);
     }
 
     unsigned long getSize() override

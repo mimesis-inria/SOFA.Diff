@@ -82,18 +82,21 @@ void GradientDescentController::onEndAnimationStep(const double /*dt*/)
         forceField->applyParametersJacobianTranspose(params, m_physicalGradientId);
 
     // Update the parameters with a step of gradient descent
-    auto parameters = gatherParametersValues();
-    const auto & gradient = gatherParametersGradients();
-    updateParameters(parameters, gradient);
-    scatterParametersValues(parameters);
+    updateParameters();
 }
 
 
-void GradientDescentController::updateParameters(std::vector<double> &parameters, const std::vector<double> & gradient)
+void GradientDescentController::updateParameters()
 {
-    const auto learningRate = d_learningRate.getValue();
-    for (unsigned int i = 0; i < parameters.size(); ++i)
-        parameters[i] -= learningRate * gradient[i]; // TODO: Use learning rate defined in TrainableParameter
+    for (const auto parameter : m_trainableParameters)
+    {
+        auto value = parameter->getValueVector();
+        const auto learningRate = parameter->d_learningRate.getValue();
+        const auto gradient = parameter->getGradientVector();
+        for (size_t j = 0; j < gradient.size(); j++)
+            value[j] -= learningRate * gradient[j];
+        parameter->setValueVector(value);
+    }
 }
 
 
@@ -128,35 +131,6 @@ void GradientDescentController::solveForPhysicalGradient() const
     // TODO: clarify why the operation below is not required
     // simulation::common::VectorOperations vop(params, ctx);
     // vop.v_eq(m_forceGradientVecId, m_forceGradientVecId, -1.0);
-}
-
-
-std::vector<double> GradientDescentController::gatherParametersValues() const
-{
-    std::vector<double> parametersVector(0);
-    for (const auto &parameter : m_trainableParameters)
-        parameter->appendValueTo(parametersVector);
-    return parametersVector;
-}
-
-
-std::vector<double> GradientDescentController::gatherParametersGradients() const
-{
-    std::vector<double> gradient(0);
-    for (const auto &parameter : m_trainableParameters)
-        parameter->appendGradientTo(gradient);
-    return gradient;
-}
-
-
-void GradientDescentController::scatterParametersValues(const std::vector<double> &parametersVector) const
-{
-    unsigned long currentIndex = 0;
-    for (const auto &parameter : m_trainableParameters)
-    {
-        parameter->setValueFrom(parametersVector, currentIndex);
-        currentIndex += parameter->getSize();
-    }
 }
 
 

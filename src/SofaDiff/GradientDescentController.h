@@ -58,16 +58,12 @@ protected:
     std::vector<TrainableParameter *> m_trainableParameters;
     std::vector<ParameterizedForceField *> m_parameterizedForceFields;
 
-    virtual void updateParameters(std::vector<double> & parameters, const std::vector<double> & gradient);
+    virtual void updateParameters();
 
 private:
     void initializeLossGradientToOne();
     void resetParametersGradient() const;
     void solveForPhysicalGradient() const;
-
-    std::vector<double> gatherParametersValues() const;
-    std::vector<double> gatherParametersGradients() const;
-    void scatterParametersValues(const std::vector<double> &parametersVector) const;
 };
 
 }
