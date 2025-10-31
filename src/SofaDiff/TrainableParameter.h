@@ -31,12 +31,16 @@ namespace sofadiff
 class SOFA_SOFADIFF_API TrainableParameter: public core::objectmodel::BaseObject
 {
 public:
+    TrainableParameter();
+
     virtual void resetGradient() = 0;
     virtual void appendValueTo(std::vector<SReal> & vector) = 0;
     virtual void appendGradientTo(std::vector<SReal> & vector) = 0;
 
     virtual void setValueFrom(const std::vector<SReal> & vector, unsigned long index) = 0;
     virtual unsigned long getSize() = 0;
+
+    Data<SReal> d_learningRate;
 };
 
 

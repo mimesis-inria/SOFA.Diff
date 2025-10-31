@@ -29,6 +29,11 @@
 namespace sofadiff
 {
 
+TrainableParameter::TrainableParameter()
+: d_learningRate(initData(&d_learningRate, "learningRate", "Learning rate to use for this parameter"))
+{}
+
+
 void registerTrainableParameter(core::ObjectFactory* factory)
 {
     factory->registerObjects(core::ObjectRegistrationData("Trainable parameter of vector type.").add< TrainableParameterVector >());
