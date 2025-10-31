@@ -9,8 +9,45 @@
 namespace sofadiff
 {
 
+void ParameterizedSpringForceField::init()
+{
+    SpringForceField::init();
+    m_canBeTrained = getCanBeTrained();
+    for (const auto& data : this->getDataFields())
+    {
+        if (!isTrainableParameter(data))
+            continue;
+
+        if (!m_canBeTrained[data])
+        {
+            msg_error() << "Data " << data->getName() << " is not trainable.";
+            continue;
+        }
+
+        m_isTrained[data] = true;
+    }
+}
+
+std::map<core::BaseData *, bool> ParameterizedSpringForceField::getCanBeTrained()
+{
+    std::map<core::BaseData *, bool> canBeTrained;
+    for (const auto& data : this->getDataFields())
+        canBeTrained[data] = false;
+    canBeTrained[static_cast<core::BaseData*>(&d_ks)] = true;
+    canBeTrained[static_cast<core::BaseData*>(&d_lengths)] = true;
+    return canBeTrained;
+}
+
+
 void ParameterizedSpringForceField::applyParametersJacobianTranspose(const core::MechanicalParams* mparams, const core::MultiVecDerivId vecId)
 {
+    // Skip if there is nothing to optimize
+    if (std::ranges::all_of(m_isTrained, [](const auto& p) { return p.second == false; }))
+    {
+        msg_warning() << "ParameterizedSpringForceField::applyParametersJacobianTranspose() skipped: no parameter to optimize. Consider using SpringForceField instead. Or not?";
+        return;
+    }
+
     std::vector<double> stiffnessGradient = {};
     std::vector<double> lengthGradient = {};
 
@@ -50,6 +87,7 @@ void ParameterizedSpringForceField::applyParametersJacobianTranspose(const core:
             // (dF/dk_s)^T @ v = (l-l_0).dot(U, v)
             u /= d;
             const Real elongation = d - spring.initpos;
+            // TODO: do only the required computations (may require to improve on TrainableParameter’s interface, in particular to be able to do gradient[i] += xxx)
             const auto grad = elongation * dot(u, DataTypes::getDPos(v1[a]) - DataTypes::getDPos(v2[b]));
             stiffnessGradient.push_back(grad);
             const auto lengthGrad = -spring.ks * dot(u, DataTypes::getDPos(v1[a]) - DataTypes::getDPos(v2[b]));
@@ -61,9 +99,11 @@ void ParameterizedSpringForceField::applyParametersJacobianTranspose(const core:
             lengthGradient.push_back(0.0);
         }
     }
-
-    addToDataGradient(d_ks, stiffnessGradient);
-    addToDataGradient(d_lengths, lengthGradient);
+    // TODO: remove this (cf TODO above)
+    if (m_isTrained[static_cast<core::BaseData*>(&d_ks)])
+        addToDataGradient(d_ks, stiffnessGradient);
+    if (m_isTrained[static_cast<core::BaseData*>(&d_lengths)])
+        addToDataGradient(d_lengths, lengthGradient);
 }
 
 void registerParameterizedSpringForceField(core::ObjectFactory* factory)

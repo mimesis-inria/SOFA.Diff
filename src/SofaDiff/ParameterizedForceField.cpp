@@ -27,6 +27,19 @@
 namespace sofadiff
 {
 
+bool ParameterizedForceField::isTrainableParameter(const core::BaseData * data)
+{
+    const auto * parent = data->getParent();
+    if (parent == nullptr)
+        return false;
+
+    auto * parameter = dynamic_cast<TrainableParameter*>(parent->getOwner());
+    if (parameter == nullptr)
+        return false;
+
+    return true;
+}
+
 void ParameterizedForceField::addToDataGradient(const Data<type::vector<SReal> > &data, const std::vector<double> &gradient)
 {
     const auto * dataPtr = data.getParent();

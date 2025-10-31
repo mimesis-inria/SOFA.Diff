@@ -40,8 +40,14 @@ public:
         core::MultiVecDerivId vecId
     ) = 0;
 
+    static bool isTrainableParameter(const core::BaseData * data);
+    std::map<core::BaseData*, bool> m_canBeTrained;
+    std::map<core::BaseData*, bool> m_isTrained;
+    virtual std::map<core::BaseData*, bool> getCanBeTrained() = 0;
+
 protected:
     static void addToDataGradient(const Data<type::vector<SReal>> &data, const std::vector<double> & gradient);
+
 };
 
 }
