@@ -21,7 +21,10 @@
  ******************************************************************************/
 #pragma once
 
+#include <unordered_set>
+
 #include <SofaDiff/config.h>
+#include <SofaDiff/TrainableParameter.h>
 
 #include <sofa/core/objectmodel/BaseObject.h>
 #include <sofa/core/behavior/MultiVec.h>
@@ -33,21 +36,23 @@ namespace sofadiff
 class SOFA_SOFADIFF_API ParameterizedForceField
 {
 public:
-    virtual ~ParameterizedForceField() = default;
+    std::unordered_set<core::BaseData*> m_canBeTrained;
 
     virtual void applyParametersJacobianTranspose(
         const core::MechanicalParams* mparams,
         core::MultiVecDerivId vecId
     ) = 0;
 
-    static bool isTrainableParameter(const core::BaseData * data);
-    std::map<core::BaseData*, bool> m_canBeTrained;
-    std::map<core::BaseData*, bool> m_isTrained;
-    virtual std::map<core::BaseData*, bool> getCanBeTrained() = 0;
+    virtual ~ParameterizedForceField() = default;
 
 protected:
-    static void addToDataGradient(const Data<type::vector<SReal>> &data, const std::vector<double> & gradient);
 
+    static TrainableParameter* getParentParameter(const core::BaseData * data);
+
+    void initParameter(Data<type::vector<SReal>> & data, Data<type::vector<SReal>> * & gradientPtr);
+    void initParameter(Data<SReal> & data, Data<SReal> * & gradientPtr);
+
+    void checkForNotImplementedParameters(const type::vector<core::BaseData *> & dataFields) const;
 };
 
 }

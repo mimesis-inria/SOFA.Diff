@@ -27,39 +27,60 @@
 namespace sofadiff
 {
 
-bool ParameterizedForceField::isTrainableParameter(const core::BaseData * data)
+TrainableParameter * ParameterizedForceField::getParentParameter(const core::BaseData *data)
 {
     const auto * parent = data->getParent();
     if (parent == nullptr)
-        return false;
+        return nullptr;
 
     auto * parameter = dynamic_cast<TrainableParameter*>(parent->getOwner());
     if (parameter == nullptr)
-        return false;
+        return nullptr;
 
-    return true;
+    return parameter;
 }
 
-void ParameterizedForceField::addToDataGradient(const Data<type::vector<SReal> > &data, const std::vector<double> &gradient)
+void ParameterizedForceField::initParameter(Data<type::vector<SReal>> & data, Data<type::vector<SReal> > * & gradientPtr)
 {
-    const auto * dataPtr = data.getParent();
-    if (dataPtr == nullptr)
-        return;
+    m_canBeTrained.insert(&data);
 
-    auto * parameterPtr = dynamic_cast<TrainableParameterVector *>(dataPtr->getOwner());
-    if (parameterPtr == nullptr)
+    auto * parameter = getParentParameter(&data);
+    if (parameter == nullptr)
         return;
-
-    // TODO: optimize things below?
-    auto dataGradientAccessor = helper::getWriteAccessor(parameterPtr->d_gradient);
-    if (dataGradientAccessor.size() != gradient.size())
+    auto * parameterVector = dynamic_cast<TrainableParameterVector*>(parameter);
+    if (parameterVector == nullptr)
     {
-        // TODO: use msg_error()? (unaccessible here, maybe because we are not a BaseObject?)
-        std::cout << "Size mismatch in gradient for TrainableParameter from ParameterizedForceField: " << dataGradientAccessor.size() << " != " << gradient.size() << std::endl;
-        return;
+        // TODO: cannot use msg_error()
+        std::cout << "Error: " << data.getName() << " parameter must be a TrainableParameterVector" << std::endl;
     }
-    for (unsigned int i = 0; i < gradient.size(); ++i)
-        dataGradientAccessor[i] += gradient[i];
+    gradientPtr = &parameterVector->d_gradient; // TODO: Do I need to check that d_gradient is not nullptr?
+}
+
+void ParameterizedForceField::initParameter(Data<SReal> & data, Data<SReal> * & gradientPtr)
+{
+    m_canBeTrained.insert(&data);
+    if (auto * parameter = getParentParameter(&data); parameter != nullptr)
+    {
+        auto * parameterScalar = dynamic_cast<TrainableParameterScalar*>(parameter);
+        if (parameterScalar == nullptr)
+        {
+            // TODO: cannot use msg_error()
+            std::cout << "Error: " << data.getName() << " parameter must be a TrainableParameterScalar" << std::endl;
+        }
+        gradientPtr = &parameterScalar->d_gradient; // TODO: Do I need to check that d_gradient is not nullptr?
+    }
+}
+
+void ParameterizedForceField::checkForNotImplementedParameters(const type::vector<core::BaseData *> &dataFields) const
+{
+    for (const auto & data : dataFields)
+    {
+        if (getParentParameter(data) != nullptr && !m_canBeTrained.contains(data))
+        {
+            // TODO: cannot use msg_error()
+            std::cout << "Error: " << "Data " << data->getName() << " is not trainable.";
+        }
+    }
 }
 
 
