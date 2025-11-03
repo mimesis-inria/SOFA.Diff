@@ -37,6 +37,7 @@ TrainableParameter::TrainableParameter()
 void registerTrainableParameter(core::ObjectFactory* factory)
 {
     factory->registerObjects(core::ObjectRegistrationData("Trainable parameter of vector type.").add< TrainableParameterVector >());
+    factory->registerObjects(core::ObjectRegistrationData("Trainable parameter of scalar type.").add< TrainableParameterScalar >());
 }
 
 

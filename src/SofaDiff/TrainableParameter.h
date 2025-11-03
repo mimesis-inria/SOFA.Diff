@@ -48,7 +48,6 @@ class SOFA_SOFADIFF_API TrainableParameterTemplated: public TrainableParameter
 {
 public:
     TrainableParameterTemplated();
-    void init() override;
 
     Data<T> d_value;
     Data<T> d_gradient;
@@ -58,6 +57,14 @@ public:
 class SOFA_SOFADIFF_API TrainableParameterVector: public TrainableParameterTemplated<type::vector<SReal>>
 {
 public:
+
+    void init() override
+    {
+        // TODO: is it the right way of doing this? Should I be doing this? (goal: allowing accumulation from ParameterizedForceField)
+        auto gradientAccessor = helper::getWriteOnlyAccessor(d_gradient);
+        gradientAccessor.resize(d_value.getValue().size());
+    }
+
     void resetGradient() override
     {
         auto gradientAccessor = helper::getWriteAccessor(d_gradient);
@@ -83,6 +90,49 @@ public:
     unsigned long getSize() override
     {
         return d_value.getValue().size();
+    }
+};
+
+
+class SOFA_SOFADIFF_API TrainableParameterScalar: public TrainableParameterTemplated<SReal>
+{
+private:
+    type::vector<SReal> m_value;
+    type::vector<SReal> m_gradient;
+
+public:
+    void init() override
+    {
+        // TODO: le init est bien appelé qu’une fois? Comment initialiser un type::vector sinon ?
+        m_value.push_back(0);
+        m_gradient.push_back(0);
+    }
+
+    void resetGradient() override
+    {
+        d_gradient.setValue(0);
+    }
+
+    const type::vector<SReal> & getValueVector() override
+    {
+        m_value[0] = d_value.getValue();
+        return m_value;
+    }
+
+    const type::vector<SReal> & getGradientVector() override
+    {
+        m_gradient[0] = d_gradient.getValue();
+        return m_gradient;
+    }
+
+    void setValueVector(const type::vector<SReal> & vector) override
+    {
+        d_value.setValue(vector[0]);
+    }
+
+    unsigned long getSize() override
+    {
+        return 1;
     }
 };
 

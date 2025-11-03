@@ -33,14 +33,5 @@ TrainableParameterTemplated<T>::TrainableParameterTemplated()
 , d_gradient(initData(&d_gradient, "gradient", "Gradient of the parameter"))
 {}
 
-template<class T>
-void TrainableParameterTemplated<T>::init()
-{
-    // TODO: is it the right way of doing this? Should I be doing this? (goal: allowing accumulation from ParameterizedForceField)
-    auto gradientAccessor = helper::getWriteOnlyAccessor(d_gradient);
-    gradientAccessor.resize(d_value.getValue().size());
-    // TODO: the gradient needs to be reset at some point!
-}
-
 
 }
