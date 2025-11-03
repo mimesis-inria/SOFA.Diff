@@ -37,7 +37,6 @@ public:
     virtual const type::vector<SReal> & getValueVector() = 0;
     virtual const type::vector<SReal> & getGradientVector() = 0;
     virtual void setValueVector(const type::vector<SReal> & vector) = 0;
-    virtual unsigned long getSize() = 0;
 
     Data<SReal> d_learningRate;
 };
@@ -86,11 +85,6 @@ public:
     {
         d_value.setValue(vector);
     }
-
-    unsigned long getSize() override
-    {
-        return d_value.getValue().size();
-    }
 };
 
 
@@ -128,11 +122,6 @@ public:
     void setValueVector(const type::vector<SReal> & vector) override
     {
         d_value.setValue(vector[0]);
-    }
-
-    unsigned long getSize() override
-    {
-        return 1;
     }
 };
 
