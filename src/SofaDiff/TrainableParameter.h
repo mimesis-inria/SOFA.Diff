@@ -46,82 +46,72 @@ template <class T>
 class SOFA_SOFADIFF_API TrainableParameterTemplated: public TrainableParameter
 {
 public:
-    TrainableParameterTemplated();
-
     Data<T> d_value;
     Data<T> d_gradient;
+
+protected:
+    type::vector<SReal> m_value;
+    type::vector<SReal> m_gradient;
+
+    virtual type::vector<SReal> getVectorFromData(const Data<T> & data) = 0;
+    virtual void setDataFromVector(Data<T> & data, const type::vector<SReal> &vector) = 0;
+
+public:
+    TrainableParameterTemplated();
+
+    void resetGradient() override
+    {
+        // Not optimal, but works for all T
+        const auto vector = getVectorFromData(d_value);
+        const type::vector<SReal> gradient(vector.size(), 0.0);
+        setDataFromVector(d_gradient, gradient);
+    }
+
+    const type::vector<SReal> & getValueVector() override
+    {
+        m_value = getVectorFromData(d_value);
+        return m_value;
+    }
+
+    const type::vector<SReal> & getGradientVector() override
+    {
+        m_gradient = getVectorFromData(d_gradient);
+        return m_gradient;
+    }
+
+    void setValueVector(const type::vector<SReal>& vector) override
+    {
+        setDataFromVector(d_value, vector);
+    }
 };
 
 
 class SOFA_SOFADIFF_API TrainableParameterVector: public TrainableParameterTemplated<type::vector<SReal>>
 {
 public:
-
-    void init() override
+    type::vector<SReal> getVectorFromData(const Data<type::vector<SReal>> & data) override
     {
-        // TODO: is it the right way of doing this? Should I be doing this? (goal: allowing accumulation from ParameterizedForceField)
-        auto gradientAccessor = helper::getWriteOnlyAccessor(d_gradient);
-        gradientAccessor.resize(d_value.getValue().size());
+        return data.getValue();
     }
 
-    void resetGradient() override
+    void setDataFromVector(Data<type::vector<SReal>> & data, const type::vector<SReal> & vector) override
     {
-        auto gradientAccessor = helper::getWriteAccessor(d_gradient);
-        for (auto & v: gradientAccessor)
-            v = 0;
-    }
-
-    const type::vector<SReal> & getValueVector() override
-    {
-        return d_value.getValue();
-    }
-
-    const type::vector<SReal> & getGradientVector() override
-    {
-        return d_gradient.getValue();
-    }
-
-    void setValueVector(const type::vector<SReal> & vector) override
-    {
-        d_value.setValue(vector);
+        data.setValue(vector);
     }
 };
 
 
 class SOFA_SOFADIFF_API TrainableParameterScalar: public TrainableParameterTemplated<SReal>
 {
-private:
-    type::vector<SReal> m_value;
-    type::vector<SReal> m_gradient;
-
 public:
-    void init() override
+    type::vector<SReal> getVectorFromData(const Data<SReal> & data) override
     {
-        // TODO: le init est bien appelé qu’une fois? Comment initialiser un type::vector sinon ?
-        m_value.push_back(0);
-        m_gradient.push_back(0);
+        return {data.getValue()};
     }
 
-    void resetGradient() override
+    void setDataFromVector(Data<SReal> & data, const type::vector<SReal> & vector) override
     {
-        d_gradient.setValue(0);
-    }
-
-    const type::vector<SReal> & getValueVector() override
-    {
-        m_value[0] = d_value.getValue();
-        return m_value;
-    }
-
-    const type::vector<SReal> & getGradientVector() override
-    {
-        m_gradient[0] = d_gradient.getValue();
-        return m_gradient;
-    }
-
-    void setValueVector(const type::vector<SReal> & vector) override
-    {
-        d_value.setValue(vector[0]);
+        data.setValue(vector[0]);
     }
 };
 
