@@ -37,7 +37,7 @@ using namespace sofa::component::solidmechanics::spring;
 using namespace sofa::defaulttype;
 
 class ParameterizedSpringForceField :
-    public ParameterizedForceField,
+    public Parameterized,
     public SpringForceField<Vec3Types>
 {
 public:

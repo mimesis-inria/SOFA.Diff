@@ -27,7 +27,7 @@
 namespace sofadiff
 {
 
-TrainableParameter * ParameterizedForceField::getParentParameter(const core::BaseData *data)
+TrainableParameter * Parameterized::getParentParameter(const core::BaseData *data)
 {
     const auto * parent = data->getParent();
     if (parent == nullptr)
@@ -40,7 +40,7 @@ TrainableParameter * ParameterizedForceField::getParentParameter(const core::Bas
     return parameter;
 }
 
-void ParameterizedForceField::initParameter(Data<type::vector<SReal>> & data, Data<type::vector<SReal> > * & gradientPtr)
+void Parameterized::initParameter(Data<type::vector<SReal>> & data, Data<type::vector<SReal> > * & gradientPtr)
 {
     m_canBeTrained.insert(&data);
 
@@ -56,7 +56,7 @@ void ParameterizedForceField::initParameter(Data<type::vector<SReal>> & data, Da
     gradientPtr = &parameterVector->d_gradient; // TODO: Do I need to check that d_gradient is not nullptr?
 }
 
-void ParameterizedForceField::initParameter(Data<SReal> & data, Data<SReal> * & gradientPtr)
+void Parameterized::initParameter(Data<SReal> & data, Data<SReal> * & gradientPtr)
 {
     m_canBeTrained.insert(&data);
     if (auto * parameter = getParentParameter(&data); parameter != nullptr)
@@ -71,7 +71,7 @@ void ParameterizedForceField::initParameter(Data<SReal> & data, Data<SReal> * & 
     }
 }
 
-void ParameterizedForceField::checkForNotImplementedParameters(const type::vector<core::BaseData *> &dataFields) const
+void Parameterized::checkForNotImplementedParameters(const type::vector<core::BaseData *> &dataFields) const
 {
     for (const auto & data : dataFields)
     {

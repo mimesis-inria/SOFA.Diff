@@ -56,7 +56,7 @@ protected:
     core::MultiVecDerivId m_geometricGradientId;
     core::MultiVecDerivId m_physicalGradientId;
     std::vector<TrainableParameter *> m_trainableParameters;
-    std::vector<ParameterizedForceField *> m_parameterizedForceFields;
+    std::vector<Parameterized *> m_parameterizedForceFields;
 
     virtual void updateParameters();
 

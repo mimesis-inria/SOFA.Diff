@@ -62,7 +62,7 @@ void GradientDescentController::init()
     m_physicalGradientId = physicalGradient.id();
 
     ctx->get<TrainableParameter> (&m_trainableParameters, core::objectmodel::BaseContext::SearchRoot);
-    ctx->get<ParameterizedForceField> (&m_parameterizedForceFields, core::objectmodel::BaseContext::SearchRoot);
+    ctx->get<Parameterized> (&m_parameterizedForceFields, core::objectmodel::BaseContext::SearchRoot);
 }
 
 

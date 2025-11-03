@@ -28,12 +28,13 @@
 
 #include <sofa/core/objectmodel/BaseObject.h>
 #include <sofa/core/behavior/MultiVec.h>
+#include <sofa/core/behavior/BaseForceField.h>
 
 
 namespace sofadiff
 {
 
-class SOFA_SOFADIFF_API ParameterizedForceField
+class SOFA_SOFADIFF_API Parameterized
 {
 public:
     std::unordered_set<core::BaseData*> m_canBeTrained;
@@ -43,7 +44,7 @@ public:
         core::MultiVecDerivId vecId
     ) = 0;
 
-    virtual ~ParameterizedForceField() = default;
+    virtual ~Parameterized() = default;
 
 protected:
 
@@ -54,5 +55,10 @@ protected:
 
     void checkForNotImplementedParameters(const type::vector<core::BaseData *> & dataFields) const;
 };
+
+
+// TODO: Inherit ForceField<> rather than BaseForceField?
+class ParameterizedForceField: public Parameterized, public core::behavior::BaseForceField
+{};
 
 }
