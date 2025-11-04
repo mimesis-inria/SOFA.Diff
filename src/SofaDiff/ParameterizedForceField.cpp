@@ -50,8 +50,7 @@ void Parameterized::initParameter(Data<type::vector<SReal>> & data, Data<type::v
     auto * parameterVector = dynamic_cast<TrainableParameterVector*>(parameter);
     if (parameterVector == nullptr)
     {
-        // TODO: cannot use msg_error()
-        std::cout << "Error: " << data.getName() << " parameter must be a TrainableParameterVector" << std::endl;
+        msg_error() << data.getName() << " parameter must be a TrainableParameterVector";
     }
     gradientPtr = &parameterVector->d_gradient; // TODO: Do I need to check that d_gradient is not nullptr?
 }
@@ -64,8 +63,7 @@ void Parameterized::initParameter(Data<SReal> & data, Data<SReal> * & gradientPt
         auto * parameterScalar = dynamic_cast<TrainableParameterScalar*>(parameter);
         if (parameterScalar == nullptr)
         {
-            // TODO: cannot use msg_error()
-            std::cout << "Error: " << data.getName() << " parameter must be a TrainableParameterScalar" << std::endl;
+            msg_error() << data.getName() << " parameter must be a TrainableParameterScalar";
         }
         gradientPtr = &parameterScalar->d_gradient; // TODO: Do I need to check that d_gradient is not nullptr?
     }
@@ -77,8 +75,7 @@ void Parameterized::checkForNotImplementedParameters(const type::vector<core::Ba
     {
         if (getParentParameter(data) != nullptr && !m_canBeTrained.contains(data))
         {
-            // TODO: cannot use msg_error()
-            std::cout << "Error: " << "Data " << data->getName() << " is not trainable.";
+            msg_error() << "Data " << data->getName() << " is not trainable.";
         }
     }
 }

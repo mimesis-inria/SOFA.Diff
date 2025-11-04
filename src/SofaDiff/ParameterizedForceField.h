@@ -34,8 +34,10 @@
 namespace sofadiff
 {
 
-class SOFA_SOFADIFF_API Parameterized
+class SOFA_SOFADIFF_API Parameterized: virtual public core::objectmodel::BaseObject
 {
+    SOFA_ABSTRACT_CLASS(Parameterized, core::objectmodel::BaseObject);
+
 public:
     std::unordered_set<core::BaseData*> m_canBeTrained;
 
@@ -44,7 +46,7 @@ public:
         core::MultiVecDerivId vecId
     ) = 0;
 
-    virtual ~Parameterized() = default;
+    ~Parameterized() override = default;
 
 protected:
 
@@ -57,8 +59,9 @@ protected:
 };
 
 
-// TODO: Inherit ForceField<> rather than BaseForceField?
-class ParameterizedForceField: public Parameterized, public core::behavior::BaseForceField
-{};
+class ParameterizedForceField: public Parameterized, virtual public core::behavior::BaseForceField
+{
+    const core::BaseClass* getClass() const override { return core::behavior::BaseForceField::getClass(); }
+};
 
 }
