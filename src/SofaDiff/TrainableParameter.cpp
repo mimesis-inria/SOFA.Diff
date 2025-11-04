@@ -29,9 +29,22 @@
 namespace sofadiff
 {
 
-TrainableParameter::TrainableParameter()
-: d_learningRate(initData(&d_learningRate, "learningRate", "Learning rate to use for this parameter"))
-{}
+void TrainableParameter::parse(core::objectmodel::BaseObjectDescription *arg)
+{
+    BaseObject::parse(arg);
+    const auto map = arg->getAttributeMap();
+    for (const auto&[name, attribute] : map)
+    {
+        if (!attribute.isAccessed())
+        {
+            auto * data = new Data<SReal>(std::stod(attribute.c_str())); // Silently ignores additional values
+            data->setName(name);
+            this->addData(data, name);
+            m_dynamicallyCreatedData.emplace_back(data);
+            arg->removeAttribute(name);
+        }
+    }
+}
 
 
 void registerTrainableParameter(core::ObjectFactory* factory)

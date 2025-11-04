@@ -31,14 +31,18 @@ namespace sofadiff
 class SOFA_SOFADIFF_API TrainableParameter: public core::objectmodel::BaseObject
 {
 public:
-    TrainableParameter();
+    SOFA_CLASS(TrainableParameter, core::objectmodel::BaseObject);
 
     virtual void resetGradient() = 0;
     virtual const type::vector<SReal> & getValueVector() = 0;
     virtual const type::vector<SReal> & getGradientVector() = 0;
     virtual void setValueVector(const type::vector<SReal> & vector) = 0;
 
-    Data<SReal> d_learningRate;
+    void parse(core::objectmodel::BaseObjectDescription *arg) override;
+
+private:
+    // To prevent memory leak
+    std::vector<std::unique_ptr<Data<SReal>>> m_dynamicallyCreatedData;
 };
 
 
@@ -46,6 +50,8 @@ template <class T>
 class SOFA_SOFADIFF_API TrainableParameterTemplated: public TrainableParameter
 {
 public:
+    SOFA_CLASS(TrainableParameterTemplated, TrainableParameter);
+
     Data<T> d_value;
     Data<T> d_gradient;
 
@@ -89,6 +95,7 @@ public:
 class SOFA_SOFADIFF_API TrainableParameterVector: public TrainableParameterTemplated<type::vector<SReal>>
 {
 public:
+    SOFA_CLASS(TrainableParameterVector, TrainableParameterTemplated<type::vector<SReal>>);
     type::vector<SReal> getVectorFromData(const Data<type::vector<SReal>> & data) override
     {
         return data.getValue();
@@ -104,6 +111,8 @@ public:
 class SOFA_SOFADIFF_API TrainableParameterScalar: public TrainableParameterTemplated<SReal>
 {
 public:
+    SOFA_CLASS(TrainableParameterScalar, TrainableParameterTemplated<SReal>);
+
     type::vector<SReal> getVectorFromData(const Data<SReal> & data) override
     {
         return {data.getValue()};

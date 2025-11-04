@@ -39,7 +39,6 @@ using namespace simulation::mechanicalvisitor;
 
 GradientDescentController::GradientDescentController()
 : l_loss(initLink("loss", "Mechanical object (vec1) with the loss to minimize"))
-, d_learningRate(initData(&d_learningRate, "learningRate", "The learning rate for the gradient descent"))
 {
     this->f_listening.setValue(true);
 }
@@ -86,12 +85,33 @@ void GradientDescentController::onEndAnimationStep(const double /*dt*/)
 }
 
 
+SReal GradientDescentController::getHyperparameter(const TrainableParameter *parameter, const std::string &hyperparameterName) const
+{
+    const auto * baseData = parameter->findData(hyperparameterName);
+    if (baseData == nullptr)
+    {
+        msg_error() << "Parameter " << parameter->getName() << " requires a data " << hyperparameterName;
+        return 0.0;
+    }
+
+    const auto * data = dynamic_cast<const Data<SReal>*>(baseData);
+    if (data == nullptr)
+    {
+        // Unlikely to trigger since the string value of the hyperparameter is converted to a double with std::stod()
+        msg_error() << "Hyperparameter " << hyperparameterName << " of parameter " << parameter->getName() << " should be scalar";
+        return 0.0;
+    }
+
+    return data->getValue();
+}
+
+
 void GradientDescentController::updateParameters()
 {
     for (const auto parameter : m_trainableParameters)
     {
         auto value = parameter->getValueVector();
-        const auto learningRate = parameter->d_learningRate.getValue();
+        const auto learningRate = getHyperparameter(parameter, "learningRate");
         const auto gradient = parameter->getGradientVector();
         for (size_t j = 0; j < gradient.size(); j++)
             value[j] -= learningRate * gradient[j];

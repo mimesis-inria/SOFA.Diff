@@ -49,8 +49,9 @@ public:
     void init() override;
     void onEndAnimationStep(double dt) override;
 
+    static constexpr std::array<std::string, 1> getHyperparametersNames() { return {"learningRate"}; }
+
     SingleLink<GradientDescentController, core::State<defaulttype::Vec1dTypes>, BaseLink::FLAG_STOREPATH|BaseLink::FLAG_STRONGLINK> l_loss;
-    Data<double> d_learningRate;
 
 protected:
     core::MultiVecDerivId m_geometricGradientId;
@@ -58,6 +59,7 @@ protected:
     std::vector<TrainableParameter *> m_trainableParameters;
     std::vector<Parameterized *> m_parameterizedForceFields;
 
+    SReal getHyperparameter(const TrainableParameter *parameter, const std::string &hyperparameterName) const;
     virtual void updateParameters();
 
 private:
