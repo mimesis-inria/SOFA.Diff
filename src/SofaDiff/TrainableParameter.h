@@ -59,8 +59,8 @@ protected:
     type::vector<SReal> m_value;
     type::vector<SReal> m_gradient;
 
-    virtual type::vector<SReal> getVectorFromData(const Data<T> & data) = 0;
-    virtual void setDataFromVector(Data<T> & data, const type::vector<SReal> &vector) = 0;
+    virtual type::vector<SReal> getVectorFromData(const Data<T> & data);
+    virtual void setDataFromVector(Data<T> & data, const type::vector<SReal> &vector);
 
 public:
     TrainableParameterTemplated();
@@ -76,9 +76,6 @@ class SOFA_SOFADIFF_API TrainableParameterVector: public TrainableParameterTempl
 {
 public:
     SOFA_CLASS(TrainableParameterVector, TrainableParameterTemplated<type::vector<SReal>>);
-
-    type::vector<SReal> getVectorFromData(const Data<type::vector<SReal>> & data) override;
-    void setDataFromVector(Data<type::vector<SReal>> & data, const type::vector<SReal> & vector) override;
 };
 
 
@@ -86,9 +83,6 @@ class SOFA_SOFADIFF_API TrainableParameterScalar: public TrainableParameterTempl
 {
 public:
     SOFA_CLASS(TrainableParameterScalar, TrainableParameterTemplated<SReal>);
-
-    type::vector<SReal> getVectorFromData(const Data<SReal> & data) override;
-    void setDataFromVector(Data<SReal> & data, const type::vector<SReal> & vector) override;
 };
 
 }

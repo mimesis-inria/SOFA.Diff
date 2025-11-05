@@ -47,23 +47,27 @@ void TrainableParameter::parse(core::objectmodel::BaseObjectDescription *arg)
 }
 
 
-type::vector<SReal> TrainableParameterVector::getVectorFromData(const Data<type::vector<SReal>> & data)
+template<>
+type::vector<SReal> TrainableParameterTemplated<type::vector<SReal>>::getVectorFromData(const Data<type::vector<SReal>> & data)
 {
     return data.getValue();
 }
 
-void TrainableParameterVector::setDataFromVector(Data<type::vector<SReal>> & data, const type::vector<SReal> & vector)
+template<>
+void TrainableParameterTemplated<type::vector<SReal>>::setDataFromVector(Data<type::vector<SReal>> & data, const type::vector<SReal> & vector)
 {
     data.setValue(vector);
 }
 
 
-type::vector<SReal> TrainableParameterScalar::getVectorFromData(const Data<SReal> & data)
+template<>
+type::vector<SReal> TrainableParameterTemplated<SReal>::getVectorFromData(const Data<SReal> & data)
 {
     return {data.getValue()};
 }
 
-void TrainableParameterScalar::setDataFromVector(Data<SReal> & data, const type::vector<SReal> & vector)
+template<>
+void TrainableParameterTemplated<SReal>::setDataFromVector(Data<SReal> & data, const type::vector<SReal> & vector)
 {
     data.setValue(vector[0]);
 }
