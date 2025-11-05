@@ -53,23 +53,7 @@ protected:
     static TrainableParameter* getParentParameter(const core::BaseData * data);
 
     template<class T>
-    void initParameter(Data<T> & data, Data<T> * & gradientPtr)
-    {
-        m_canBeTrained.insert(&data);
-
-        auto * parameter = getParentParameter(&data);
-        if (parameter == nullptr)
-            return;
-
-        auto * parameterVector = dynamic_cast<TrainableParameterTemplated<T>*>(parameter);
-        if (parameterVector == nullptr)
-        {
-            msg_error() << data.getName() << " parameter must be a " << TrainableParameterTemplated<T>::GetCustomClassName();
-            return;
-        }
-
-        gradientPtr = &parameterVector->d_gradient;
-    }
+    void initParameter(Data<T> & data, Data<T> * & gradientPtr);
 
     void checkForNotImplementedParameters(const type::vector<core::BaseData *> & dataFields) const;
 };
@@ -79,5 +63,25 @@ class ParameterizedForceField: public Parameterized, virtual public core::behavi
 {
     const core::BaseClass* getClass() const override { return core::behavior::BaseForceField::getClass(); }
 };
+
+
+template<class T>
+void Parameterized::initParameter(Data<T> &data, Data<T> *&gradientPtr)
+{
+    m_canBeTrained.insert(&data);
+
+    auto * parameter = getParentParameter(&data);
+    if (parameter == nullptr)
+        return;
+
+    auto * parameterVector = dynamic_cast<TrainableParameterTemplated<T>*>(parameter);
+    if (parameterVector == nullptr)
+    {
+        msg_error() << data.getName() << " parameter must be a " << TrainableParameterTemplated<T>::GetCustomClassName();
+        return;
+    }
+
+    gradientPtr = &parameterVector->d_gradient;
+}
 
 }
