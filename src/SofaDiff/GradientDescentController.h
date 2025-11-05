@@ -29,6 +29,8 @@
 #include <sofa/core/behavior/LinearSolverAccessor.h>
 #include <sofa/core/behavior/MultiVec.h>
 
+#include "LossState.h"
+
 
 namespace sofadiff
 {
@@ -54,11 +56,10 @@ public:
 
     static constexpr std::array<std::string, 1> getHyperparametersNames() { return {"learningRate"}; }
 
-    SingleLink<GradientDescentController, core::State<defaulttype::Vec1dTypes>, BaseLink::FLAG_STOREPATH|BaseLink::FLAG_STRONGLINK> l_loss;
-
 protected:
     std::vector<BaseParameter *> m_trainableParameters;
     std::vector<Parameterized *> m_parameterizedForceFields;
+    std::vector<LossState *> m_lossStates;
 
     SReal getHyperparameter(const BaseParameter *parameter, const std::string &hyperparameterName) const;
     virtual void updateParameters();

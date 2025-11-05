@@ -26,10 +26,12 @@
 #include <SofaDiff/visitors/MechanicalAccumulateVecDeriv.h>
 #include <SofaDiff/visitors/MechanicalPropagateVecDeriv.h>
 #include <SofaDiff/ParameterizedForceField.h>
+#include <SofaDiff/LossState.h>
 
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/simulation/VectorOperations.h>
 #include <sofa/simulation/mechanicalvisitor/MechanicalResetForceVisitor.h>
+
 
 
 namespace sofadiff {
@@ -42,9 +44,8 @@ core::MultiVecDerivId s_physicalGradientId = core::TMultiVecId<core::VecType::V_
 
 
 GradientDescentController::GradientDescentController()
-: l_loss(initLink("loss", "Mechanical object (vec1) with the loss to minimize"))
 {
-    this->f_listening.setValue(true);
+    this->f_listening.setValue(true); // TODO: Why?
 }
 
 
@@ -64,8 +65,11 @@ void GradientDescentController::init()
     physicalGradient.realloc(&vop, false, true, core::VecIdProperties{"Physical gradient of the loss", this->getClassName()});
     s_physicalGradientId = physicalGradient.id();
 
-    ctx->get<BaseParameter> (&m_trainableParameters, core::objectmodel::BaseContext::SearchRoot);
-    ctx->get<Parameterized> (&m_parameterizedForceFields, core::objectmodel::BaseContext::SearchRoot);
+    ctx->get<BaseParameter> (&m_trainableParameters, BaseContext::SearchRoot);
+    ctx->get<Parameterized> (&m_parameterizedForceFields, BaseContext::SearchRoot);
+    ctx->get<LossState> (&m_lossStates, BaseContext::SearchRoot);
+
+    initializeLossGradientToOne();
 }
 
 
@@ -76,7 +80,6 @@ void GradientDescentController::onEndAnimationStep(const double /*dt*/)
 
     // Compute the gradient of the loss wrt the parameters
     MechanicalResetForceVisitor(params, s_geometricGradientId).execute(ctx, false);
-    initializeLossGradientToOne();
     resetParametersGradient();
     MechanicalAccumulateVecDeriv(params, s_geometricGradientId).execute(ctx, false);
     solveForPhysicalGradient();
@@ -126,17 +129,19 @@ void GradientDescentController::updateParameters()
 
 void GradientDescentController::initializeLossGradientToOne()
 {
-    const auto loss = l_loss.get();
-    if (loss == nullptr)
+    for (const auto loss : m_lossStates)
     {
-        msg_error() << "Bad link to the loss object";
-        this->d_componentState.setValue(core::objectmodel::ComponentState::Invalid);
-        return;
+        if (loss == nullptr)
+        {
+            msg_error() << "Bad link to the loss object";
+            this->d_componentState.setValue(ComponentState::Invalid);
+            return;
+        }
+        const auto& gradient = s_geometricGradientId.getId(loss);
+        // TODO: handle case where we cannot write in gradient
+        helper::WriteAccessor<Data<VecDeriv_t<defaulttype::Vec1Types>> > lossGradient = loss->write(gradient);
+        lossGradient[0] = sofa::Deriv_t<defaulttype::Vec1Types> (1);
     }
-    const auto& gradient = s_geometricGradientId.getId(loss);
-    // TODO: handle case where we cannot write in gradient
-    helper::WriteAccessor<Data<VecDeriv_t<defaulttype::Vec1Types>> > lossGradient = loss->write(gradient);
-    lossGradient[0] = sofa::Deriv_t<defaulttype::Vec1Types> (1);
 }
 
 
