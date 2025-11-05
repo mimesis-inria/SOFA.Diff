@@ -52,8 +52,24 @@ protected:
 
     static TrainableParameter* getParentParameter(const core::BaseData * data);
 
-    void initParameter(Data<type::vector<SReal>> & data, Data<type::vector<SReal>> * & gradientPtr);
-    void initParameter(Data<SReal> & data, Data<SReal> * & gradientPtr);
+    template<class T>
+    void initParameter(Data<T> & data, Data<T> * & gradientPtr)
+    {
+        m_canBeTrained.insert(&data);
+
+        auto * parameter = getParentParameter(&data);
+        if (parameter == nullptr)
+            return;
+
+        auto * parameterVector = dynamic_cast<TrainableParameterTemplated<T>*>(parameter);
+        if (parameterVector == nullptr)
+        {
+            msg_error() << data.getName() << " parameter must be a " << TrainableParameterTemplated<T>::GetCustomClassName();
+            return;
+        }
+
+        gradientPtr = &parameterVector->d_gradient;
+    }
 
     void checkForNotImplementedParameters(const type::vector<core::BaseData *> & dataFields) const;
 };

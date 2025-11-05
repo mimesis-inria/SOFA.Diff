@@ -21,7 +21,6 @@
 ******************************************************************************/
 
 #include <SofaDiff/ParameterizedForceField.h>
-#include <SofaDiff/TrainableParameter.h>
 
 
 namespace sofadiff
@@ -38,35 +37,6 @@ TrainableParameter * Parameterized::getParentParameter(const core::BaseData *dat
         return nullptr;
 
     return parameter;
-}
-
-void Parameterized::initParameter(Data<type::vector<SReal>> & data, Data<type::vector<SReal> > * & gradientPtr)
-{
-    m_canBeTrained.insert(&data);
-
-    auto * parameter = getParentParameter(&data);
-    if (parameter == nullptr)
-        return;
-    auto * parameterVector = dynamic_cast<TrainableParameterTemplated<type::vector<SReal>>*>(parameter);
-    if (parameterVector == nullptr)
-    {
-        msg_error() << data.getName() << " parameter must be a TrainableParameterVector";
-    }
-    gradientPtr = &parameterVector->d_gradient; // TODO: Do I need to check that d_gradient is not nullptr?
-}
-
-void Parameterized::initParameter(Data<SReal> & data, Data<SReal> * & gradientPtr)
-{
-    m_canBeTrained.insert(&data);
-    if (auto * parameter = getParentParameter(&data); parameter != nullptr)
-    {
-        auto * parameterScalar = dynamic_cast<TrainableParameterTemplated<SReal>*>(parameter);
-        if (parameterScalar == nullptr)
-        {
-            msg_error() << data.getName() << " parameter must be a TrainableParameterScalar";
-        }
-        gradientPtr = &parameterScalar->d_gradient; // TODO: Do I need to check that d_gradient is not nullptr?
-    }
 }
 
 void Parameterized::checkForNotImplementedParameters(const type::vector<core::BaseData *> &dataFields) const
