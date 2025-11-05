@@ -28,10 +28,10 @@
 namespace sofadiff
 {
 
-class SOFA_SOFADIFF_API TrainableParameter: public core::objectmodel::BaseObject
+class SOFA_SOFADIFF_API BaseParameter: public core::objectmodel::BaseObject
 {
 public:
-    SOFA_CLASS(TrainableParameter, core::objectmodel::BaseObject);
+    SOFA_CLASS(BaseParameter, core::objectmodel::BaseObject);
 
     virtual void resetGradient() = 0;
     virtual const type::vector<SReal> & getValueVector() = 0;
@@ -47,10 +47,10 @@ private:
 
 
 template <class T>
-class SOFA_SOFADIFF_API TrainableParameterTemplated: public TrainableParameter
+class SOFA_SOFADIFF_API Parameter: public BaseParameter
 {
 public:
-    SOFA_CLASS(TrainableParameterTemplated, TrainableParameter);
+    SOFA_CLASS(Parameter, BaseParameter);
 
     Data<T> d_value;
     Data<T> d_gradient;
@@ -63,7 +63,7 @@ protected:
     virtual void setDataFromVector(Data<T> & data, const type::vector<SReal> &vector);
 
 public:
-    TrainableParameterTemplated();
+    Parameter();
 
     static std::string GetCustomClassName();
 

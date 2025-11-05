@@ -26,13 +26,13 @@
 namespace sofadiff
 {
 
-TrainableParameter * Parameterized::getParentParameter(const core::BaseData *data)
+BaseParameter * Parameterized::getParentParameter(const core::BaseData *data)
 {
     const auto * parent = data->getParent();
     if (parent == nullptr)
         return nullptr;
 
-    auto * parameter = dynamic_cast<TrainableParameter*>(parent->getOwner());
+    auto * parameter = dynamic_cast<BaseParameter*>(parent->getOwner());
     if (parameter == nullptr)
         return nullptr;
 

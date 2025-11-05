@@ -60,7 +60,7 @@ void GradientDescentController::init()
     physicalGradient.realloc(&vop, false, true, core::VecIdProperties{"Physical gradient of the loss", this->getClassName()});
     m_physicalGradientId = physicalGradient.id();
 
-    ctx->get<TrainableParameter> (&m_trainableParameters, core::objectmodel::BaseContext::SearchRoot);
+    ctx->get<BaseParameter> (&m_trainableParameters, core::objectmodel::BaseContext::SearchRoot);
     ctx->get<Parameterized> (&m_parameterizedForceFields, core::objectmodel::BaseContext::SearchRoot);
 }
 
@@ -85,7 +85,7 @@ void GradientDescentController::onEndAnimationStep(const double /*dt*/)
 }
 
 
-SReal GradientDescentController::getHyperparameter(const TrainableParameter *parameter, const std::string &hyperparameterName) const
+SReal GradientDescentController::getHyperparameter(const BaseParameter *parameter, const std::string &hyperparameterName) const
 {
     const auto * baseData = parameter->findData(hyperparameterName);
     if (baseData == nullptr)

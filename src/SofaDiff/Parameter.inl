@@ -22,19 +22,19 @@
 #pragma once
 
 #include <SofaDiff/config.h>
-#include <SofaDiff/TrainableParameter.h>
+#include <SofaDiff/Parameter.h>
 
 namespace sofadiff
 {
 
 template<class T>
-TrainableParameterTemplated<T>::TrainableParameterTemplated()
+Parameter<T>::Parameter()
 : d_value(initData(&d_value, "value", "Value of the parameter"))
 , d_gradient(initData(&d_gradient, "gradient", "Gradient of the parameter"))
 {}
 
 template<class T>
-void TrainableParameterTemplated<T>::resetGradient()
+void Parameter<T>::resetGradient()
 {
     // Not optimal, but works for all T
     const auto vector = getVectorFromData(d_value);
@@ -43,21 +43,21 @@ void TrainableParameterTemplated<T>::resetGradient()
 }
 
 template<class T>
-const type::vector<SReal> & TrainableParameterTemplated<T>::getValueVector()
+const type::vector<SReal> & Parameter<T>::getValueVector()
 {
     m_value = getVectorFromData(d_value);
     return m_value;
 }
 
 template<class T>
-const type::vector<SReal> & TrainableParameterTemplated<T>::getGradientVector()
+const type::vector<SReal> & Parameter<T>::getGradientVector()
 {
     m_gradient = getVectorFromData(d_gradient);
     return m_gradient;
 }
 
 template<class T>
-void TrainableParameterTemplated<T>::setValueVector(const type::vector<SReal>& vector)
+void Parameter<T>::setValueVector(const type::vector<SReal>& vector)
 {
     setDataFromVector(d_value, vector);
 }

@@ -21,7 +21,7 @@
  ******************************************************************************/
 
 #include <SofaDiff/config.h>
-#include <SofaDiff/TrainableParameter.inl>
+#include <SofaDiff/Parameter.inl>
 
 #include <sofa/core/ObjectFactory.h>
 
@@ -29,7 +29,7 @@
 namespace sofadiff
 {
 
-void TrainableParameter::parse(core::objectmodel::BaseObjectDescription *arg)
+void BaseParameter::parse(core::objectmodel::BaseObjectDescription *arg)
 {
     BaseObject::parse(arg);
     const auto map = arg->getAttributeMap();
@@ -48,38 +48,38 @@ void TrainableParameter::parse(core::objectmodel::BaseObjectDescription *arg)
 
 
 template<>
-std::string TrainableParameterTemplated<type::vector<SReal>>::GetCustomClassName()
+std::string Parameter<type::vector<SReal>>::GetCustomClassName()
 {
     return "TrainableParameterVector";
 }
 
 template<>
-type::vector<SReal> TrainableParameterTemplated<type::vector<SReal>>::getVectorFromData(const Data<type::vector<SReal>> & data)
+type::vector<SReal> Parameter<type::vector<SReal>>::getVectorFromData(const Data<type::vector<SReal>> & data)
 {
     return data.getValue();
 }
 
 template<>
-void TrainableParameterTemplated<type::vector<SReal>>::setDataFromVector(Data<type::vector<SReal>> & data, const type::vector<SReal> & vector)
+void Parameter<type::vector<SReal>>::setDataFromVector(Data<type::vector<SReal>> & data, const type::vector<SReal> & vector)
 {
     data.setValue(vector);
 }
 
 
 template<>
-std::string TrainableParameterTemplated<SReal>::GetCustomClassName()
+std::string Parameter<SReal>::GetCustomClassName()
 {
     return "TrainableParameterScalar";
 }
 
 template<>
-type::vector<SReal> TrainableParameterTemplated<SReal>::getVectorFromData(const Data<SReal> & data)
+type::vector<SReal> Parameter<SReal>::getVectorFromData(const Data<SReal> & data)
 {
     return {data.getValue()};
 }
 
 template<>
-void TrainableParameterTemplated<SReal>::setDataFromVector(Data<SReal> & data, const type::vector<SReal> & vector)
+void Parameter<SReal>::setDataFromVector(Data<SReal> & data, const type::vector<SReal> & vector)
 {
     data.setValue(vector[0]);
 }
@@ -87,8 +87,8 @@ void TrainableParameterTemplated<SReal>::setDataFromVector(Data<SReal> & data, c
 
 void registerTrainableParameter(core::ObjectFactory* factory)
 {
-    factory->registerObjects(core::ObjectRegistrationData("Trainable parameter of vector type.").add< TrainableParameterTemplated<type::vector<SReal>> >());
-    factory->registerObjects(core::ObjectRegistrationData("Trainable parameter of scalar type.").add< TrainableParameterTemplated<SReal> >());
+    factory->registerObjects(core::ObjectRegistrationData("Trainable parameter of vector type.").add< Parameter<type::vector<SReal>> >());
+    factory->registerObjects(core::ObjectRegistrationData("Trainable parameter of scalar type.").add< Parameter<SReal> >());
 }
 
 

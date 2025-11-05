@@ -23,7 +23,7 @@
 
 #include <SofaDiff/config.h>
 #include <SofaDiff/ParameterizedForceField.h>
-#include <SofaDiff/TrainableParameter.h>
+#include <SofaDiff/Parameter.h>
 
 #include <sofa/component/controller/Controller.h>
 #include <sofa/core/behavior/LinearSolverAccessor.h>
@@ -56,10 +56,10 @@ public:
 protected:
     core::MultiVecDerivId m_geometricGradientId;
     core::MultiVecDerivId m_physicalGradientId;
-    std::vector<TrainableParameter *> m_trainableParameters;
+    std::vector<BaseParameter *> m_trainableParameters;
     std::vector<Parameterized *> m_parameterizedForceFields;
 
-    SReal getHyperparameter(const TrainableParameter *parameter, const std::string &hyperparameterName) const;
+    SReal getHyperparameter(const BaseParameter *parameter, const std::string &hyperparameterName) const;
     virtual void updateParameters();
 
 private:

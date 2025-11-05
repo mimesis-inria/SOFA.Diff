@@ -24,7 +24,7 @@
 #include <unordered_set>
 
 #include <SofaDiff/config.h>
-#include <SofaDiff/TrainableParameter.h>
+#include <SofaDiff/Parameter.h>
 
 #include <sofa/core/objectmodel/BaseObject.h>
 #include <sofa/core/behavior/MultiVec.h>
@@ -50,7 +50,7 @@ public:
 
 protected:
 
-    static TrainableParameter* getParentParameter(const core::BaseData * data);
+    static BaseParameter* getParentParameter(const core::BaseData * data);
 
     template<class T>
     void initParameter(Data<T> & data, Data<T> * & gradientPtr);
@@ -74,10 +74,10 @@ void Parameterized::initParameter(Data<T> &data, Data<T> *&gradientPtr)
     if (parameter == nullptr)
         return;
 
-    auto * parameterVector = dynamic_cast<TrainableParameterTemplated<T>*>(parameter);
+    auto * parameterVector = dynamic_cast<Parameter<T>*>(parameter);
     if (parameterVector == nullptr)
     {
-        msg_error() << data.getName() << " parameter must be a " << TrainableParameterTemplated<T>::GetCustomClassName();
+        msg_error() << data.getName() << " parameter must be a " << Parameter<T>::GetCustomClassName();
         return;
     }
 
