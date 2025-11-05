@@ -48,6 +48,12 @@ void TrainableParameter::parse(core::objectmodel::BaseObjectDescription *arg)
 
 
 template<>
+std::string TrainableParameterTemplated<type::vector<SReal>>::GetCustomClassName()
+{
+    return "TrainableParameterVector";
+}
+
+template<>
 type::vector<SReal> TrainableParameterTemplated<type::vector<SReal>>::getVectorFromData(const Data<type::vector<SReal>> & data)
 {
     return data.getValue();
@@ -59,6 +65,12 @@ void TrainableParameterTemplated<type::vector<SReal>>::setDataFromVector(Data<ty
     data.setValue(vector);
 }
 
+
+template<>
+std::string TrainableParameterTemplated<SReal>::GetCustomClassName()
+{
+    return "TrainableParameterScalar";
+}
 
 template<>
 type::vector<SReal> TrainableParameterTemplated<SReal>::getVectorFromData(const Data<SReal> & data)
@@ -75,8 +87,8 @@ void TrainableParameterTemplated<SReal>::setDataFromVector(Data<SReal> & data, c
 
 void registerTrainableParameter(core::ObjectFactory* factory)
 {
-    factory->registerObjects(core::ObjectRegistrationData("Trainable parameter of vector type.").add< TrainableParameterVector >());
-    factory->registerObjects(core::ObjectRegistrationData("Trainable parameter of scalar type.").add< TrainableParameterScalar >());
+    factory->registerObjects(core::ObjectRegistrationData("Trainable parameter of vector type.").add< TrainableParameterTemplated<type::vector<SReal>> >());
+    factory->registerObjects(core::ObjectRegistrationData("Trainable parameter of scalar type.").add< TrainableParameterTemplated<SReal> >());
 }
 
 

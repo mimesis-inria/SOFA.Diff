@@ -65,24 +65,12 @@ protected:
 public:
     TrainableParameterTemplated();
 
+    static std::string GetCustomClassName();
+
     void resetGradient() override;
     const type::vector<SReal> & getValueVector() override;
     const type::vector<SReal> & getGradientVector() override;
     void setValueVector(const type::vector<SReal>& vector) override;
-};
-
-
-class SOFA_SOFADIFF_API TrainableParameterVector: public TrainableParameterTemplated<type::vector<SReal>>
-{
-public:
-    SOFA_CLASS(TrainableParameterVector, TrainableParameterTemplated<type::vector<SReal>>);
-};
-
-
-class SOFA_SOFADIFF_API TrainableParameterScalar: public TrainableParameterTemplated<SReal>
-{
-public:
-    SOFA_CLASS(TrainableParameterScalar, TrainableParameterTemplated<SReal>);
 };
 
 }

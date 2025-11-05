@@ -47,7 +47,7 @@ void Parameterized::initParameter(Data<type::vector<SReal>> & data, Data<type::v
     auto * parameter = getParentParameter(&data);
     if (parameter == nullptr)
         return;
-    auto * parameterVector = dynamic_cast<TrainableParameterVector*>(parameter);
+    auto * parameterVector = dynamic_cast<TrainableParameterTemplated<type::vector<SReal>>*>(parameter);
     if (parameterVector == nullptr)
     {
         msg_error() << data.getName() << " parameter must be a TrainableParameterVector";
@@ -60,7 +60,7 @@ void Parameterized::initParameter(Data<SReal> & data, Data<SReal> * & gradientPt
     m_canBeTrained.insert(&data);
     if (auto * parameter = getParentParameter(&data); parameter != nullptr)
     {
-        auto * parameterScalar = dynamic_cast<TrainableParameterScalar*>(parameter);
+        auto * parameterScalar = dynamic_cast<TrainableParameterTemplated<SReal>*>(parameter);
         if (parameterScalar == nullptr)
         {
             msg_error() << data.getName() << " parameter must be a TrainableParameterScalar";
