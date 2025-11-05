@@ -33,6 +33,9 @@
 namespace sofadiff
 {
 
+extern core::MultiVecDerivId s_geometricGradientId;
+extern core::MultiVecDerivId s_PhysicalGradientId;
+
 /**
  * @brief GradientDescentController Class
  *
@@ -54,8 +57,6 @@ public:
     SingleLink<GradientDescentController, core::State<defaulttype::Vec1dTypes>, BaseLink::FLAG_STOREPATH|BaseLink::FLAG_STRONGLINK> l_loss;
 
 protected:
-    core::MultiVecDerivId m_geometricGradientId;
-    core::MultiVecDerivId m_physicalGradientId;
     std::vector<BaseParameter *> m_trainableParameters;
     std::vector<Parameterized *> m_parameterizedForceFields;
 

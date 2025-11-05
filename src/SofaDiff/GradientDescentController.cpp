@@ -37,6 +37,10 @@ namespace sofadiff {
 using namespace simulation::mechanicalvisitor;
 
 
+core::MultiVecDerivId s_geometricGradientId = core::TMultiVecId<core::VecType::V_DERIV, core::VecAccess::V_WRITE>();
+core::MultiVecDerivId s_physicalGradientId = core::TMultiVecId<core::VecType::V_DERIV, core::VecAccess::V_WRITE>();
+
+
 GradientDescentController::GradientDescentController()
 : l_loss(initLink("loss", "Mechanical object (vec1) with the loss to minimize"))
 {
@@ -52,13 +56,13 @@ void GradientDescentController::init()
     auto* params = core::mechanicalparams::defaultInstance();
     simulation::common::VectorOperations vop(params, ctx);
 
-    core::behavior::MultiVecDeriv geometricGradient(&vop, m_geometricGradientId);
+    core::behavior::MultiVecDeriv geometricGradient(&vop, s_geometricGradientId);
     geometricGradient.realloc(&vop, false, true, core::VecIdProperties{"Geometric gradient of the loss", this->getClassName()});
-    m_geometricGradientId = geometricGradient.id();
+    s_geometricGradientId = geometricGradient.id();
 
-    core::behavior::MultiVecDeriv physicalGradient(&vop, m_physicalGradientId);
+    core::behavior::MultiVecDeriv physicalGradient(&vop, s_physicalGradientId);
     physicalGradient.realloc(&vop, false, true, core::VecIdProperties{"Physical gradient of the loss", this->getClassName()});
-    m_physicalGradientId = physicalGradient.id();
+    s_physicalGradientId = physicalGradient.id();
 
     ctx->get<BaseParameter> (&m_trainableParameters, core::objectmodel::BaseContext::SearchRoot);
     ctx->get<Parameterized> (&m_parameterizedForceFields, core::objectmodel::BaseContext::SearchRoot);
@@ -71,14 +75,14 @@ void GradientDescentController::onEndAnimationStep(const double /*dt*/)
     auto *params = core::mechanicalparams::defaultInstance();
 
     // Compute the gradient of the loss wrt the parameters
-    MechanicalResetForceVisitor(params, m_geometricGradientId).execute(ctx, false);
+    MechanicalResetForceVisitor(params, s_geometricGradientId).execute(ctx, false);
     initializeLossGradientToOne();
     resetParametersGradient();
-    MechanicalAccumulateVecDeriv(params, m_geometricGradientId).execute(ctx, false);
+    MechanicalAccumulateVecDeriv(params, s_geometricGradientId).execute(ctx, false);
     solveForPhysicalGradient();
-    MechanicalPropagateVecDeriv(params, m_physicalGradientId).execute(ctx, false);
+    MechanicalPropagateVecDeriv(params, s_physicalGradientId).execute(ctx, false);
     for (const auto &forceField: m_parameterizedForceFields)
-        forceField->applyParametersJacobianTranspose(params, m_physicalGradientId);
+        forceField->applyParametersJacobianTranspose(params, s_physicalGradientId);
 
     // Update the parameters with a step of gradient descent
     updateParameters();
@@ -129,7 +133,7 @@ void GradientDescentController::initializeLossGradientToOne()
         this->d_componentState.setValue(core::objectmodel::ComponentState::Invalid);
         return;
     }
-    const auto& gradient = m_geometricGradientId.getId(loss);
+    const auto& gradient = s_geometricGradientId.getId(loss);
     helper::WriteAccessor<Data<VecDeriv_t<defaulttype::Vec1Types>> > lossGradient = loss->write(gradient);
     lossGradient[0] = sofa::Deriv_t<defaulttype::Vec1Types> (1);
 }
@@ -145,8 +149,8 @@ void GradientDescentController::resetParametersGradient() const
 void GradientDescentController::solveForPhysicalGradient() const
 {
     auto *linearSolver = l_linearSolver.get();
-    linearSolver->setSystemLHVector(m_physicalGradientId);
-    linearSolver->setSystemRHVector(m_geometricGradientId);
+    linearSolver->setSystemLHVector(s_physicalGradientId);
+    linearSolver->setSystemRHVector(s_geometricGradientId);
     linearSolver->solveSystem();
     // TODO: clarify why the operation below is not required
     // simulation::common::VectorOperations vop(params, ctx);
