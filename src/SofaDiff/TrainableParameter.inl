@@ -33,5 +33,33 @@ TrainableParameterTemplated<T>::TrainableParameterTemplated()
 , d_gradient(initData(&d_gradient, "gradient", "Gradient of the parameter"))
 {}
 
+template<class T>
+void TrainableParameterTemplated<T>::resetGradient()
+{
+    // Not optimal, but works for all T
+    const auto vector = getVectorFromData(d_value);
+    const type::vector<SReal> gradient(vector.size(), 0.0);
+    setDataFromVector(d_gradient, gradient);
+}
+
+template<class T>
+const type::vector<SReal> & TrainableParameterTemplated<T>::getValueVector()
+{
+    m_value = getVectorFromData(d_value);
+    return m_value;
+}
+
+template<class T>
+const type::vector<SReal> & TrainableParameterTemplated<T>::getGradientVector()
+{
+    m_gradient = getVectorFromData(d_gradient);
+    return m_gradient;
+}
+
+template<class T>
+void TrainableParameterTemplated<T>::setValueVector(const type::vector<SReal>& vector)
+{
+    setDataFromVector(d_value, vector);
+}
 
 }

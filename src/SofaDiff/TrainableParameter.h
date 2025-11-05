@@ -65,30 +65,10 @@ protected:
 public:
     TrainableParameterTemplated();
 
-    void resetGradient() override
-    {
-        // Not optimal, but works for all T
-        const auto vector = getVectorFromData(d_value);
-        const type::vector<SReal> gradient(vector.size(), 0.0);
-        setDataFromVector(d_gradient, gradient);
-    }
-
-    const type::vector<SReal> & getValueVector() override
-    {
-        m_value = getVectorFromData(d_value);
-        return m_value;
-    }
-
-    const type::vector<SReal> & getGradientVector() override
-    {
-        m_gradient = getVectorFromData(d_gradient);
-        return m_gradient;
-    }
-
-    void setValueVector(const type::vector<SReal>& vector) override
-    {
-        setDataFromVector(d_value, vector);
-    }
+    void resetGradient() override;
+    const type::vector<SReal> & getValueVector() override;
+    const type::vector<SReal> & getGradientVector() override;
+    void setValueVector(const type::vector<SReal>& vector) override;
 };
 
 
@@ -96,15 +76,9 @@ class SOFA_SOFADIFF_API TrainableParameterVector: public TrainableParameterTempl
 {
 public:
     SOFA_CLASS(TrainableParameterVector, TrainableParameterTemplated<type::vector<SReal>>);
-    type::vector<SReal> getVectorFromData(const Data<type::vector<SReal>> & data) override
-    {
-        return data.getValue();
-    }
 
-    void setDataFromVector(Data<type::vector<SReal>> & data, const type::vector<SReal> & vector) override
-    {
-        data.setValue(vector);
-    }
+    type::vector<SReal> getVectorFromData(const Data<type::vector<SReal>> & data) override;
+    void setDataFromVector(Data<type::vector<SReal>> & data, const type::vector<SReal> & vector) override;
 };
 
 
@@ -113,15 +87,8 @@ class SOFA_SOFADIFF_API TrainableParameterScalar: public TrainableParameterTempl
 public:
     SOFA_CLASS(TrainableParameterScalar, TrainableParameterTemplated<SReal>);
 
-    type::vector<SReal> getVectorFromData(const Data<SReal> & data) override
-    {
-        return {data.getValue()};
-    }
-
-    void setDataFromVector(Data<SReal> & data, const type::vector<SReal> & vector) override
-    {
-        data.setValue(vector[0]);
-    }
+    type::vector<SReal> getVectorFromData(const Data<SReal> & data) override;
+    void setDataFromVector(Data<SReal> & data, const type::vector<SReal> & vector) override;
 };
 
 }
