@@ -90,7 +90,7 @@
             <MechanicalObject template="Vec1d" name="output" position="0"/>
             <DistanceFromTargetMapping input="@/Physics/HorizontalBeam/TargetPoint" targetPositions="50 0 0"/>
             <Node name="Squared">
-                <MechanicalObject template="Vec1d" name="output" position="0"/>
+                <LossState name="output"/>
                 <SquareMapping input="@.."/>
             </Node>
         </Node>

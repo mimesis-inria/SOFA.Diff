@@ -134,6 +134,7 @@ void GradientDescentController::initializeLossGradientToOne()
         return;
     }
     const auto& gradient = s_geometricGradientId.getId(loss);
+    // TODO: handle case where we cannot write in gradient
     helper::WriteAccessor<Data<VecDeriv_t<defaulttype::Vec1Types>> > lossGradient = loss->write(gradient);
     lossGradient[0] = sofa::Deriv_t<defaulttype::Vec1Types> (1);
 }
