@@ -32,14 +32,42 @@ namespace sofadiff
 void ParameterizedTetrahedronFEMForceField::init()
 {
     TetrahedronFEMForceField::init();
-    initParameter(d_localStiffnessFactor, m_youngModulusGradient);
+    initParameter(d_youngModulus, m_youngModulusGradient);
     checkForNotImplementedParameters(this->getDataFields());
 }
 
 
 void ParameterizedTetrahedronFEMForceField::applyParametersJacobianTranspose(const core::MechanicalParams* mparams, const core::MultiVecDerivId vecId)
 {
-    // TODO
+    if (m_youngModulusGradient == nullptr)
+    {
+        msg_warning() << "ParameterizedTetrahedronFEMForceField::applyParametersJacobianTranspose() skipped: no parameter to optimize. Consider using TetrahedronFEMForceField instead. Or not?";
+        return;
+    }
+
+    const auto state = this->mstate.get();
+
+    // Get vector to multiply with
+    const auto & vectorData = *vecId[state].read();
+    const helper::ReadAccessor<Data<VecDeriv>> vector = helper::getReadAccessor(vectorData);
+
+    // Get the force, since the jacobian happens to be the force divided by the Young modulus
+    const auto * x = mparams->readX(state);
+    const DataVecDeriv v;
+    DataVecDeriv f;
+    VecDeriv f0;
+    f0.resize(x->getValue().size());
+    f.setValue(f0);
+    this->addForce(nullptr, f, *x, v);
+    const auto force = f.getValue();
+
+    // Apply the jacobian: gradient += dot(jacobian, vector)
+    const auto youngModulus = this->d_youngModulus.getValue()[0];
+    auto youngModulusGradient = helper::getWriteAccessor(*m_youngModulusGradient);
+    for (unsigned int i=0; i < force.size(); i++)
+    {
+        youngModulusGradient[0] += dot(force[i], vector[i]) / youngModulus;
+    }
 }
 
 void registerParameterizedTetrahedronFEMForceField(core::ObjectFactory* factory)

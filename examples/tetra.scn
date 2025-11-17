@@ -1,0 +1,79 @@
+<?xml version="1.0"?>
+<Node name="Root" gravity="0 -9.8 0" time="0" animate="0" bbox="-2 -20 -4 42 4 4" dt="0.001">
+
+    <Node name="Plugins">
+        <RequiredPlugin name="SofaDiff" pluginName="SofaDiff"/>
+        <RequiredPlugin name="Sofa.Component.Visual"/> <!-- Needed to use components [VisualStyle] -->
+        <RequiredPlugin name="Sofa.Component.LinearSolver.Iterative"/> <!-- Needed to use components [CGLinearSolver] -->
+        <RequiredPlugin name="Sofa.Component.LinearSolver.Direct"/> <!-- Needed to use components [SparseLDLSolver] -->
+        <RequiredPlugin name="Sofa.Component.ODESolver.Backward"/> <!-- Needed to use components [NewtonRaphsonSolver, StaticSolver] -->
+        <RequiredPlugin name="Sofa.Component.StateContainer"/> <!-- Needed to use components [MechanicalObject] -->
+        <RequiredPlugin name="Sofa.Component.Mass"/> <!-- Needed to use components [UniformMass] -->
+        <RequiredPlugin name="Sofa.Component.MechanicalLoad"/> <!-- Needed to use components [ConstantForceField] -->
+        <RequiredPlugin name="Sofa.Component.Constraint.Projective"/> <!-- Needed to use components [FixedProjectiveConstraint] -->
+        <RequiredPlugin name="Sofa.Component.SolidMechanics.Spring"/> <!-- Needed to use components [SpringForceField] -->
+        <RequiredPlugin name="Sofa.Component.Topology.Container.Grid"/> <!-- Needed to use components [RegularGridTopology] -->
+        <RequiredPlugin name="Sofa.Component.Engine.Select"/> <!-- Needed to use components [BoxROI] -->
+        <RequiredPlugin name="Sofa.Component.SolidMechanics.FEM.Elastic"/> <!-- Needed to use components [HexahedronFEMForceField] -->
+        <RequiredPlugin name="Sofa.Component.Mapping.Linear"/> <!-- Needed to use components [BarycentricMapping] -->
+        <RequiredPlugin name="Sofa.Component.Mapping.NonLinear"/> <!-- Needed to use components [DistanceFromTargetMapping] -->
+        <RequiredPlugin name="Sofa.Component.Topology.Container.Dynamic"/> <!-- Needed to use components [TetrahedronSetGeometryAlgorithms,TetrahedronSetTopologyContainer,TetrahedronSetTopologyModifier] -->
+        <RequiredPlugin name="Sofa.Component.Topology.Mapping"/> <!-- Needed to use components [Hexa2TetraTopologicalMapping] -->
+    </Node>
+
+    <DefaultAnimationLoop computeBoundingBox="false"/>
+    <VisualStyle displayFlags="showBehavior showBehaviorModels showForceFields showMappings"/>
+
+    <Node name="Parameters">
+        <TrainableParameterVector name="youngModulus" value="100000" learningRate="10000000"/>
+    </Node>
+
+    <Node name="Physics">
+        <NewtonRaphsonSolver name="newton" maxNbIterationsNewton="100" maxNbIterationsLineSearch="1" warnWhenLineSearchFails="false"/>
+        <StaticSolver newtonSolver="@newton" name="static"/>
+        <SparseLDLSolver template="CompressedRowSparseMatrixd" name="solver"/>
+
+        <Node name="Beam">
+            <RegularGridTopology name="grid" min="0 -2 -2" max="40 2 2" n="31 4 4"/>
+            <MechanicalObject template="Vec3d" name="state" position="@grid.position"/>
+<!--            <Node name="Tetra">-->
+            <TetrahedronSetGeometryAlgorithms/>
+            <TetrahedronSetTopologyModifier/>
+            <TetrahedronSetTopologyContainer name="topology"/>
+            <Hexa2TetraTopologicalMapping input="@grid" output="@topology"/>
+<!--            </Node>-->
+            <Node name="TargetPoint">
+                <MechanicalObject template="Vec3d" name="state" position="40 0 0"/>
+                <BarycentricMapping/>
+            </Node>
+            <Node name="BoundaryCondition">
+                <BoxROI name="region" box="-0.1 -2 -2   0.1 2 2"/>
+                <FixedProjectiveConstraint indices="@region.indices"/>
+            </Node>
+            <Node name="Forces">
+                <ParameterizedTetrahedronFEMForceField
+                        name="elasticity"
+                        youngModulus="@/Parameters/youngModulus.value"
+                        poissonRatio="0.45"
+                        updateStiffness="true"
+                />
+                <UniformMass template="Vec3d" name="mass" totalMass="600"/>
+            </Node>
+        </Node>
+    </Node>
+
+    <Node name="Loss">
+        <LossState name="MSE"/>
+        <Node name="Target">
+            <MechanicalObject template="Vec3d" name="state" position="40 -6 0" showObject="true" drawMode="1" showObjectScale="0.5"/>
+        </Node>
+        <Node name="Distance">
+            <MechanicalObject template="Vec1d" name="output" position="0"/>
+            <DistanceFromTargetMapping input="@/Physics/Beam/TargetPoint" targetPositions="@/Loss/Target/state.position"/>
+            <Node name="Squared">
+                <SquareMapping input="@.." output="@/Loss/MSE"/>
+            </Node>
+        </Node>
+    </Node>
+    <GradientDescentController name="optimizer"/>
+</Node>
