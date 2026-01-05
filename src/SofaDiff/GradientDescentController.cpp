@@ -31,7 +31,9 @@
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/simulation/VectorOperations.h>
 #include <sofa/simulation/mechanicalvisitor/MechanicalResetForceVisitor.h>
+#include <sofa/helper/ScopedAdvancedTimer.h>
 
+#include "sofa/helper/fwd.h"
 
 
 namespace sofadiff {
@@ -75,6 +77,7 @@ void GradientDescentController::init()
 
 void GradientDescentController::onEndAnimationStep(const double /*dt*/)
 {
+    SCOPED_TIMER("GradientDescentController::Solve");
     auto *ctx = this->getContext();
     auto *params = core::mechanicalparams::defaultInstance();
 
@@ -84,9 +87,12 @@ void GradientDescentController::onEndAnimationStep(const double /*dt*/)
     MechanicalAccumulateVecDeriv(params, s_geometricGradientId).execute(ctx, false);
     solveForPhysicalGradient();
     MechanicalPropagateVecDeriv(params, s_physicalGradientId).execute(ctx, false);
-    for (const auto &forceField: m_parameterizedForceFields)
-        forceField->applyParametersJacobianTranspose(params, s_physicalGradientId);
+    {
+        SCOPED_TIMER("GradientDescentController::applyParametersJacobianTranspose");
 
+        for (const auto &forceField: m_parameterizedForceFields)
+            forceField->applyParametersJacobianTranspose(params, s_physicalGradientId);
+    }
     // Update the parameters with a step of gradient descent
     updateParameters();
 }
@@ -147,6 +153,8 @@ void GradientDescentController::initializeLossGradientToOne()
 
 void GradientDescentController::resetParametersGradient() const
 {
+    SCOPED_TIMER("GradientDescentController::resetParametersGradient");
+
     for (auto & parameter : m_trainableParameters)
         parameter->resetGradient();
 }
@@ -154,6 +162,7 @@ void GradientDescentController::resetParametersGradient() const
 
 void GradientDescentController::solveForPhysicalGradient() const
 {
+    SCOPED_TIMER("GradientDescentController::solveForPhysicalGradient");
     auto *linearSolver = l_linearSolver.get();
     linearSolver->setSystemLHVector(s_physicalGradientId);
     linearSolver->setSystemRHVector(s_geometricGradientId);

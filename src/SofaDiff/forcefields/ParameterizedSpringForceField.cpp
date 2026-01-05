@@ -65,11 +65,13 @@ void ParameterizedSpringForceField::applyParametersJacobianTranspose(const core:
             {
                 auto stiffnessGradient = helper::getWriteAccessor(*m_stiffnessGradient);
                 stiffnessGradient[i] += elongation * dot(u, DataTypes::getDPos(v1[a]) - DataTypes::getDPos(v2[b]));
+                // stiffnessGradient[i] += 0.1 * 2 * spring.ks * elongation;  // Penalization
             }
             if (m_lengthGradient != nullptr)
             {
                 auto lengthGradient = helper::getWriteAccessor(*m_lengthGradient);
                 lengthGradient[i] += -spring.ks * dot(u, DataTypes::getDPos(v1[a]) - DataTypes::getDPos(v2[b]));
+                // lengthGradient[i] += -0.1 * 2 * spring.ks * elongation;  // Penalization
             }
         }
     }

@@ -19,13 +19,21 @@
         <RequiredPlugin name="Sofa.Component.Mapping.NonLinear"/> <!-- Needed to use components [DistanceFromTargetMapping] -->
         <RequiredPlugin name="Sofa.Component.Topology.Container.Dynamic"/> <!-- Needed to use components [TetrahedronSetGeometryAlgorithms,TetrahedronSetTopologyContainer,TetrahedronSetTopologyModifier] -->
         <RequiredPlugin name="Sofa.Component.Topology.Mapping"/> <!-- Needed to use components [Hexa2TetraTopologicalMapping] -->
+        <RequiredPlugin name="Sofa.GL.Component.Rendering3D"/> <!-- Needed to use components [OglModel] -->
     </Node>
 
     <DefaultAnimationLoop computeBoundingBox="false"/>
-    <VisualStyle displayFlags="showBehavior showBehaviorModels showForceFields showMappings"/>
+    <VisualStyle displayFlags="showBehavior showBehaviorModels showForceFields hideMappings"/>
 
     <Node name="Parameters">
-        <TrainableParameterVector name="youngModulus" value="100000" learningRate="10000000"/>
+        <TrainableParameterVector name="youngModulus1" value="50000" learningRate="10000000"/>
+        <TrainableParameterVector name="youngModulus2" value="50000" learningRate="10000000"/>
+        <TrainableParameterVector name="youngModulus3" value="50000" learningRate="1000000"/>
+        <TrainableParameterVector name="youngModulus4" value="50000" learningRate="10000000"/>
+    </Node>
+
+    <Node name="Topology">
+        <RegularGridTopology name="grid" min="0 -1.5 -1.5" max="40 1.5 1.5" n="41 4 4"/>
     </Node>
 
     <Node name="Physics">
@@ -33,47 +41,170 @@
         <StaticSolver newtonSolver="@newton" name="static"/>
         <SparseLDLSolver template="CompressedRowSparseMatrixd" name="solver"/>
 
+
         <Node name="Beam">
-            <RegularGridTopology name="grid" min="0 -2 -2" max="40 2 2" n="31 4 4"/>
-            <MechanicalObject template="Vec3d" name="state" position="@grid.position"/>
-<!--            <Node name="Tetra">-->
             <TetrahedronSetGeometryAlgorithms/>
             <TetrahedronSetTopologyModifier/>
-            <TetrahedronSetTopologyContainer name="topology"/>
-            <Hexa2TetraTopologicalMapping input="@grid" output="@topology"/>
-<!--            </Node>-->
-            <Node name="TargetPoint">
-                <MechanicalObject template="Vec3d" name="state" position="40 0 0"/>
-                <BarycentricMapping/>
-            </Node>
-            <Node name="BoundaryCondition">
-                <BoxROI name="region" box="-0.1 -2 -2   0.1 2 2"/>
-                <FixedProjectiveConstraint indices="@region.indices"/>
-            </Node>
-            <Node name="Forces">
+            <TetrahedronSetTopologyContainer name="topology" position="@/Topology/grid.position"/>
+            <Hexa2TetraTopologicalMapping input="@/Topology/grid" output="@topology" swapping="true"/>
+
+            <MechanicalObject template="Vec3d" name="state" position="@/Topology/grid.position"/>
+            <UniformMass template="Vec3d" name="mass" totalMass="600"/>
+
+            <BoxROI name="Young1" box="-0.1 -2.1 -2.1 10.1 2.1 2.1"  drawBoxes="false"/>
+            <BoxROI name="Young2" box="9.9 -2.1 -2.1 20.1 2.1 2.1"  drawBoxes="false"/>
+            <BoxROI name="Young3" box="19.9 -2.1 -2.1 30.1 2.1 2.1"  drawBoxes="false"/>
+            <BoxROI name="Young4" box="29.9 -2.1 -2.1 40.1 2.1 2.1"  drawBoxes="false"/>
+
+            <Node name="SubTopo1">
+                <TetrahedronSetTopologyContainer name="topology" tetrahedra="@../Young1.tetrahedraInROI"/>
+
+                <MechanicalObject template="Vec3d" name="state" position="@../state.position"/>
                 <ParameterizedTetrahedronFEMForceField
                         name="elasticity"
-                        youngModulus="@/Parameters/youngModulus.value"
+                        youngModulus="@/Parameters/youngModulus1.value"
                         poissonRatio="0.45"
                         updateStiffness="true"
                 />
-                <UniformMass template="Vec3d" name="mass" totalMass="600"/>
+                <IdentityMapping />
+            </Node>
+            <Node name="SubTopo2">
+                <TetrahedronSetTopologyContainer name="topology" tetrahedra="@../Young2.tetrahedraInROI"/>
+
+                <MechanicalObject template="Vec3d" name="state" position="@../state.position"/>
+                <ParameterizedTetrahedronFEMForceField
+                        name="elasticity"
+                        youngModulus="@/Parameters/youngModulus2.value"
+                        poissonRatio="0.45"
+                        updateStiffness="true"
+                />
+                <IdentityMapping />
+            </Node>
+            <Node name="SubTopo3">
+                <TetrahedronSetTopologyContainer name="topology" tetrahedra="@../Young3.tetrahedraInROI"/>
+                <MechanicalObject template="Vec3d" name="state" position="@../state.position"/>
+                <ParameterizedTetrahedronFEMForceField
+                        name="elasticity"
+                        youngModulus="@/Parameters/youngModulus3.value"
+                        poissonRatio="0.45"
+                        updateStiffness="true"
+                />
+                <IdentityMapping />
+            </Node>
+            <Node name="SubTopo4">
+                <TetrahedronSetTopologyContainer name="topology" tetrahedra="@../Young4.tetrahedraInROI"/>
+                <MechanicalObject template="Vec3d" name="state" position="@../state.position"/>
+                <ParameterizedTetrahedronFEMForceField
+                        name="elasticity"
+                        youngModulus="@/Parameters/youngModulus4.value"
+                        poissonRatio="0.45"
+                        updateStiffness="true"
+                />
+                <IdentityMapping />
+            </Node>
+
+            <Node name="Visual">
+                <Node name="VisualGel1" activated="1">
+                    <TriangleSetTopologyContainer name="Container" triangles="@/Physics/Beam/Young1.trianglesInROI"/>
+                    <OglModel color="0.470588235 0.368627451 0.941176471 0.5" name="visualModel"/>
+                    <BarycentricMapping name="VisualMapping"/>
+                </Node>
+                <Node name="VisualGel2" activated="1">
+                    <TriangleSetTopologyContainer name="Container" triangles="@/Physics/Beam/Young2.trianglesInROI"/>
+                    <OglModel color="0.862745098 0.149019608 0.498039216 0.5" name="visualModel"/>
+                    <BarycentricMapping name="VisualMapping"/>
+                </Node>
+                <Node name="VisualGel3" activated="1">
+                    <TriangleSetTopologyContainer name="Container" triangles="@/Physics/Beam/Young3.trianglesInROI"/>
+                    <OglModel color="0.392156863 0.560784314 1 0.5" name="visualModel"/>
+                    <BarycentricMapping name="VisualMapping"/>
+                </Node>
+                <Node name="VisualGel4" activated="1">
+                    <TriangleSetTopologyContainer name="Container" triangles="@/Physics/Beam/Young4.trianglesInROI"/>
+                    <OglModel color="0.996078431 0.380392157 0 0.5" name="visualModel"/>
+                    <BarycentricMapping name="VisualMapping"/>
+                </Node>
+            </Node>
+
+            <Node name="BoundaryCondition">
+                <BoxROI name="region" box="19.9 -2 -2   20.1 2 2"/>
+                <FixedProjectiveConstraint indices="@region.indices"/>
+            </Node>
+
+            <Node name="TargetPoint1">
+                <MechanicalObject template="Vec3d" name="state" position="0 0 0"/>
+                <BarycentricMapping/>
+            </Node>
+            <Node name="TargetPoint2">
+                <MechanicalObject template="Vec3d" name="state" position="10 0 0"/>
+                <BarycentricMapping/>
+            </Node>
+            <Node name="TargetPoint3">
+                <MechanicalObject template="Vec3d" name="state" position="30 0 0"/>
+                <BarycentricMapping/>
+            </Node>
+            <Node name="TargetPoint4">
+                <MechanicalObject template="Vec3d" name="state" position="40 0 0"/>
+                <BarycentricMapping/>
             </Node>
         </Node>
     </Node>
 
-    <Node name="Loss">
-        <LossState name="MSE"/>
-        <Node name="Target">
-            <MechanicalObject template="Vec3d" name="state" position="40 -6 0" showObject="true" drawMode="1" showObjectScale="0.5"/>
+
+    <Node name="Losses">
+        <Node name="Loss1">
+            <LossState name="MSE"/>
+            <Node name="Target">
+                <MechanicalObject template="Vec3d" name="state" position="0.2 -2.6 0.0" showObject="true" drawMode="1" showObjectScale="0.5"/>
+            </Node>
+            <Node name="Distance">
+                <MechanicalObject template="Vec1d" name="output" position="0"/>
+                <DistanceFromTargetMapping input="@/Physics/Beam/TargetPoint1" targetPositions="@../Target/state.position"/>
+                <Node name="Squared">
+                    <MeanSquaredErrorMapping input="@.." output="@../../MSE"/>
+                </Node>
+            </Node>
         </Node>
-        <Node name="Distance">
-            <MechanicalObject template="Vec1d" name="output" position="0"/>
-            <DistanceFromTargetMapping input="@/Physics/Beam/TargetPoint" targetPositions="@/Loss/Target/state.position"/>
-            <Node name="Squared">
-                <SquareMapping input="@.." output="@/Loss/MSE"/>
+        <Node name="Loss2">
+            <LossState name="MSE"/>
+            <Node name="Target">
+                <MechanicalObject template="Vec3d" name="state" position="10.0 -0.8 0.0" showObject="true" drawMode="1" showObjectScale="0.5"/>
+            </Node>
+            <Node name="Distance">
+                <MechanicalObject template="Vec1d" name="output" position="0"/>
+                <DistanceFromTargetMapping input="@/Physics/Beam/TargetPoint2" targetPositions="@../Target/state.position"/>
+                <Node name="Squared">
+                    <MeanSquaredErrorMapping input="@.." output="@../../MSE"/>
+                </Node>
+            </Node>
+        </Node>
+        <Node name="Loss3">
+            <LossState name="MSE"/>
+            <Node name="Target">
+                <MechanicalObject template="Vec3d" name="state" position="29.5 -2.9 0.0" showObject="true" drawMode="1" showObjectScale="0.5"/>
+            </Node>
+            <Node name="Distance">
+                <MechanicalObject template="Vec1d" name="output" position="0"/>
+                <DistanceFromTargetMapping input="@/Physics/Beam/TargetPoint3" targetPositions="@../Target/state.position"/>
+                <Node name="Squared">
+                    <MeanSquaredErrorMapping input="@.." output="@../../MSE"/>
+                </Node>
+            </Node>
+        </Node>
+        <Node name="Loss4">
+            <LossState name="MSE"/>
+            <Node name="Target">
+                <MechanicalObject template="Vec3d" name="state" position="38.5 -7.4 0.0" showObject="true" drawMode="1" showObjectScale="0.5"/>
+            </Node>
+            <Node name="Distance">
+                <MechanicalObject template="Vec1d" name="output" position="0"/>
+                <DistanceFromTargetMapping input="@/Physics/Beam/TargetPoint4" targetPositions="@../Target/state.position"/>
+                <Node name="Squared">
+                    <MeanSquaredErrorMapping input="@.." output="@../../MSE"/>
+                </Node>
             </Node>
         </Node>
     </Node>
+
     <GradientDescentController name="optimizer"/>
 </Node>

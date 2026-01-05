@@ -23,8 +23,8 @@
     <VisualStyle displayFlags="showBehavior showBehaviorModels showForceFields showMappings"/>
 
     <Node name="Parameters">
-        <TrainableParameterVector name="springLength" value="20" learningRate="0.01"/>
-        <TrainableParameterVector name="springStiffness" value="1000" learningRate="100"/>
+        <TrainableParameterVector name="springLength" value="20" learningRate="0.02"/>
+        <TrainableParameterVector name="springStiffness" value="1000" learningRate="200"/>
     </Node>
 
     <Node name="Physics">
@@ -80,6 +80,8 @@
                     length="@/Parameters/springLength.value"
                     stiffness="@/Parameters/springStiffness.value"
                     damping="0"
+                    drawMode="1"
+                    showArrowSize="0.2"
             />
         </Node>
     </Node>

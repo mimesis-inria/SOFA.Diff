@@ -52,21 +52,19 @@ void ParameterizedTetrahedronFEMForceField::applyParametersJacobianTranspose(con
     const helper::ReadAccessor<Data<VecDeriv>> vector = helper::getReadAccessor(vectorData);
 
     // Get the force, since the jacobian happens to be the force divided by the Young modulus
-    const auto * x = mparams->readX(state);
+    const VecCoord & x = state->readPositions().ref();
     const DataVecDeriv v;
     DataVecDeriv f;
-    VecDeriv f0;
-    f0.resize(x->getValue().size());
-    f.setValue(f0);
-    this->addForce(nullptr, f, *x, v);
-    const auto force = f.getValue();
+    auto writeAccess = f.beginWriteOnly();
+    writeAccess->resize(x.size());
+    this->addForce(nullptr, f, x, v);
 
     // Apply the jacobian: gradient += dot(jacobian, vector)
     const auto youngModulus = this->d_youngModulus.getValue()[0];
     auto youngModulusGradient = helper::getWriteAccessor(*m_youngModulusGradient);
-    for (unsigned int i=0; i < force.size(); i++)
+    for (unsigned int i=0; i < writeAccess->size(); i++)
     {
-        youngModulusGradient[0] += dot(force[i], vector[i]) / youngModulus;
+        youngModulusGradient[0] += dot((*writeAccess)[i], vector[i]) / youngModulus;
     }
 }
 
