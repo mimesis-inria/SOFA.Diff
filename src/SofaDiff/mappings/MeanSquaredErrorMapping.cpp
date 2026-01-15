@@ -33,14 +33,14 @@ using namespace defaulttype;
 
 void MeanSquaredErrorMapping::apply( const core::MechanicalParams* mparams, OutDataVecCoord& out, const InDataVecCoord& in)
 {
-    const auto values = helper::getReadAccessor(in)[0];
+    const auto values = helper::getReadAccessor(in);
     auto result = helper::getWriteAccessor(out);
     m_values.resize(values.size());
-    for (const auto value : values)
+    for (unsigned long i = 0; i < m_values.size(); i++)
     {
-        result[0][0] += value * value;
+        result[0][0] += values[i][0] * values[i][0];
+        m_values[i] = values[i][0]; // Store the values for later use in applyJT
     }
-
 }
 
 void MeanSquaredErrorMapping::applyJ( const core::MechanicalParams* mparams, OutDataVecDeriv& out, const InDataVecDeriv& in)
@@ -54,10 +54,11 @@ void MeanSquaredErrorMapping::applyJT( const core::MechanicalParams* mparams, In
 
     const auto values = helper::getReadAccessor(in);
     auto result = helper::getWriteAccessor(out);
-    for (const auto value : values[0])
+    for (unsigned long i = 0; i < m_values.size(); i++)
     {
-        result[0][0] += 2 * value * value;
+        result[i][0] += 2 * values[0][0] * m_values[i];
     }
+    // TODO: am I supposed to multiply by kfactor?
 }
 
 void registerMeanSquaredErrorMapping(sofa::core::ObjectFactory* factory)

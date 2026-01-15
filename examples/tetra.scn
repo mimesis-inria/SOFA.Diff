@@ -131,77 +131,24 @@
                 <FixedProjectiveConstraint indices="@region.indices"/>
             </Node>
 
-            <Node name="TargetPoint1">
-                <MechanicalObject template="Vec3d" name="state" position="0 0 0"/>
-                <BarycentricMapping/>
-            </Node>
-            <Node name="TargetPoint2">
-                <MechanicalObject template="Vec3d" name="state" position="10 0 0"/>
-                <BarycentricMapping/>
-            </Node>
-            <Node name="TargetPoint3">
-                <MechanicalObject template="Vec3d" name="state" position="30 0 0"/>
-                <BarycentricMapping/>
-            </Node>
-            <Node name="TargetPoint4">
-                <MechanicalObject template="Vec3d" name="state" position="40 0 0"/>
+            <Node name="Markers">
+                <MechanicalObject template="Vec3d" name="state" position="0 0 0  10 0 0  30 0 0  40 0 0"/>
                 <BarycentricMapping/>
             </Node>
         </Node>
     </Node>
 
 
-    <Node name="Losses">
-        <Node name="Loss1">
-            <LossState name="MSE"/>
-            <Node name="Target">
-                <MechanicalObject template="Vec3d" name="state" position="0.2 -2.6 0.0" showObject="true" drawMode="1" showObjectScale="0.5"/>
-            </Node>
-            <Node name="Distance">
-                <MechanicalObject template="Vec1d" name="output" position="0"/>
-                <DistanceFromTargetMapping input="@/Physics/Beam/TargetPoint1" targetPositions="@../Target/state.position"/>
-                <Node name="Squared">
-                    <MeanSquaredErrorMapping input="@.." output="@../../MSE"/>
-                </Node>
-            </Node>
+    <Node name="Loss">
+        <Node name="Targets">
+            <MechanicalObject template="Vec3d" name="state" position="0.2 -2.6 0.0  10.0 -0.8 0.0  29.5 -2.9 0.0  38.5 -7.4 0.0" showObject="true" drawMode="1" showObjectScale="0.5"/>
         </Node>
-        <Node name="Loss2">
-            <LossState name="MSE"/>
-            <Node name="Target">
-                <MechanicalObject template="Vec3d" name="state" position="10.0 -0.8 0.0" showObject="true" drawMode="1" showObjectScale="0.5"/>
-            </Node>
-            <Node name="Distance">
-                <MechanicalObject template="Vec1d" name="output" position="0"/>
-                <DistanceFromTargetMapping input="@/Physics/Beam/TargetPoint2" targetPositions="@../Target/state.position"/>
-                <Node name="Squared">
-                    <MeanSquaredErrorMapping input="@.." output="@../../MSE"/>
-                </Node>
-            </Node>
-        </Node>
-        <Node name="Loss3">
-            <LossState name="MSE"/>
-            <Node name="Target">
-                <MechanicalObject template="Vec3d" name="state" position="29.5 -2.9 0.0" showObject="true" drawMode="1" showObjectScale="0.5"/>
-            </Node>
-            <Node name="Distance">
-                <MechanicalObject template="Vec1d" name="output" position="0"/>
-                <DistanceFromTargetMapping input="@/Physics/Beam/TargetPoint3" targetPositions="@../Target/state.position"/>
-                <Node name="Squared">
-                    <MeanSquaredErrorMapping input="@.." output="@../../MSE"/>
-                </Node>
-            </Node>
-        </Node>
-        <Node name="Loss4">
-            <LossState name="MSE"/>
-            <Node name="Target">
-                <MechanicalObject template="Vec3d" name="state" position="38.5 -7.4 0.0" showObject="true" drawMode="1" showObjectScale="0.5"/>
-            </Node>
-            <Node name="Distance">
-                <MechanicalObject template="Vec1d" name="output" position="0"/>
-                <DistanceFromTargetMapping input="@/Physics/Beam/TargetPoint4" targetPositions="@../Target/state.position"/>
-                <Node name="Squared">
-                    <MeanSquaredErrorMapping input="@.." output="@../../MSE"/>
-                </Node>
+        <Node name="Distances">
+            <MechanicalObject template="Vec1d" name="output" position="0"/>
+            <DistanceFromTargetMapping input="@Physics/Beam/Markers" targetPositions="@../Targets/state.position"/>
+            <Node name="MSE">
+                <LossState name="state"/>
+                <MeanSquaredErrorMapping input="@.." output="@state"/>
             </Node>
         </Node>
     </Node>
