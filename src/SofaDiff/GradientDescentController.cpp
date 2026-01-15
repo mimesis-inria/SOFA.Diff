@@ -164,9 +164,10 @@ void GradientDescentController::solveForPhysicalGradient() const
 {
     SCOPED_TIMER("GradientDescentController::solveForPhysicalGradient");
     auto *linearSolver = l_linearSolver.get();
-    linearSolver->setSystemLHVector(s_physicalGradientId);
-    linearSolver->setSystemRHVector(s_geometricGradientId);
+    linearSolver->getLinearSystem()->setSystemSolution(s_physicalGradientId);
+    linearSolver->getLinearSystem()->setRHS(s_geometricGradientId);
     linearSolver->solveSystem();
+    linearSolver->getLinearSystem()->dispatchSystemSolution(s_physicalGradientId);
     // TODO: clarify why the operation below is not required
     // simulation::common::VectorOperations vop(params, ctx);
     // vop.v_eq(m_forceGradientVecId, m_forceGradientVecId, -1.0);
