@@ -58,7 +58,7 @@
                 <MechanicalObject template="Vec3d" name="state" position="20 2 0"/>
                 <BarycentricMapping/>
             </Node>
-            <Node name="TargetPoint">
+            <Node name="Marker">
                 <MechanicalObject template="Vec3d" name="state" position="40 0 0"/>
                 <BarycentricMapping/>
             </Node>
@@ -87,15 +87,15 @@
     </Node>
 
     <Node name="Loss">
-        <LossState name="MSE"/>
         <Node name="Target">
             <MechanicalObject template="Vec3d" name="state" position="40 0 0" showObject="true" drawMode="1" showObjectScale="0.5"/>
         </Node>
         <Node name="Distance">
             <MechanicalObject template="Vec1d" name="output" position="0"/>
-            <DistanceFromTargetMapping input="@/Physics/BottomBeam/TargetPoint" targetPositions="@/Loss/Target/state.position"/>
-            <Node name="Squared">
-                <SquareMapping input="@.." output="@/Loss/MSE"/>
+            <DistanceFromTargetMapping input="@/Physics/BottomBeam/Marker" targetPositions="@/Loss/Target/state.position"/>
+            <Node name="MSE">
+                <LossState name="state"/>
+                <MeanSquaredErrorMapping/>
             </Node>
         </Node>
     </Node>

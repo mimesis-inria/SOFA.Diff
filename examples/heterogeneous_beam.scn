@@ -148,7 +148,7 @@
             <DistanceFromTargetMapping input="@Physics/Beam/Markers" targetPositions="@../Targets/state.position"/>
             <Node name="MSE">
                 <LossState name="state"/>
-                <MeanSquaredErrorMapping input="@.." output="@state"/>
+                <MeanSquaredErrorMapping/>
             </Node>
         </Node>
     </Node>
