@@ -38,7 +38,7 @@ void MeanSquaredErrorMapping::apply( const core::MechanicalParams* mparams, OutD
     m_values.resize(values.size());
     for (unsigned long i = 0; i < m_values.size(); i++)
     {
-        result[0][0] += values[i][0] * values[i][0];
+        result[0][0] = values[i][0] * values[i][0];
         m_values[i] = values[i][0]; // Store the values for later use in applyJT
     }
 }
