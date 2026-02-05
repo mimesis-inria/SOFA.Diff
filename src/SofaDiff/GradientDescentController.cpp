@@ -32,6 +32,7 @@
 #include <sofa/simulation/VectorOperations.h>
 #include <sofa/simulation/mechanicalvisitor/MechanicalResetForceVisitor.h>
 #include <sofa/helper/ScopedAdvancedTimer.h>
+#include <sofa/simulation/MechanicalOperations.h>
 
 #include "sofa/helper/fwd.h"
 
@@ -160,17 +161,23 @@ void GradientDescentController::resetParametersGradient() const
 }
 
 
-void GradientDescentController::solveForPhysicalGradient() const
+void GradientDescentController::solveForPhysicalGradient()
 {
     SCOPED_TIMER("GradientDescentController::solveForPhysicalGradient");
     auto *linearSolver = l_linearSolver.get();
+
+    const auto * params = core::execparams::defaultInstance();
+    simulation::common::MechanicalOperations mop(params, this->getContext());
+    mop->setImplicit(true);
+    static constexpr core::MatricesFactors::M m(0);
+    static constexpr core::MatricesFactors::B b(0);
+    static constexpr core::MatricesFactors::K k(-1);
+    mop.setSystemMBKMatrix(m, b, k, linearSolver);
+
     linearSolver->getLinearSystem()->setSystemSolution(s_physicalGradientId);
     linearSolver->getLinearSystem()->setRHS(s_geometricGradientId);
-    linearSolver->solveSystem();
+    linearSolver->solveSystem();  // Solve -df/dx * lambda = dy/dx
     linearSolver->getLinearSystem()->dispatchSystemSolution(s_physicalGradientId);
-    // TODO: clarify why the operation below is not required
-    // simulation::common::VectorOperations vop(params, ctx);
-    // vop.v_eq(m_forceGradientVecId, m_forceGradientVecId, -1.0);
 }
 
 

@@ -67,7 +67,7 @@ protected:
 private:
     void initializeLossGradientToOne();
     void resetParametersGradient() const;
-    void solveForPhysicalGradient() const;
+    void solveForPhysicalGradient();
 };
 
 }
