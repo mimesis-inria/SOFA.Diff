@@ -34,8 +34,6 @@
 #include <sofa/helper/ScopedAdvancedTimer.h>
 #include <sofa/simulation/MechanicalOperations.h>
 
-#include "sofa/helper/fwd.h"
-
 
 namespace sofadiff {
 
