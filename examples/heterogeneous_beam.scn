@@ -22,7 +22,7 @@
         <RequiredPlugin name="Sofa.GL.Component.Rendering3D"/> <!-- Needed to use components [OglModel] -->
     </Node>
 
-    <DefaultAnimationLoop computeBoundingBox="false"/>
+    <DifferentiableAnimationLoop computeBoundingBox="false"/>
     <VisualStyle displayFlags="showBehavior showBehaviorModels showForceFields hideMappings"/>
 
     <Node name="Parameters">
