@@ -40,7 +40,7 @@
         <NewtonRaphsonSolver name="newton" maxNbIterationsNewton="100" maxNbIterationsLineSearch="1" warnWhenLineSearchFails="false"/>
         <StaticSolver newtonSolver="@newton" name="static"/>
         <SparseLDLSolver template="CompressedRowSparseMatrixd" name="solver"/>
-
+        <StaticAdjointSolver name="adjoint"/>
 
         <Node name="Beam">
             <TetrahedronSetGeometryAlgorithms/>

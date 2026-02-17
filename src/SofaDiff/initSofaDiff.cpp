@@ -28,6 +28,7 @@ using sofa::core::ObjectFactory;
 namespace sofadiff
 {
     extern void registerDifferentiableAnimationLoop(sofa::core::ObjectFactory* factory);
+    extern void registerStaticAdjointSolver(sofa::core::ObjectFactory* factory);
     extern void registerGradientDescentController(sofa::core::ObjectFactory* factory);
     extern void registerParameterizedSpringForceField(sofa::core::ObjectFactory* factory);
     extern void registerTrainableParameter(sofa::core::ObjectFactory* factory);
@@ -79,6 +80,7 @@ namespace sofadiff
     void registerObjects(sofa::core::ObjectFactory* factory)
     {
         registerDifferentiableAnimationLoop(factory);
+        registerStaticAdjointSolver(factory);
         registerGradientDescentController(factory);
         registerParameterizedSpringForceField(factory);
         registerParameterizedTetrahedronFEMForceField(factory);

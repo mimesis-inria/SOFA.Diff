@@ -22,9 +22,6 @@
 #pragma once
 
 #include <SofaDiff/config.h>
-#include <SofaDiff/ParameterizedForceField.h>
-#include <SofaDiff/Parameter.h>
-#include <SofaDiff/LossState.h>
 
 #include <sofa/simulation/DefaultAnimationLoop.h>
 #include <sofa/core/behavior/LinearSolverAccessor.h>
@@ -47,19 +44,9 @@ public:
     // DifferentiableAnimationLoop();
     void init() override;
 
-    void step(const sofa::core::ExecParams* params, SReal dt) override;
+    void step(const core::ExecParams* params, SReal dt) override;
 
-    void stepAdjoint(const sofa::core::ExecParams* params, SReal dt);
-
-protected:
-    std::vector<BaseParameter *> m_trainableParameters;
-    std::vector<Parameterized *> m_parameterizedForceFields;
-    std::vector<LossState *> m_lossStates;
-
-private:
-    void initializeLossGradientToOne();
-    void resetParametersGradient() const;
-    void solveForPhysicalGradient();
+    void stepAdjoint(const core::ExecParams* params, SReal dt);
 };
 
 }
