@@ -23,13 +23,13 @@
 #include <ranges>  // for iterating on maps with std::views
 
 #include <SofaDiff/GradientDescentController.h>
+#include <SofaDiff/DifferentiableAnimationLoop.h>
 #include <SofaDiff/visitors/MechanicalAccumulateVecDeriv.h>
 #include <SofaDiff/visitors/MechanicalPropagateVecDeriv.h>
 #include <SofaDiff/ParameterizedForceField.h>
 #include <SofaDiff/LossState.h>
 
 #include <sofa/core/ObjectFactory.h>
-#include <sofa/simulation/VectorOperations.h>
 #include <sofa/simulation/mechanicalvisitor/MechanicalResetForceVisitor.h>
 #include <sofa/helper/ScopedAdvancedTimer.h>
 #include <sofa/simulation/MechanicalOperations.h>
@@ -38,10 +38,6 @@
 namespace sofadiff {
 
 using namespace simulation::mechanicalvisitor;
-
-
-core::MultiVecDerivId s_geometricGradientId = core::TMultiVecId<core::VecType::V_DERIV, core::VecAccess::V_WRITE>();
-core::MultiVecDerivId s_physicalGradientId = core::TMultiVecId<core::VecType::V_DERIV, core::VecAccess::V_WRITE>();
 
 
 GradientDescentController::GradientDescentController()
@@ -54,18 +50,7 @@ void GradientDescentController::init()
 {
     LinearSolverAccessor::init();
 
-    auto* ctx = this->getContext();
-    auto* params = core::mechanicalparams::defaultInstance();
-    simulation::common::VectorOperations vop(params, ctx);
-
-    core::behavior::MultiVecDeriv geometricGradient(&vop, s_geometricGradientId);
-    geometricGradient.realloc(&vop, false, true, core::VecIdProperties{"Geometric gradient of the loss", this->getClassName()});
-    s_geometricGradientId = geometricGradient.id();
-
-    core::behavior::MultiVecDeriv physicalGradient(&vop, s_physicalGradientId);
-    physicalGradient.realloc(&vop, false, true, core::VecIdProperties{"Physical gradient of the loss", this->getClassName()});
-    s_physicalGradientId = physicalGradient.id();
-
+    const auto* ctx = this->getContext();
     ctx->get<BaseParameter> (&m_trainableParameters, BaseContext::SearchRoot);
     ctx->get<Parameterized> (&m_parameterizedForceFields, BaseContext::SearchRoot);
     ctx->get<LossState> (&m_lossStates, BaseContext::SearchRoot);

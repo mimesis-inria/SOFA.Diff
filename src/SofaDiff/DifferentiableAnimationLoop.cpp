@@ -26,6 +26,7 @@
 #include <SofaDiff/ParameterizedForceField.h>
 #include <SofaDiff/LossState.h>
 
+#include <sofa/simulation/VectorOperations.h>
 #include <sofa/core/MechanicalParams.h>
 #include <sofa/core/ObjectFactory.h>
 
@@ -33,13 +34,27 @@
 namespace sofadiff
 {
 
-// core::MultiVecDerivId s_geometricGradientId = core::TMultiVecId<core::VecType::V_DERIV, core::VecAccess::V_WRITE>();
-// core::MultiVecDerivId s_physicalGradientId = core::TMultiVecId<core::VecType::V_DERIV, core::VecAccess::V_WRITE>();
+core::MultiVecDerivId s_geometricGradientId = core::TMultiVecId<core::VecType::V_DERIV, core::VecAccess::V_WRITE>();
+core::MultiVecDerivId s_physicalGradientId = core::TMultiVecId<core::VecType::V_DERIV, core::VecAccess::V_WRITE>();
 
 
-DifferentiableAnimationLoop::DifferentiableAnimationLoop()
-= default;
+void DifferentiableAnimationLoop::init()
+{
+    DefaultAnimationLoop::init();
+    LinearSolverAccessor::init();
 
+    auto* ctx = this->getContext();
+    auto* params = core::mechanicalparams::defaultInstance();
+    simulation::common::VectorOperations vop(params, ctx);
+
+    core::behavior::MultiVecDeriv geometricGradient(&vop, s_geometricGradientId);
+    geometricGradient.realloc(&vop, false, true, core::VecIdProperties{"Geometric gradient of the loss", this->getClassName()});
+    s_geometricGradientId = geometricGradient.id();
+
+    core::behavior::MultiVecDeriv physicalGradient(&vop, s_physicalGradientId);
+    physicalGradient.realloc(&vop, false, true, core::VecIdProperties{"Physical gradient of the loss", this->getClassName()});
+    s_physicalGradientId = physicalGradient.id();
+}
 
 void registerDifferentiableAnimationLoop(core::ObjectFactory* factory)
 {

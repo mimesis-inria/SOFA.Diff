@@ -21,7 +21,7 @@
  ******************************************************************************/
 
 #include <SofaDiff/LossState.h>
-#include <SofaDiff/GradientDescentController.h>
+#include <SofaDiff/DifferentiableAnimationLoop.h>
 
 #include <sofa/core/State.h>
 #include <sofa/core/trait/DataTypes.h>

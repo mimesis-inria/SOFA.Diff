@@ -35,7 +35,7 @@
 namespace sofadiff
 {
 extern core::MultiVecDerivId s_geometricGradientId;
-extern core::MultiVecDerivId s_PhysicalGradientId;
+extern core::MultiVecDerivId s_physicalGradientId;
 
 class SOFA_SOFADIFF_API DifferentiableAnimationLoop:
     public simulation::DefaultAnimationLoop,
@@ -44,8 +44,8 @@ class SOFA_SOFADIFF_API DifferentiableAnimationLoop:
 public:
     SOFA_CLASS2(DifferentiableAnimationLoop, sofa::simulation::DefaultAnimationLoop, core::behavior::LinearSolverAccessor);
 
-    DifferentiableAnimationLoop();
-    void init() override {DefaultAnimationLoop::init(); }
+    // DifferentiableAnimationLoop();
+    void init() override;
 };
 
 }

@@ -35,9 +35,6 @@
 namespace sofadiff
 {
 
-extern core::MultiVecDerivId s_geometricGradientId;
-extern core::MultiVecDerivId s_PhysicalGradientId;
-
 /**
  * @brief GradientDescentController Class
  *
