@@ -21,7 +21,7 @@
         <RequiredPlugin name="Sofa.Component.Topology.Mapping"/> <!-- Needed to use components [Hexa2TetraTopologicalMapping] -->
     </Node>
 
-    <DefaultAnimationLoop computeBoundingBox="false"/>
+    <DifferentiableAnimationLoop computeBoundingBox="false"/>
     <VisualStyle displayFlags="showBehavior showBehaviorModels showForceFields hideMappings"/>
 
     <Node name="Parameters">

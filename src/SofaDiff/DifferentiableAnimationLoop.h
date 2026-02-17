@@ -46,6 +46,20 @@ public:
 
     // DifferentiableAnimationLoop();
     void init() override;
+
+    void step(const sofa::core::ExecParams* params, SReal dt) override;
+
+    void stepAdjoint(const sofa::core::ExecParams* params, SReal dt);
+
+protected:
+    std::vector<BaseParameter *> m_trainableParameters;
+    std::vector<Parameterized *> m_parameterizedForceFields;
+    std::vector<LossState *> m_lossStates;
+
+private:
+    void initializeLossGradientToOne();
+    void resetParametersGradient() const;
+    void solveForPhysicalGradient();
 };
 
 }

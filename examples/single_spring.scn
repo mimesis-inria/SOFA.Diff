@@ -19,7 +19,7 @@
         <RequiredPlugin name="Sofa.Component.Mapping.NonLinear"/> <!-- Needed to use components [DistanceFromTargetMapping] -->
     </Node>
 
-    <DefaultAnimationLoop computeBoundingBox="false"/>
+    <DifferentiableAnimationLoop computeBoundingBox="false"/>
     <VisualStyle displayFlags="showBehavior showBehaviorModels showForceFields showMappings"/>
 
     <Node name="Parameters">

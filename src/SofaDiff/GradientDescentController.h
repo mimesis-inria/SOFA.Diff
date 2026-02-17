@@ -55,16 +55,9 @@ public:
 
 protected:
     std::vector<BaseParameter *> m_trainableParameters;
-    std::vector<Parameterized *> m_parameterizedForceFields;
-    std::vector<LossState *> m_lossStates;
 
     SReal getHyperparameter(const BaseParameter *parameter, const std::string &hyperparameterName) const;
     virtual void updateParameters();
-
-private:
-    void initializeLossGradientToOne();
-    void resetParametersGradient() const;
-    void solveForPhysicalGradient();
 };
 
 }

@@ -28,11 +28,17 @@
 
 #include <sofa/simulation/VectorOperations.h>
 #include <sofa/core/MechanicalParams.h>
+#include <sofa/helper/ScopedAdvancedTimer.h>
+#include <sofa/simulation/mechanicalvisitor/MechanicalResetForceVisitor.h>
+#include <sofa/simulation/MechanicalOperations.h>
 #include <sofa/core/ObjectFactory.h>
 
 
 namespace sofadiff
 {
+
+using namespace simulation::mechanicalvisitor;
+
 
 core::MultiVecDerivId s_geometricGradientId = core::TMultiVecId<core::VecType::V_DERIV, core::VecAccess::V_WRITE>();
 core::MultiVecDerivId s_physicalGradientId = core::TMultiVecId<core::VecType::V_DERIV, core::VecAccess::V_WRITE>();
@@ -54,7 +60,90 @@ void DifferentiableAnimationLoop::init()
     core::behavior::MultiVecDeriv physicalGradient(&vop, s_physicalGradientId);
     physicalGradient.realloc(&vop, false, true, core::VecIdProperties{"Physical gradient of the loss", this->getClassName()});
     s_physicalGradientId = physicalGradient.id();
+
+    ctx->get<BaseParameter> (&m_trainableParameters, BaseContext::SearchRoot);
+    ctx->get<Parameterized> (&m_parameterizedForceFields, BaseContext::SearchRoot);
+    ctx->get<LossState> (&m_lossStates, BaseContext::SearchRoot);
+
+    initializeLossGradientToOne();
 }
+
+
+void DifferentiableAnimationLoop::step(const sofa::core::ExecParams* params, SReal dt)
+{
+    DefaultAnimationLoop::step(params, dt);
+    stepAdjoint(params, dt); // temporary: later on should be called directly by user (e.g. button in GUI)
+}
+
+void DifferentiableAnimationLoop::stepAdjoint(const core::ExecParams* params, SReal dt)
+{
+    if (this->d_componentState.getValue() != ComponentState::Valid)
+    {
+        return;
+    }
+
+    auto *ctx = this->getContext();
+    const core::MechanicalParams mparams(*params);
+
+    // Compute the gradient of the loss wrt the parameters
+    MechanicalResetForceVisitor(&mparams, s_geometricGradientId).execute(ctx, false);
+    resetParametersGradient();
+    MechanicalAccumulateVecDeriv(&mparams, s_geometricGradientId).execute(ctx, false);
+    solveForPhysicalGradient();
+    MechanicalPropagateVecDeriv(&mparams, s_physicalGradientId).execute(ctx, false);
+    {
+        SCOPED_TIMER("GradientDescentController::applyParametersJacobianTranspose");
+        for (const auto &forceField: m_parameterizedForceFields)
+            forceField->applyParametersJacobianTranspose(&mparams, s_physicalGradientId);
+    }
+}
+
+void DifferentiableAnimationLoop::initializeLossGradientToOne()
+{
+    for (const auto loss : m_lossStates)
+    {
+        if (loss == nullptr)
+        {
+            msg_error() << "Bad link to the loss object";
+            this->d_componentState.setValue(ComponentState::Invalid);
+            return;
+        }
+        const auto& gradient = s_geometricGradientId.getId(loss);
+        // TODO: handle case where we cannot write in gradient
+        helper::WriteAccessor<Data<VecDeriv_t<defaulttype::Vec1Types>> > lossGradient = loss->write(gradient);
+        lossGradient[0] = sofa::Deriv_t<defaulttype::Vec1Types> (1);
+    }
+}
+
+
+void DifferentiableAnimationLoop::resetParametersGradient() const
+{
+    SCOPED_TIMER("GradientDescentController::resetParametersGradient");
+
+    for (auto & parameter : m_trainableParameters)
+        parameter->resetGradient();
+}
+
+
+void DifferentiableAnimationLoop::solveForPhysicalGradient()
+{
+    SCOPED_TIMER("GradientDescentController::solveForPhysicalGradient");
+    auto *linearSolver = l_linearSolver.get();
+
+    const auto * params = core::execparams::defaultInstance();
+    simulation::common::MechanicalOperations mop(params, this->getContext());
+    mop->setImplicit(true);
+    static constexpr core::MatricesFactors::M m(0);
+    static constexpr core::MatricesFactors::B b(0);
+    static constexpr core::MatricesFactors::K k(-1);
+    mop.setSystemMBKMatrix(m, b, k, linearSolver);
+
+    linearSolver->getLinearSystem()->setSystemSolution(s_physicalGradientId);
+    linearSolver->getLinearSystem()->setRHS(s_geometricGradientId);
+    linearSolver->solveSystem();  // Solve -df/dx * lambda = dy/dx
+    linearSolver->getLinearSystem()->dispatchSystemSolution(s_physicalGradientId);
+}
+
 
 void registerDifferentiableAnimationLoop(core::ObjectFactory* factory)
 {

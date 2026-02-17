@@ -24,7 +24,7 @@ def createScene(root):
 
     root.addObject("VisualStyle", displayFlags="showCollision showVisualModels showForceFields showInteractionForceFields")
     root.addObject("DefaultVisualManagerLoop")
-    root.addObject("DefaultAnimationLoop", computeBoundingBox=False)
+    root.addObject("DifferentiableAnimationLoop", computeBoundingBox=False)
 
     with root.addChild("Parameters") as parameters:
         # length = 88.28363382  # length at rest configuration
