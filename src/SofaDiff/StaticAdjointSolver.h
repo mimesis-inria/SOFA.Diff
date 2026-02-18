@@ -11,16 +11,16 @@
 
 namespace sofadiff
 {
-class SOFA_SOFADIFF_API StaticAdjointSolver: public AdjointSolver, public core::behavior::LinearSolverAccessor
+using namespace sofa::core;
+
+
+class SOFA_SOFADIFF_API StaticAdjointSolver: public AdjointSolver, public behavior::LinearSolverAccessor
 {
 public:
     SOFA_CLASS2(StaticAdjointSolver, AdjointSolver, core::behavior::LinearSolverAccessor);
 
-    StaticAdjointSolver();
-
     void init() override;
-
-    void solve(const core::ExecParams* /*params*/, SReal /*dt*/, core::MultiVecCoordId /*xResult*/, core::MultiVecDerivId /*vResult*/) override;
+    void solve(const ExecParams* /*params*/, SReal /*dt*/, MultiVecCoordId /*xResult*/, MultiVecDerivId /*vResult*/) override;
 
 protected:
     std::vector<BaseParameter *> m_trainableParameters;

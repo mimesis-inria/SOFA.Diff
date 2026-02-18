@@ -28,7 +28,6 @@
 #include <sofa/core/behavior/MultiVec.h>
 
 
-
 namespace sofadiff
 {
 extern core::MultiVecDerivId s_geometricGradientId;
@@ -41,11 +40,8 @@ class SOFA_SOFADIFF_API DifferentiableAnimationLoop:
 public:
     SOFA_CLASS2(DifferentiableAnimationLoop, sofa::simulation::DefaultAnimationLoop, core::behavior::LinearSolverAccessor);
 
-    // DifferentiableAnimationLoop();
     void init() override;
-
     void step(const core::ExecParams* params, SReal dt) override;
-
     void stepAdjoint(const core::ExecParams* params, SReal dt);
 };
 

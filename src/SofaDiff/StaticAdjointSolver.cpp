@@ -14,24 +14,19 @@
 
 namespace sofadiff
 {
+using namespace sofa::simulation::mechanicalvisitor;
+using namespace sofa::core;
 
-using namespace simulation::mechanicalvisitor;
 
-
-void registerStaticAdjointSolver(core::ObjectFactory* factory)
+void registerStaticAdjointSolver(ObjectFactory* factory)
 {
-    factory->registerObjects(core::ObjectRegistrationData("Controller that performs gradient descent.").add< StaticAdjointSolver >());
-}
-
-StaticAdjointSolver::StaticAdjointSolver()
-{
-
+    factory->registerObjects(ObjectRegistrationData("Adjoint solver for static problems.").add< StaticAdjointSolver >());
 }
 
 void StaticAdjointSolver::init()
 {
     LinearSolverAccessor::init();
-    auto* ctx = this->getContext();
+    const auto* ctx = this->getContext();
 
     ctx->get<BaseParameter> (&m_trainableParameters, BaseContext::SearchRoot);
     ctx->get<Parameterized> (&m_parameterizedForceFields, BaseContext::SearchRoot);
@@ -40,19 +35,18 @@ void StaticAdjointSolver::init()
     initializeLossGradientToOne();
 }
 
-void StaticAdjointSolver::solve(const core::ExecParams* params, SReal /*dt*/, core::MultiVecCoordId /*xResult*/, core::MultiVecDerivId /*vResult*/)
+void StaticAdjointSolver::solve(const ExecParams* params, SReal /*dt*/, MultiVecCoordId /*xResult*/, MultiVecDerivId /*vResult*/)
 {
     auto *ctx = this->getContext()->getRootContext(); // TODO: maybe not the root context? But needs access to loss and parameters...
-    const core::MechanicalParams mparams(*params);
+    const MechanicalParams mparams(*params);
 
-    // Compute the gradient of the loss wrt the parameters
     MechanicalResetForceVisitor(&mparams, s_geometricGradientId).execute(ctx, false);
     resetParametersGradient();
     MechanicalAccumulateVecDeriv(&mparams, s_geometricGradientId).execute(ctx, false);
     solveForPhysicalGradient();
     MechanicalPropagateVecDeriv(&mparams, s_physicalGradientId).execute(ctx, false);
     {
-        SCOPED_TIMER("GradientDescentController::applyParametersJacobianTranspose");
+        SCOPED_TIMER("StaticAdjointSolver::applyParametersJacobianTranspose");
         for (const auto &forceField: m_parameterizedForceFields)
             forceField->applyParametersJacobianTranspose(&mparams, s_physicalGradientId);
     }
@@ -60,6 +54,7 @@ void StaticAdjointSolver::solve(const core::ExecParams* params, SReal /*dt*/, co
 
 void StaticAdjointSolver::initializeLossGradientToOne()
 {
+    SCOPED_TIMER("StaticAdjointSolver::initializeLossGradientToOne");
     for (const auto loss : m_lossStates)
     {
         if (loss == nullptr)
@@ -78,8 +73,7 @@ void StaticAdjointSolver::initializeLossGradientToOne()
 
 void StaticAdjointSolver::resetParametersGradient() const
 {
-    SCOPED_TIMER("GradientDescentController::resetParametersGradient");
-
+    SCOPED_TIMER("StaticAdjointSolver::resetParametersGradient");
     for (auto & parameter : m_trainableParameters)
         parameter->resetGradient();
 }
@@ -87,15 +81,15 @@ void StaticAdjointSolver::resetParametersGradient() const
 
 void StaticAdjointSolver::solveForPhysicalGradient()
 {
-    SCOPED_TIMER("GradientDescentController::solveForPhysicalGradient");
+    SCOPED_TIMER("StaticAdjointSolver::solveForPhysicalGradient");
     auto *linearSolver = l_linearSolver.get();
 
-    const auto * params = core::execparams::defaultInstance();
+    const auto * params = execparams::defaultInstance();
     simulation::common::MechanicalOperations mop(params, this->getContext());
     mop->setImplicit(true);
-    static constexpr core::MatricesFactors::M m(0);
-    static constexpr core::MatricesFactors::B b(0);
-    static constexpr core::MatricesFactors::K k(-1);
+    static constexpr MatricesFactors::M m(0);
+    static constexpr MatricesFactors::B b(0);
+    static constexpr MatricesFactors::K k(-1);
     mop.setSystemMBKMatrix(m, b, k, linearSolver);
 
     linearSolver->getLinearSystem()->setSystemSolution(s_physicalGradientId);

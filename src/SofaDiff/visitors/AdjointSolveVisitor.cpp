@@ -7,15 +7,16 @@
 
 namespace sofadiff
 {
+using namespace sofa::core;
 
-AdjointSolveVisitor::AdjointSolveVisitor(const core::ExecParams *params, SReal _dt, core::MultiVecCoordId X, core::MultiVecDerivId V):
+
+AdjointSolveVisitor::AdjointSolveVisitor(const ExecParams *params, SReal _dt, MultiVecCoordId X, MultiVecDerivId V):
     Visitor(params),
     dt(_dt),
     x(X),
     v(V)
-{
+{}
 
-}
 
 simulation::Visitor::Result AdjointSolveVisitor::processNodeTopDown(simulation::Node* node)
 {
@@ -24,7 +25,7 @@ simulation::Visitor::Result AdjointSolveVisitor::processNodeTopDown(simulation::
         // TODO: better way to get the adjoint?
         std::vector<AdjointSolver *> adjoints;
         const auto* ctx = node->getContext();
-        ctx->get<AdjointSolver> (&adjoints, core::objectmodel::BaseContext::Local); // TODO: correct search direction?
+        ctx->get<AdjointSolver> (&adjoints, objectmodel::BaseContext::Local); // TODO: correct search direction?
         if (adjoints.empty())
         {
             msg_error("No adjoint solver found");
@@ -46,6 +47,7 @@ simulation::Visitor::Result AdjointSolveVisitor::processNodeTopDown(simulation::
     // }
     return RESULT_CONTINUE;
 }
+
 
 void AdjointSolveVisitor::processNodeBottomUp(simulation::Node* /*node*/)
 {

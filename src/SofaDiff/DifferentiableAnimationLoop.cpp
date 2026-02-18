@@ -22,10 +22,7 @@
 
 #include <SofaDiff/DifferentiableAnimationLoop.h>
 #include <SofaDiff/visitors/AdjointSolveVisitor.h>
-#include <SofaDiff/visitors/MechanicalAccumulateVecDeriv.h>
-#include <SofaDiff/visitors/MechanicalPropagateVecDeriv.h>
 #include <SofaDiff/ParameterizedForceField.h>
-#include <SofaDiff/LossState.h>
 
 #include <sofa/core/MechanicalParams.h>
 #include <sofa/core/ObjectFactory.h>
@@ -38,12 +35,12 @@
 
 namespace sofadiff
 {
+using namespace sofa::simulation::mechanicalvisitor;
+using namespace sofa::core;
 
-using namespace simulation::mechanicalvisitor;
 
-
-core::MultiVecDerivId s_geometricGradientId = core::TMultiVecId<core::VecType::V_DERIV, core::VecAccess::V_WRITE>();
-core::MultiVecDerivId s_physicalGradientId = core::TMultiVecId<core::VecType::V_DERIV, core::VecAccess::V_WRITE>();
+MultiVecDerivId s_geometricGradientId = TMultiVecId<VecType::V_DERIV, VecAccess::V_WRITE>();
+MultiVecDerivId s_physicalGradientId = TMultiVecId<VecType::V_DERIV, VecAccess::V_WRITE>();
 
 
 void DifferentiableAnimationLoop::init()
@@ -52,28 +49,29 @@ void DifferentiableAnimationLoop::init()
     LinearSolverAccessor::init();
 
     auto* ctx = this->getContext();
-    auto* params = core::mechanicalparams::defaultInstance();
+    auto* params = mechanicalparams::defaultInstance();
     simulation::common::VectorOperations vop(params, ctx);
 
-    core::behavior::MultiVecDeriv geometricGradient(&vop, s_geometricGradientId);
-    geometricGradient.realloc(&vop, false, true, core::VecIdProperties{"Geometric gradient of the loss", this->getClassName()});
+    behavior::MultiVecDeriv geometricGradient(&vop, s_geometricGradientId);
+    geometricGradient.realloc(&vop, false, true, VecIdProperties{"Geometric gradient of the loss", this->getClassName()});
     s_geometricGradientId = geometricGradient.id();
 
-    core::behavior::MultiVecDeriv physicalGradient(&vop, s_physicalGradientId);
-    physicalGradient.realloc(&vop, false, true, core::VecIdProperties{"Physical gradient of the loss", this->getClassName()});
+    behavior::MultiVecDeriv physicalGradient(&vop, s_physicalGradientId);
+    physicalGradient.realloc(&vop, false, true, VecIdProperties{"Physical gradient of the loss", this->getClassName()});
     s_physicalGradientId = physicalGradient.id();
 }
 
 
-void DifferentiableAnimationLoop::step(const sofa::core::ExecParams* params, SReal dt)
+void DifferentiableAnimationLoop::step(const ExecParams* params, SReal dt)
 {
     DefaultAnimationLoop::step(params, dt);
     stepAdjoint(params, dt); // temporary: later on should be called directly by user (e.g. button in GUI)
 }
 
-void DifferentiableAnimationLoop::stepAdjoint(const core::ExecParams* params, SReal dt)
+
+void DifferentiableAnimationLoop::stepAdjoint(const ExecParams* params, SReal dt)
 {
-    if (this->d_componentState.getValue() != ComponentState::Valid)
+    if (this->d_componentState.getValue() != objectmodel::ComponentState::Valid)
     {
         return;
     }
@@ -81,13 +79,13 @@ void DifferentiableAnimationLoop::stepAdjoint(const core::ExecParams* params, SR
     // TODO: call the "backward solver" if dynamic
 
     // TODO: use the other constructor (like DefaultAnimationLoop with SolveVisitor)
-    AdjointSolveVisitor(params, dt, core::vec_id::write_access::position, core::vec_id::write_access::velocity).execute(m_node);
+    AdjointSolveVisitor(params, dt, vec_id::write_access::position, vec_id::write_access::velocity).execute(m_node);
 }
 
 
-void registerDifferentiableAnimationLoop(core::ObjectFactory* factory)
+void registerDifferentiableAnimationLoop(ObjectFactory* factory)
 {
-    factory->registerObjects(core::ObjectRegistrationData("Controller that performs gradient descent.").add< DifferentiableAnimationLoop >());
+    factory->registerObjects(ObjectRegistrationData("Controller that performs gradient descent.").add< DifferentiableAnimationLoop >());
 }
 
 }

@@ -8,17 +8,15 @@
 
 namespace sofadiff
 {
-class SOFA_SOFADIFF_API AdjointSolver: public virtual core::objectmodel::BaseObject
+using namespace sofa::core;
+
+
+class SOFA_SOFADIFF_API AdjointSolver: public virtual objectmodel::BaseObject
 {
 public:
-    SOFA_ABSTRACT_CLASS(AdjointSolver, sofa::core::objectmodel::BaseObject);
-    // SOFA_BASE_CAST_IMPLEMENTATION(AdjointSolver)
+    SOFA_ABSTRACT_CLASS(AdjointSolver, objectmodel::BaseObject);
+    // SOFA_BASE_CAST_IMPLEMENTATION(AdjointSolver) // TODO: What's that?
 
-    virtual void solve(const core::ExecParams* /*params*/, SReal /*dt*/, core::MultiVecCoordId /*xResult*/, core::MultiVecDerivId /*vResult*/) = 0;
-
-protected:
-    AdjointSolver();
-
-    ~AdjointSolver() override;
+    virtual void solve(const ExecParams* /*params*/, SReal /*dt*/, MultiVecCoordId /*xResult*/, MultiVecDerivId /*vResult*/) = 0;
 };
 }

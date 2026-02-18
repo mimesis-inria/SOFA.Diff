@@ -8,10 +8,13 @@
 
 namespace sofadiff
 {
+using namespace sofa::core;
+
+
 class SOFA_SOFADIFF_API AdjointSolveVisitor: public simulation::Visitor
 {
 public:
-    AdjointSolveVisitor(const core::ExecParams* params, SReal _dt, core::MultiVecCoordId X, core::MultiVecDerivId V);
+    AdjointSolveVisitor(const ExecParams* params, SReal _dt, MultiVecCoordId X, MultiVecDerivId V);
 
     Result processNodeTopDown(simulation::Node* node) override;
     void processNodeBottomUp(simulation::Node* /*node*/) override;
@@ -26,7 +29,7 @@ public:
 
 protected:
     SReal dt;
-    sofa::core::MultiVecCoordId x;
-    sofa::core::MultiVecDerivId v;
+    MultiVecCoordId x;
+    MultiVecDerivId v;
 };
 }
