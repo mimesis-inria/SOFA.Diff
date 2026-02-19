@@ -18,10 +18,12 @@ find_package(SofaImGui REQUIRED)
 set(SOFADIFF_SRC_DIR src/SofaDiff)
 set(HEADER_FILES
         ${SOFADIFF_SRC_DIR}/config.h.in
+        ${SOFADIFF_SRC_DIR}/optimizers/OptimizationLoop.h
+        ${SOFADIFF_SRC_DIR}/optimizers/GradientBasedOptimizationLoop.h
+        ${SOFADIFF_SRC_DIR}/optimizers/GradientDescentOptimizationLoop.h
         ${SOFADIFF_SRC_DIR}/DifferentiableAnimationLoop.h
         ${SOFADIFF_SRC_DIR}/AdjointSolver.h
         ${SOFADIFF_SRC_DIR}/StaticAdjointSolver.h
-        ${SOFADIFF_SRC_DIR}/GradientDescentController.h
         ${SOFADIFF_SRC_DIR}/ParameterizedForceField.h
         ${SOFADIFF_SRC_DIR}/Parameter.h
         ${SOFADIFF_SRC_DIR}/Parameter.inl
@@ -38,10 +40,12 @@ set(HEADER_FILES_TO_MOC
 )
 set(SOURCE_FILES
         ${SOFADIFF_SRC_DIR}/initSofaDiff.cpp
+        ${SOFADIFF_SRC_DIR}/optimizers/OptimizationLoop.cpp
+        ${SOFADIFF_SRC_DIR}/optimizers/GradientBasedOptimizationLoop.cpp
+        ${SOFADIFF_SRC_DIR}/optimizers/GradientDescentOptimizationLoop.cpp
         ${SOFADIFF_SRC_DIR}/DifferentiableAnimationLoop.cpp
         ${SOFADIFF_SRC_DIR}/AdjointSolver.cpp
         ${SOFADIFF_SRC_DIR}/StaticAdjointSolver.cpp
-        ${SOFADIFF_SRC_DIR}/GradientDescentController.cpp
         ${SOFADIFF_SRC_DIR}/ParameterizedForceField.cpp
         ${SOFADIFF_SRC_DIR}/Parameter.cpp
         ${SOFADIFF_SRC_DIR}/LossState.cpp

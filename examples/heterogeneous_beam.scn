@@ -22,6 +22,7 @@
         <RequiredPlugin name="Sofa.GL.Component.Rendering3D"/> <!-- Needed to use components [OglModel] -->
     </Node>
 
+    <GradientDescentOptimizationLoop/>
     <DifferentiableAnimationLoop computeBoundingBox="false"/>
     <VisualStyle displayFlags="showBehavior showBehaviorModels showForceFields hideMappings"/>
 
@@ -152,6 +153,4 @@
             </Node>
         </Node>
     </Node>
-
-    <GradientDescentController name="optimizer"/>
 </Node>

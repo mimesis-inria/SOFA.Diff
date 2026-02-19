@@ -21,6 +21,7 @@
 ******************************************************************************/
 #include <SofaDiff/imgui/LoopsControlsGUI.h>
 #include <SofaDiff/DifferentiableAnimationLoop.h>
+#include <SofaDiff/optimizers/OptimizationLoop.h>
 
 #include <imgui.h>
 #include <SofaImGui/guis/AdditionalGUIRegistry.h>
@@ -40,6 +41,24 @@ void registerLoopsControlsGUI()
 
 void LoopsControlsGUI::doDraw(core::sptr<simulation::Node> groot)
 {
+    OptimizationLoop * optimizationLoop;
+    groot->get(optimizationLoop);
+    if (optimizationLoop)
+    {
+        const auto params = core::execparams::defaultInstance();
+        const auto dt = groot->getDt();
+
+        ImGui::Text("Optimization Loop");
+        ImGui::SameLine();
+        const auto forwardStepButton = ImGui::Button(std::string(ICON_FA_FORWARD_STEP).append("##1").c_str());
+        ImGui::SetItemTooltip("Make one step of the forward solver");
+        if (forwardStepButton)
+        {
+            optimizationLoop->step(params, dt);
+            simulation::node::updateVisual(groot.get());
+        }
+    }
+
     DifferentiableAnimationLoop * differentiableLoop;
     groot->get(differentiableLoop);
     if (differentiableLoop)
