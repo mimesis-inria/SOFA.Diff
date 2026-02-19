@@ -1,4 +1,4 @@
-#include <SofaDiff/StaticAdjointSolver.h>
+#include <SofaDiff/adjoints/StaticAdjointSolver.h>
 #include <SofaDiff/DifferentiableAnimationLoop.h>
 #include <SofaDiff/visitors/MechanicalAccumulateVecDeriv.h>
 #include <SofaDiff/visitors/MechanicalPropagateVecDeriv.h>

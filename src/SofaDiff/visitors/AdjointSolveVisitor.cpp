@@ -1,5 +1,5 @@
 #include <SofaDiff/visitors/AdjointSolveVisitor.h>
-#include <SofaDiff/AdjointSolver.h>
+#include <SofaDiff/adjoints/AdjointSolver.h>
 
 #include <sofa/simulation/Node.h>
 #include <sofa/core/objectmodel/BaseContext.h>

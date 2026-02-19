@@ -1,7 +1,7 @@
 #pragma once
 
 #include <SofaDiff/config.h>
-#include <SofaDiff/AdjointSolver.h>
+#include <SofaDiff/adjoints/AdjointSolver.h>
 #include <SofaDiff/ParameterizedForceField.h>
 #include <SofaDiff/Parameter.h>
 #include <SofaDiff/LossState.h>
