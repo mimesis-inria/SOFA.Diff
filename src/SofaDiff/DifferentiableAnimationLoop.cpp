@@ -22,14 +22,17 @@
 
 #include <SofaDiff/DifferentiableAnimationLoop.h>
 #include <SofaDiff/visitors/AdjointSolveVisitor.h>
+#include <SofaDiff/visitors/StoreStateVisitor.h>
+#include <SofaDiff/visitors/RetrieveStateVisitor.h>
 #include <SofaDiff/ParameterizedForceField.h>
 
 #include <sofa/core/MechanicalParams.h>
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/helper/ScopedAdvancedTimer.h>
 #include <sofa/simulation/MechanicalOperations.h>
-#include <sofa/simulation/mechanicalvisitor/MechanicalResetForceVisitor.h>
 #include <sofa/simulation/Node.h>
+// #include <sofa/simulation/UpdateMappingVisitor.h>  // cf TODO below
+#include <sofa/simulation/mechanicalvisitor/MechanicalPropagateOnlyPositionAndVelocityVisitor.h>
 #include <sofa/simulation/VectorOperations.h>
 
 
@@ -59,12 +62,50 @@ void DifferentiableAnimationLoop::init()
     behavior::MultiVecDeriv physicalGradient(&vop, s_physicalGradientId);
     physicalGradient.realloc(&vop, false, true, VecIdProperties{"Physical gradient of the loss", this->getClassName()});
     s_physicalGradientId = physicalGradient.id();
+
+    m_index = 0;
+}
+
+
+void DifferentiableAnimationLoop::storeState(const ExecParams* params)
+{
+    m_index++;
+    if (m_index > m_positionStorage.size() + 1)
+    {
+        msg_error("Storage requires more than one additional VecId — This should not happen.");
+        return;
+    }
+    if (m_index == m_positionStorage.size() + 1)
+    {
+        auto* ctx = this->getContext();
+        simulation::common::VectorOperations vop(params, ctx);
+
+        behavior::MultiVecCoord position(&vop, TMultiVecId<VecType::V_COORD, VecAccess::V_WRITE>());
+        position.realloc(&vop, false, true, VecIdProperties{"x"+std::to_string(m_index - 1), this->getClassName()});
+
+        behavior::MultiVecDeriv velocity(&vop, TMultiVecId<VecType::V_DERIV, VecAccess::V_WRITE>());
+        velocity.realloc(&vop, false, true, VecIdProperties{"v"+std::to_string(m_index - 1), this->getClassName()});
+
+        m_positionStorage.push_back(position.id());
+        m_velocityStorage.push_back(velocity.id());
+    }
+    StoreStateVisitor(params, m_positionStorage[m_index - 1], m_velocityStorage[m_index - 1]).execute(m_node);
+}
+
+void DifferentiableAnimationLoop::retrieveState(const ExecParams* params)
+{
+    auto m_params = MechanicalParams(*params);
+    RetrieveStateVisitor(params, m_positionStorage[m_index - 1], m_velocityStorage[m_index - 1]).execute(m_node);
+    MechanicalPropagateOnlyPositionAndVelocityVisitor(&m_params).execute(m_node);
+    // simulation::UpdateMappingVisitor(params).execute(m_node); // TODO: useful?
+    m_index--;
 }
 
 
 void DifferentiableAnimationLoop::step(const ExecParams* params, SReal dt)
 {
     DefaultAnimationLoop::step(params, dt);
+    storeState(params);
 }
 
 
@@ -75,10 +116,15 @@ void DifferentiableAnimationLoop::stepAdjoint(const ExecParams* params, SReal dt
         return;
     }
 
-    // TODO: call the "backward solver" if dynamic
+    if (m_index < 1)
+    {
+        return;
+    }
 
     // TODO: use the other constructor (like DefaultAnimationLoop with SolveVisitor)
     AdjointSolveVisitor(params, dt, vec_id::write_access::position, vec_id::write_access::velocity).execute(m_node);
+    updateSimulationContext(params, -dt, m_node->getTime());
+    retrieveState(params);
 }
 
 

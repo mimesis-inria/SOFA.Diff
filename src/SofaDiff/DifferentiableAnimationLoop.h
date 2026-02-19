@@ -43,6 +43,15 @@ public:
     void init() override;
     void step(const core::ExecParams* params, SReal dt) override;
     void stepAdjoint(const core::ExecParams* params, SReal dt);
+
+protected:
+    void storeState(const core::ExecParams* params);
+    void retrieveState(const core::ExecParams* params);
+
+private:
+    std::vector<core::MultiVecCoordId> m_positionStorage;
+    std::vector<core::MultiVecDerivId> m_velocityStorage;
+    unsigned int m_index; // index of the current time step
 };
 
 }

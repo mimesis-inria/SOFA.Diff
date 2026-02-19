@@ -76,6 +76,7 @@ void LoopsControlsGUI::doDraw(core::sptr<simulation::Node> groot)
         if(adjointStepButton)
         {
             differentiableLoop->stepAdjoint(params, dt);
+            simulation::node::updateVisual(groot.get());
         }
         if (forwardStepButton)
         {
