@@ -65,7 +65,6 @@ void DifferentiableAnimationLoop::init()
 void DifferentiableAnimationLoop::step(const ExecParams* params, SReal dt)
 {
     DefaultAnimationLoop::step(params, dt);
-    stepAdjoint(params, dt); // temporary: later on should be called directly by user (e.g. button in GUI)
 }
 
 

@@ -8,6 +8,7 @@ find_package(Sofa.Component.Controller REQUIRED)
 find_package(Sofa.Component.Mapping REQUIRED)
 find_package(Sofa.Component.SolidMechanics.Spring REQUIRED)
 find_package(Sofa.Component.SolidMechanics.FEM.Elastic REQUIRED)
+find_package(SofaImGui REQUIRED)
 
 ## Optional dependencies
 #sofa_find_package(Sofa.GUI.Qt QUIET)
@@ -31,6 +32,7 @@ set(HEADER_FILES
         ${SOFADIFF_SRC_DIR}/forcefields/ParameterizedSpringForceField.h
         ${SOFADIFF_SRC_DIR}/forcefields/ParameterizedTetrahedronFEMForceField.h
         ${SOFADIFF_SRC_DIR}/mappings/MeanSquaredErrorMapping.h
+        ${SOFADIFF_SRC_DIR}/imgui/LoopsControlsGUI.h
 )
 set(HEADER_FILES_TO_MOC
 )
@@ -49,6 +51,7 @@ set(SOURCE_FILES
         ${SOFADIFF_SRC_DIR}/forcefields/ParameterizedSpringForceField.cpp
         ${SOFADIFF_SRC_DIR}/forcefields/ParameterizedTetrahedronFEMForceField.cpp
         ${SOFADIFF_SRC_DIR}/mappings/MeanSquaredErrorMapping.cpp
+        ${SOFADIFF_SRC_DIR}/imgui/LoopsControlsGUI.cpp
 )
 set(README_FILES
         README.md
@@ -60,7 +63,7 @@ set(README_FILES
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES_TO_MOC} ${MOCCED_HEADER_FILES} ${HEADER_FILES} ${SOURCE_FILES} ${README_FILES})
 
 # Link the plugin library to its dependency(ies).
-target_link_libraries(${PROJECT_NAME} Sofa.Framework Sofa.Component.Controller Sofa.Component.Mapping Sofa.Component.SolidMechanics.Spring Sofa.Component.SolidMechanics.FEM.Elastic)
+target_link_libraries(${PROJECT_NAME} Sofa.Framework Sofa.Component.Controller Sofa.Component.Mapping Sofa.Component.SolidMechanics.Spring Sofa.Component.SolidMechanics.FEM.Elastic SofaImGui)
 # Link with the optional GUI dependencies.
 #if(Qt5Core_FOUND AND Sofa.GUI.Qt_FOUND)
 #    target_link_libraries(${PROJECT_NAME} Sofa.GUI.Qt)
