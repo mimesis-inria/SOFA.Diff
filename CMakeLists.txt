@@ -24,6 +24,7 @@ set(HEADER_FILES
         ${SOFADIFF_SRC_DIR}/DifferentiableAnimationLoop.h
         ${SOFADIFF_SRC_DIR}/adjoints/AdjointSolver.h
         ${SOFADIFF_SRC_DIR}/adjoints/StaticAdjointSolver.h
+        ${SOFADIFF_SRC_DIR}/adjoints/ImplicitAdjointSolver.h
         ${SOFADIFF_SRC_DIR}/ParameterizedForceField.h
         ${SOFADIFF_SRC_DIR}/Parameter.h
         ${SOFADIFF_SRC_DIR}/Parameter.inl
@@ -46,6 +47,7 @@ set(SOURCE_FILES
         ${SOFADIFF_SRC_DIR}/DifferentiableAnimationLoop.cpp
         ${SOFADIFF_SRC_DIR}/adjoints/AdjointSolver.cpp
         ${SOFADIFF_SRC_DIR}/adjoints/StaticAdjointSolver.cpp
+        ${SOFADIFF_SRC_DIR}/adjoints/ImplicitAdjointSolver.cpp
         ${SOFADIFF_SRC_DIR}/ParameterizedForceField.cpp
         ${SOFADIFF_SRC_DIR}/Parameter.cpp
         ${SOFADIFF_SRC_DIR}/LossState.cpp
