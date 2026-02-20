@@ -20,14 +20,18 @@ public:
     SOFA_CLASS2(ImplicitAdjointSolver, AdjointSolver, core::behavior::LinearSolverAccessor);
 
     void init() override;
-    void solve(const ExecParams* /*params*/, SReal /*dt*/, MultiVecCoordId /*xResult*/, MultiVecDerivId /*vResult*/) override;
+    void solve(const ExecParams* params, SReal dt, MultiVecCoordId /*xResult*/, MultiVecDerivId /*vResult*/) override;
 
-// protected:
+protected:
+    MultiVecDerivId m_positionGradientId;
+    MultiVecDerivId m_velocityGradientId;
+    MultiVecDerivId m_deltaVelocityGradientId;
 //     std::vector<BaseParameter *> m_trainableParameters;
 //     std::vector<Parameterized *> m_parameterizedForceFields;
 //     std::vector<LossState *> m_lossStates;
 //
-// private:
+private:
+    void solveForForceGradient(const ExecParams* params, SReal dt);
 //     void initializeLossGradientToOne();
 //     void resetParametersGradient() const;
 //     void solveForPhysicalGradient();
