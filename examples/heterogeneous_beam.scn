@@ -135,6 +135,7 @@
 
             <Node name="Markers">
                 <MechanicalObject template="Vec3d" name="state" position="0 0 0  10 0 0  30 0 0  40 0 0"/>
+<!--                <MechanicalObject template="Vec3d" name="state" position="0 0 0  10 0 0"/>-->
                 <BarycentricMapping/>
             </Node>
         </Node>
@@ -144,6 +145,7 @@
     <Node name="Loss">
         <Node name="Targets">
             <MechanicalObject template="Vec3d" name="state" position="0.2 -2.6 0.0  10.0 -0.8 0.0  29.5 -2.9 0.0  38.5 -7.4 0.0" showObject="true" drawMode="1" showObjectScale="0.5"/>
+<!--            <MechanicalObject template="Vec3d" name="state" position="0.2 -2.6 0.0  10.0 -0.8 0.0" showObject="true" drawMode="1" showObjectScale="0.5"/>-->
         </Node>
         <Node name="Distances">
             <MechanicalObject template="Vec1d" name="output" position="0"/>

@@ -40,7 +40,8 @@ void OptimizationLoop::step(const core::ExecParams *params, SReal dt)
     updateParameters();
 
     // TODO: make as many steps as required to compute the loss
-    m_animationLoop->step(params, dt);
+    for (int i = 0; i < 60; i++)
+        m_animationLoop->step(params, dt);
 }
 
 

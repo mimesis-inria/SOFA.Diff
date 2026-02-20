@@ -27,11 +27,13 @@ protected:
     MultiVecDerivId m_velocityGradientId;
     MultiVecDerivId m_deltaVelocityGradientId;
 //     std::vector<BaseParameter *> m_trainableParameters;
-//     std::vector<Parameterized *> m_parameterizedForceFields;
+    std::vector<Parameterized *> m_parameterizedForceFields;
 //     std::vector<LossState *> m_lossStates;
 //
 private:
     void solveForForceGradient(const ExecParams* params, SReal dt);
+    void updatePositionGradient(MechanicalParams mparams, SReal dt);
+    void updateVelocityGradient(MechanicalParams mparams, SReal dt);
 //     void initializeLossGradientToOne();
 //     void resetParametersGradient() const;
 //     void solveForPhysicalGradient();

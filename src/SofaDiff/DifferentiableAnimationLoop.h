@@ -22,6 +22,8 @@
 #pragma once
 
 #include <SofaDiff/config.h>
+#include <SofaDiff/ParameterizedForceField.h>
+#include <SofaDiff/LossState.h>
 
 #include <sofa/simulation/DefaultAnimationLoop.h>
 #include <sofa/core/behavior/LinearSolverAccessor.h>
@@ -32,6 +34,8 @@ namespace sofadiff
 {
 extern core::MultiVecDerivId s_geometricGradientId;
 extern core::MultiVecDerivId s_physicalGradientId;
+
+enum SolverDirection {NONE, FORWARD, BACKWARD};
 
 class SOFA_SOFADIFF_API DifferentiableAnimationLoop:
     public simulation::DefaultAnimationLoop,
@@ -45,6 +49,9 @@ public:
     void stepAdjoint(const core::ExecParams* params, SReal dt);
 
 protected:
+    std::vector<LossState *> m_lossStates;
+    void setLossGradient(SReal value);
+
     void storeState(const core::ExecParams* params);
     void retrieveState(const core::ExecParams* params);
 
@@ -52,6 +59,8 @@ private:
     std::vector<core::MultiVecCoordId> m_positionStorage;
     std::vector<core::MultiVecDerivId> m_velocityStorage;
     unsigned int m_index; // index of the current time step
+    SolverDirection m_solverDirection;
+    unsigned int m_totalTimesteps; // number of consecutive time steps
 };
 
 }

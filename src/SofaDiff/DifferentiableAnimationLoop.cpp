@@ -64,6 +64,9 @@ void DifferentiableAnimationLoop::init()
     s_physicalGradientId = physicalGradient.id();
 
     m_index = 0;
+    m_totalTimesteps = 0;
+
+    ctx->get<LossState> (&m_lossStates, BaseContext::SearchRoot);
 }
 
 
@@ -104,8 +107,14 @@ void DifferentiableAnimationLoop::retrieveState(const ExecParams* params)
 
 void DifferentiableAnimationLoop::step(const ExecParams* params, SReal dt)
 {
+    if (m_solverDirection != FORWARD)
+    {
+        m_totalTimesteps = m_index;
+        m_solverDirection = FORWARD;
+    }
     DefaultAnimationLoop::step(params, dt);
     storeState(params);
+    m_totalTimesteps++;
 }
 
 
@@ -121,11 +130,39 @@ void DifferentiableAnimationLoop::stepAdjoint(const ExecParams* params, SReal dt
         return;
     }
 
+    if (m_solverDirection != BACKWARD)
+    {
+        m_solverDirection = BACKWARD;
+    }
+
+    // Hard coded "global loss" equal to the latest "instant loss": very dirty and temporary
+    const SReal lossGradient = (m_index == m_totalTimesteps) ? 1.0 : 0.0;
+    setLossGradient(lossGradient);
+
     // TODO: use the other constructor (like DefaultAnimationLoop with SolveVisitor)
     AdjointSolveVisitor(params, dt, vec_id::write_access::position, vec_id::write_access::velocity).execute(m_node);
     updateSimulationContext(params, -dt, m_node->getTime());
     retrieveState(params);
 }
+
+
+void DifferentiableAnimationLoop::setLossGradient(const SReal value)
+{
+    for (const auto loss : m_lossStates)
+    {
+        if (loss == nullptr)
+        {
+            msg_error() << "Bad link to the loss object";
+            this->d_componentState.setValue(ComponentState::Invalid);
+            return;
+        }
+        const auto& gradient = s_geometricGradientId.getId(loss);
+        // TODO: handle case where we cannot write in gradient
+        helper::WriteAccessor<Data<VecDeriv_t<defaulttype::Vec1Types>> > lossGradient = loss->write(gradient);
+        lossGradient[0] = sofa::Deriv_t<defaulttype::Vec1Types> (value);
+    }
+}
+
 
 
 void registerDifferentiableAnimationLoop(ObjectFactory* factory)
