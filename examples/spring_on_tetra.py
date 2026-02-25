@@ -54,7 +54,7 @@ def set_data(**kwargs):
 # =====================================================================================================================
 def createScene(root):
     set_current_node(root)
-    set_data(dt=0.05, gravity=(0, -9.8, 0))
+    set_data(dt=0.01, gravity=(0, -10, 0))
 
     with Node("Plugins"):
         add_object("RequiredPlugin", pluginName=[
@@ -83,11 +83,11 @@ def createScene(root):
     add_object("MechanicalObject", template="Vec3d", name="state", position="0 10 0")
 
     with Node("Parameters"):
-        add_object("TrainableParameterVector", name="stiffness", value="30", learningRate="0.005")
+        add_object("TrainableParameterVector", name="stiffness", value="10", learningRate="0.001")
 
     with Node("Physics"):
         add_object("SparseLDLSolver", template="CompressedRowSparseMatrixd", name="solver", printLog="false")
-        add_object("NewtonRaphsonSolver", name="newton", maxNbIterationsNewton="100", maxNbIterationsLineSearch="1", warnWhenLineSearchFails="false")
+        # add_object("NewtonRaphsonSolver", name="newton", maxNbIterationsNewton="100", maxNbIterationsLineSearch="1", warnWhenLineSearchFails="false")
         # add_object("StaticSolver", newtonSolver="@newton", name="static")
         # add_object("StaticAdjointSolver", name="adjoint")
         add_object("EulerImplicitSolver", name="euler")
@@ -95,18 +95,11 @@ def createScene(root):
 
         add_object("MechanicalObject", template="Vec3d", name="state", position="0 0 0", showObject="true", drawMode="1", showObjectScale="0.1")
         add_object("UniformMass", template="Vec3d", name="mass", totalMass="10")
-        # add_object("MechanicalObject", template="Vec3d", name="state", position="0 0 0", showObject="true", drawMode="1", showObjectScale="0.1")
-        # add_object("UniformMass", template="Vec3d", name="mass", totalMass="1")
-        # add_object("ConstantForceField", forces=(0, -9.8, 0, 0, 0, 0, 0))
-        # with Node("Point"):
-        #     add_object("MechanicalObject", template="Vec3d", name="state", position="0 1 0")
-        #     add_object("RigidMapping")
-        # add_object("RestShapeSpringsForceField", angularStiffness=1000000)
 
-        add_object("ParameterizedSpringForceField", name="spring", object1="@/Physics/state", indices1="0", object2="@/state", indices2="0", length="3", stiffness="@/Parameters/stiffness.value")
+        add_object("ParameterizedSpringForceField", name="spring", object1="@/Physics/state", indices1="0", object2="@/state", indices2="0", length="5", stiffness="@/Parameters/stiffness.value", damping=0)
 
     with Node("Loss"):
-        add_object("MechanicalObject", template="Vec3d", name="state", position="0 2.67 0", showObject="true", drawMode="1", showObjectScale="0.08")
+        add_object("MechanicalObject", template="Vec3d", name="state", position="0 0 0", showObject="true", drawMode="1", showObjectScale="0.08")
         with Node("Distance"):
             add_object("MechanicalObject", template="Vec1d", name="state", position="0")
             add_object("DistanceFromTargetMapping", input="@Physics/state", targetPositions="@/Loss/state.position")
