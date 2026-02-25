@@ -1,6 +1,7 @@
 #include <SofaDiff/adjoints/AdjointSolver.h>
 
 #include <sofa/helper/ScopedAdvancedTimer.h>
+#include <sofa/simulation/VectorOperations.h>
 
 
 namespace sofadiff
@@ -15,11 +16,27 @@ void AdjointSolver::init()
     ctx->get<Parameterized> (&m_parameterizedForceFields, objectmodel::BaseContext::SearchRoot);
 }
 
+MultiVecDerivId AdjointSolver::newVecId(const char * name)
+{
+    simulation::common::VectorOperations vop(mechanicalparams::defaultInstance(), this->getContext());
+    const auto vecId = TMultiVecId<VecType::V_DERIV, VecAccess::V_WRITE>();
+    behavior::MultiVecDeriv vec(&vop, vecId);
+    vec.realloc(&vop, false, true, VecIdProperties{name, this->getClassName()});
+    return vec.id();
+}
+
 void AdjointSolver::resetParametersGradient() const
 {
     SCOPED_TIMER("AdjointSolver::resetParametersGradient");
     for (auto & parameter : m_trainableParameters)
         parameter->resetGradient();
+}
+
+void AdjointSolver::propagateGradientsThroughForceFields(const MechanicalParams * mparams, const MultiVecDerivId & forceGradientId) const
+{
+    SCOPED_TIMER("AdjointSolver::propagateGradientsThroughForceFields");
+    for (const auto &forceField: m_parameterizedForceFields)
+        forceField->applyParametersJacobianTranspose(mparams, forceGradientId);
 }
 
 }

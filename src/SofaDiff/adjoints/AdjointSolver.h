@@ -7,6 +7,10 @@
 #include <sofa/core/MultiVecId.h>
 #include <sofa/core/objectmodel/BaseObject.h>
 
+#include "sofa/core/MechanicalParams.h"
+#include "SofaDiff/visitors/AdjointResetVisitor.h"
+#include "SofaDiff/visitors/AdjointResetVisitor.h"
+
 
 namespace sofadiff
 {
@@ -29,7 +33,8 @@ protected:
     std::vector<BaseParameter *> m_trainableParameters;
     std::vector<Parameterized *> m_parameterizedForceFields;
 
+    MultiVecDerivId newVecId(const char * name);
     void resetParametersGradient() const;
-
+    void propagateGradientsThroughForceFields(const MechanicalParams * mparams, const MultiVecDerivId & forceGradientId) const;
 };
 }

@@ -12,7 +12,6 @@
 #include <sofa/simulation/VectorOperations.h>
 
 
-
 namespace sofadiff
 {
 using namespace sofa::core;
@@ -32,24 +31,9 @@ void ImplicitAdjointSolver::init()
     auto* params = mechanicalparams::defaultInstance();
     simulation::common::VectorOperations vop(params, ctx);
 
-    m_positionGradientId = TMultiVecId<VecType::V_DERIV, VecAccess::V_WRITE>();
-    behavior::MultiVecDeriv positionGradient(&vop, m_positionGradientId);
-    positionGradient.realloc(&vop, false, true, VecIdProperties{"gradient of the loss wrt x", this->getClassName()});
-    m_positionGradientId = positionGradient.id();
-
-    m_velocityGradientId = TMultiVecId<VecType::V_DERIV, VecAccess::V_WRITE>();
-    behavior::MultiVecDeriv velocityGradient(&vop, m_velocityGradientId);
-    velocityGradient.realloc(&vop, false, true, VecIdProperties{"gradient of the loss wrt v", this->getClassName()});
-    m_velocityGradientId = velocityGradient.id();
-
-    m_deltaVelocityGradientId = TMultiVecId<VecType::V_DERIV, VecAccess::V_WRITE>();
-    behavior::MultiVecDeriv deltaVelocityGradient(&vop, m_deltaVelocityGradientId);
-    deltaVelocityGradient.realloc(&vop, false, true, VecIdProperties{"gradient of the loss wrt dv", this->getClassName()});
-    m_deltaVelocityGradientId = deltaVelocityGradient.id();
-
-    // TODO: why do I do that?
-    for (const auto & parameter : m_trainableParameters)
-        parameter->resetGradient();
+    m_positionGradientId = newVecId("gradient of the loss wrt x");
+    m_velocityGradientId = newVecId("gradient of the loss wrt v");
+    m_deltaVelocityGradientId = newVecId("gradient of the loss wrt dv");
 }
 
 void ImplicitAdjointSolver::resetGradients(const ExecParams * params)
@@ -92,8 +76,7 @@ void ImplicitAdjointSolver::solve(const ExecParams * params, SReal dt, MultiVecC
 
     // propagate the "force gradient" to the parameters through the ParameterizedForceFields
     // ?? pn.grad += f.grad * df/dp
-    for (const auto &forceField: m_parameterizedForceFields)
-        forceField->applyParametersJacobianTranspose(&mparams, s_physicalGradientId);
+    propagateGradientsThroughForceFields(&mparams, s_physicalGradientId);
 
     // update the "dofs gradient" by propagating the "force gradient"
     // this gradient replaces the previous one
@@ -114,7 +97,6 @@ void ImplicitAdjointSolver::solveForForceGradient(const ExecParams *params, SRea
     simulation::common::VectorOperations vop(&mparams, ctx);
     vop.v_eq(m_deltaVelocityGradientId, m_velocityGradientId);
     vop.v_peq(m_deltaVelocityGradientId, m_positionGradientId, dt);
-    // vop.v_peq(m_deltaVelocityGradientId, s_geometricGradientId, dt);
 
     // dF/d(dv) = M - dt^2*K - dt*B
     auto *linearSolver = l_linearSolver.get();

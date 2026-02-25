@@ -50,11 +50,7 @@ void StaticAdjointSolver::solve(const ExecParams* params, SReal /*dt*/, MultiVec
     MechanicalAccumulateVecDeriv(&mparams, s_geometricGradientId).execute(ctx, false);
     solveForPhysicalGradient();
     MechanicalPropagateVecDeriv(&mparams, s_physicalGradientId).execute(ctx, false);
-    {
-        SCOPED_TIMER("StaticAdjointSolver::applyParametersJacobianTranspose");
-        for (const auto &forceField: m_parameterizedForceFields)
-            forceField->applyParametersJacobianTranspose(&mparams, s_physicalGradientId);
-    }
+    propagateGradientsThroughForceFields(&mparams, s_physicalGradientId);
 }
 
 void StaticAdjointSolver::initializeLossGradientToOne()
