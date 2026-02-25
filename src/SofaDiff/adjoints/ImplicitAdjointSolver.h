@@ -24,18 +24,18 @@ public:
     void solve(const ExecParams* params, SReal dt, MultiVecCoordId /*xResult*/, MultiVecDerivId /*vResult*/) override;
 
 protected:
+    MultiVecDerivId m_lossGradientId;
     MultiVecDerivId m_positionGradientId;
     MultiVecDerivId m_velocityGradientId;
     MultiVecDerivId m_deltaVelocityGradientId;
-//     std::vector<BaseParameter *> m_trainableParameters;
-//     std::vector<LossState *> m_lossStates;
-//
+    MultiVecDerivId m_forceGradientId;
+
+    MultiVecDerivId & getLossGradientId() override { return m_lossGradientId; }
+
 private:
     void solveForForceGradient(const ExecParams* params, SReal dt);
     void updatePositionGradient(MechanicalParams mparams, SReal dt);
     void updateVelocityGradient(MechanicalParams mparams, SReal dt);
-//     void initializeLossGradientToOne();
-//     void solveForPhysicalGradient();
 };
 
 }

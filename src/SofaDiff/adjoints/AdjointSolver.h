@@ -1,15 +1,13 @@
 #pragma once
 
 #include <SofaDiff/config.h>
+#include <SofaDiff/LossState.h>
 #include <SofaDiff/Parameter.h>
 #include <SofaDiff/ParameterizedForceField.h>
 
+#include <sofa/core/MechanicalParams.h>
 #include <sofa/core/MultiVecId.h>
 #include <sofa/core/objectmodel/BaseObject.h>
-
-#include "sofa/core/MechanicalParams.h"
-#include "SofaDiff/visitors/AdjointResetVisitor.h"
-#include "SofaDiff/visitors/AdjointResetVisitor.h"
 
 
 namespace sofadiff
@@ -26,15 +24,17 @@ public:
     void init() override;
 
     virtual void resetGradients(const ExecParams* /*params*/) = 0; // TODO: could use BaseObject::reset() ?
-
     virtual void solve(const ExecParams* /*params*/, SReal /*dt*/, MultiVecCoordId /*xResult*/, MultiVecDerivId /*vResult*/) = 0;
 
 protected:
+    std::vector<LossState *> m_lossStates;
     std::vector<BaseParameter *> m_trainableParameters;
     std::vector<Parameterized *> m_parameterizedForceFields;
 
     MultiVecDerivId newVecId(const char * name);
     void resetParametersGradient() const;
     void propagateGradientsThroughForceFields(const MechanicalParams * mparams, const MultiVecDerivId & forceGradientId) const;
+
+    virtual MultiVecDerivId & getLossGradientId() = 0;
 };
 }

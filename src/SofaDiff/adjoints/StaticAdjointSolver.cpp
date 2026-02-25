@@ -28,15 +28,17 @@ void StaticAdjointSolver::init()
     AdjointSolver::init();
     LinearSolverAccessor::init();
 
-    // TODO: remove this part (move it to DifferentiableAnimationLoop somehow)
-    const auto* ctx = this->getContext();
-    ctx->get<LossState> (&m_lossStates, BaseContext::SearchRoot);
-    initializeLossGradientToOne();
+    m_positionGradientId = newVecId("gradient of the global loss wrt x");
+    m_forceGradientId = newVecId("gradient of the global loss wrt f");
 }
 
-void StaticAdjointSolver::resetGradients(const ExecParams *)
+void StaticAdjointSolver::resetGradients(const ExecParams * params)
 {
+    auto *ctx = this->getContext()->getRootContext(); // TODO: maybe not the root context? But needs access to loss and parameters...
+    const MechanicalParams mparams(*params);
 
+    MechanicalResetForceVisitor(&mparams, m_positionGradientId).execute(ctx, false);
+    resetParametersGradient();
 }
 
 
@@ -45,30 +47,10 @@ void StaticAdjointSolver::solve(const ExecParams* params, SReal /*dt*/, MultiVec
     auto *ctx = this->getContext()->getRootContext(); // TODO: maybe not the root context? But needs access to loss and parameters...
     const MechanicalParams mparams(*params);
 
-    MechanicalResetForceVisitor(&mparams, s_geometricGradientId).execute(ctx, false);
-    resetParametersGradient();
-    MechanicalAccumulateVecDeriv(&mparams, s_geometricGradientId).execute(ctx, false);
+    MechanicalAccumulateVecDeriv(&mparams, m_positionGradientId).execute(ctx, false);
     solveForPhysicalGradient();
-    MechanicalPropagateVecDeriv(&mparams, s_physicalGradientId).execute(ctx, false);
-    propagateGradientsThroughForceFields(&mparams, s_physicalGradientId);
-}
-
-void StaticAdjointSolver::initializeLossGradientToOne()
-{
-    SCOPED_TIMER("StaticAdjointSolver::initializeLossGradientToOne");
-    for (const auto loss : m_lossStates)
-    {
-        if (loss == nullptr)
-        {
-            msg_error() << "Bad link to the loss object";
-            this->d_componentState.setValue(ComponentState::Invalid);
-            return;
-        }
-        const auto& gradient = s_geometricGradientId.getId(loss);
-        // TODO: handle case where we cannot write in gradient
-        helper::WriteAccessor<Data<VecDeriv_t<defaulttype::Vec1Types>> > lossGradient = loss->write(gradient);
-        lossGradient[0] = sofa::Deriv_t<defaulttype::Vec1Types> (1);
-    }
+    MechanicalPropagateVecDeriv(&mparams, m_forceGradientId).execute(ctx, false);
+    propagateGradientsThroughForceFields(&mparams, m_forceGradientId);
 }
 
 void StaticAdjointSolver::solveForPhysicalGradient()
@@ -84,10 +66,10 @@ void StaticAdjointSolver::solveForPhysicalGradient()
     static constexpr MatricesFactors::K k(-1);
     mop.setSystemMBKMatrix(m, b, k, linearSolver);
 
-    linearSolver->getLinearSystem()->setSystemSolution(s_physicalGradientId);
-    linearSolver->getLinearSystem()->setRHS(s_geometricGradientId);
+    linearSolver->getLinearSystem()->setSystemSolution(m_forceGradientId);
+    linearSolver->getLinearSystem()->setRHS(m_positionGradientId);
     linearSolver->solveSystem();  // Solve -df/dx * lambda = dy/dx
-    linearSolver->getLinearSystem()->dispatchSystemSolution(s_physicalGradientId);
+    linearSolver->getLinearSystem()->dispatchSystemSolution(m_forceGradientId);
 }
 
 }

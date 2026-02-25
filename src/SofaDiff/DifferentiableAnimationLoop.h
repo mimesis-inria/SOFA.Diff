@@ -32,9 +32,6 @@
 
 namespace sofadiff
 {
-extern core::MultiVecDerivId s_geometricGradientId;
-extern core::MultiVecDerivId s_physicalGradientId;
-
 enum SolverDirection {NONE, FORWARD, BACKWARD};
 
 class SOFA_SOFADIFF_API DifferentiableAnimationLoop:

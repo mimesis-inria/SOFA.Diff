@@ -23,6 +23,7 @@
 
 #include <SofaDiff/config.h>
 
+#include <sofa/core/MultiVecId.h>
 #include <sofa/core/State.h>
 #include <sofa/core/trait/DataTypes.h>
 
@@ -41,6 +42,7 @@ public:
     Data< VecDeriv_t<defaulttype::Vec1Types> > d_gradient;
 
     LossState();
+    void setGradientVecId(core::MultiVecDerivId & gradientVecId) const;
 
     Data< VecCoord >* write(core::VecCoordId v) override;
     const Data< VecCoord >* read(core::ConstVecCoordId v) const override;

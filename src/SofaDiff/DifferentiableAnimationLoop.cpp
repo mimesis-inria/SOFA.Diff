@@ -42,11 +42,6 @@ namespace sofadiff
 using namespace sofa::simulation::mechanicalvisitor;
 using namespace sofa::core;
 
-
-MultiVecDerivId s_geometricGradientId = TMultiVecId<VecType::V_DERIV, VecAccess::V_WRITE>();
-MultiVecDerivId s_physicalGradientId = TMultiVecId<VecType::V_DERIV, VecAccess::V_WRITE>();
-
-
 void DifferentiableAnimationLoop::init()
 {
     DefaultAnimationLoop::init();
@@ -55,14 +50,6 @@ void DifferentiableAnimationLoop::init()
     auto* ctx = this->getContext();
     auto* params = mechanicalparams::defaultInstance();
     simulation::common::VectorOperations vop(params, ctx);
-
-    behavior::MultiVecDeriv geometricGradient(&vop, s_geometricGradientId);
-    geometricGradient.realloc(&vop, false, true, VecIdProperties{"Geometric gradient of the loss", this->getClassName()});
-    s_geometricGradientId = geometricGradient.id();
-
-    behavior::MultiVecDeriv physicalGradient(&vop, s_physicalGradientId);
-    physicalGradient.realloc(&vop, false, true, VecIdProperties{"Physical gradient of the loss", this->getClassName()});
-    s_physicalGradientId = physicalGradient.id();
 
     m_index = 0;
     m_totalTimesteps = 0;
@@ -166,9 +153,8 @@ void DifferentiableAnimationLoop::setLossGradient(const SReal value)
             this->d_componentState.setValue(ComponentState::Invalid);
             return;
         }
-        const auto& gradient = s_geometricGradientId.getId(loss);
         // TODO: handle case where we cannot write in gradient
-        helper::WriteAccessor<Data<VecDeriv_t<defaulttype::Vec1Types>> > lossGradient = loss->write(gradient);
+        helper::WriteAccessor<Data<VecDeriv_t<defaulttype::Vec1Types>> > lossGradient = helper::getWriteAccessor(loss->d_gradient);
         lossGradient[0] = sofa::Deriv_t<defaulttype::Vec1Types> (value);
     }
 }

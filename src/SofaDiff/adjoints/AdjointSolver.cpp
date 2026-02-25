@@ -12,13 +12,16 @@ using namespace sofa::core;
 void AdjointSolver::init()
 {
     const auto* ctx = this->getContext();
-    ctx->get<BaseParameter> (&m_trainableParameters, objectmodel::BaseContext::SearchRoot);
-    ctx->get<Parameterized> (&m_parameterizedForceFields, objectmodel::BaseContext::SearchRoot);
+    ctx->get<BaseParameter> (&m_trainableParameters, BaseContext::SearchRoot);
+    ctx->get<Parameterized> (&m_parameterizedForceFields, BaseContext::SearchRoot);
+    ctx->get<LossState> (&m_lossStates, BaseContext::SearchRoot);
+    for (const auto loss : m_lossStates)
+        loss->setGradientVecId(getLossGradientId());
 }
 
 MultiVecDerivId AdjointSolver::newVecId(const char * name)
 {
-    simulation::common::VectorOperations vop(mechanicalparams::defaultInstance(), this->getContext());
+    simulation::common::VectorOperations vop(mechanicalparams::defaultInstance(), this->getContext()->getRootContext());
     const auto vecId = TMultiVecId<VecType::V_DERIV, VecAccess::V_WRITE>();
     behavior::MultiVecDeriv vec(&vop, vecId);
     vec.realloc(&vop, false, true, VecIdProperties{name, this->getClassName()});

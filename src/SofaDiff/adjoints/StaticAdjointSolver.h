@@ -24,7 +24,10 @@ public:
     void solve(const ExecParams* /*params*/, SReal /*dt*/, MultiVecCoordId /*xResult*/, MultiVecDerivId /*vResult*/) override;
 
 protected:
-    std::vector<LossState *> m_lossStates;
+    MultiVecDerivId m_positionGradientId;
+    MultiVecDerivId m_forceGradientId;
+
+    MultiVecDerivId & getLossGradientId() override { return m_positionGradientId; }
 
 private:
     void initializeLossGradientToOne();

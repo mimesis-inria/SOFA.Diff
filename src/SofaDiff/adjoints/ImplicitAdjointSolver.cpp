@@ -24,16 +24,16 @@ void registerImplicitAdjointSolver(ObjectFactory* factory)
 
 void ImplicitAdjointSolver::init()
 {
-    AdjointSolver::init();
     LinearSolverAccessor::init();
 
-    auto* ctx = this->getContext();
-    auto* params = mechanicalparams::defaultInstance();
-    simulation::common::VectorOperations vop(params, ctx);
+    m_lossGradientId = newVecId("gradient of the instant loss wrt x");
+    m_positionGradientId = newVecId("gradient of the global loss wrt x");
+    m_velocityGradientId = newVecId("gradient of the global loss wrt v");
+    m_deltaVelocityGradientId = newVecId("gradient of the global loss wrt dv");
+    m_forceGradientId = newVecId("gradient of the global loss wrt f");
 
-    m_positionGradientId = newVecId("gradient of the loss wrt x");
-    m_velocityGradientId = newVecId("gradient of the loss wrt v");
-    m_deltaVelocityGradientId = newVecId("gradient of the loss wrt dv");
+    // TODO: Needs to be called after initialization of the VecIds, which is not ideal (because how is the user supposed to know?)
+    AdjointSolver::init();
 }
 
 void ImplicitAdjointSolver::resetGradients(const ExecParams * params)
@@ -60,23 +60,23 @@ void ImplicitAdjointSolver::solve(const ExecParams * params, SReal dt, MultiVecC
     // xn.grad += yn.grad * dyn/dxn  <--- Only this one for now (because standard mapping are functions of x only)
     // vn.grad += yn.grad * dyn/dvn
     // ?? pn.grad += yn.grad * dyn/dpn ??
-    simulation::mechanicalvisitor::MechanicalResetForceVisitor(&mparams, s_geometricGradientId).execute(ctx, false);
-    MechanicalAccumulateVecDeriv(&mparams, s_geometricGradientId).execute(ctx, false);
+    simulation::mechanicalvisitor::MechanicalResetForceVisitor(&mparams, m_lossGradientId).execute(ctx, false);
+    MechanicalAccumulateVecDeriv(&mparams, m_lossGradientId).execute(ctx, false);
 
     auto * local_ctx = this->getContext();
     simulation::common::VectorOperations vop(&mparams, local_ctx);
-    vop.v_peq(m_positionGradientId, s_geometricGradientId);
+    vop.v_peq(m_positionGradientId, m_lossGradientId);
 
     // solve the system for the "force gradient"
     // F(dv; xn, vn, pn) = 0 --> f.grad * dF/d(dv) = - dv.grad = - vn.grad - dt * xn.grad
     solveForForceGradient(params, dt);
 
     // propagate the force gradient to the mapped states through the mappings
-    MechanicalPropagateVecDeriv(&mparams, s_physicalGradientId).execute(ctx, false);
+    MechanicalPropagateVecDeriv(&mparams, m_forceGradientId).execute(ctx, false);
 
     // propagate the "force gradient" to the parameters through the ParameterizedForceFields
     // ?? pn.grad += f.grad * df/dp
-    propagateGradientsThroughForceFields(&mparams, s_physicalGradientId);
+    propagateGradientsThroughForceFields(&mparams, m_forceGradientId);
 
     // update the "dofs gradient" by propagating the "force gradient"
     // this gradient replaces the previous one
@@ -108,14 +108,14 @@ void ImplicitAdjointSolver::solveForForceGradient(const ExecParams *params, SRea
     mop.setSystemMBKMatrix(mFact, bFact, kFact, l_linearSolver.get());
 
     // Solve
-    linearSolver->getLinearSystem()->setSystemSolution(s_physicalGradientId);
+    linearSolver->getLinearSystem()->setSystemSolution(m_forceGradientId);
     linearSolver->getLinearSystem()->setRHS(m_deltaVelocityGradientId);
     linearSolver->solveSystem();  // Solve dF/d(dv) * dy/df = dy/dx (note the absence of the minus sign, cf below)
-    linearSolver->getLinearSystem()->dispatchSystemSolution(s_physicalGradientId);
+    linearSolver->getLinearSystem()->dispatchSystemSolution(m_forceGradientId);
 
     // Multiply by dt to get the force gradient (since F = M*dv - dt*f ==> f.grad = -dt * F.grad)
     // The minus sign cancels out with the minus sign that was omitted in the system above
-    vop.v_teq(s_physicalGradientId, dt);
+    vop.v_teq(m_forceGradientId, dt);
 }
 
 void ImplicitAdjointSolver::updatePositionGradient(MechanicalParams mparams, SReal dt)
@@ -123,7 +123,7 @@ void ImplicitAdjointSolver::updatePositionGradient(MechanicalParams mparams, SRe
     auto *ctx = this->getContext();
 
     const ConstMultiVecDerivId dx = mparams.dx();
-    mparams.setDx(s_physicalGradientId);
+    mparams.setDx(m_forceGradientId);
     // setDf(df);
     mparams.setBFactor(0.0);
     mparams.setKFactor(1.0);
@@ -140,7 +140,7 @@ void ImplicitAdjointSolver::updateVelocityGradient(MechanicalParams mparams, SRe
     vop.v_peq(m_velocityGradientId, m_positionGradientId, dt);
 
     const ConstMultiVecDerivId dx = mparams.dx();
-    mparams.setDx(s_physicalGradientId);
+    mparams.setDx(m_forceGradientId);
     // setDf(df);
     mparams.setBFactor(1.0);
     mparams.setKFactor(dt);

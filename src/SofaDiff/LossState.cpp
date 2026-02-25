@@ -35,14 +35,18 @@ LossState::LossState()
 : d_value(initData(&d_value, "value", "Value of the loss"))
 , d_gradient(initData(&d_gradient, "gradient", "Gradient of the loss"))
 {
-    s_geometricGradientId.setId(this, core::TVecId<core::VecType::V_DERIV, core::VecAccess::V_WRITE>(6));
-
     d_value.beginWriteOnly()->resize( 1 );
     d_value.endEdit();
 
     d_gradient.beginWriteOnly()->resize( 1 );
     d_gradient.endEdit();
 }
+
+void LossState::setGradientVecId(core::MultiVecDerivId & gradientVecId) const
+{
+    gradientVecId.setId(this, core::TVecId<core::VecType::V_DERIV, core::VecAccess::V_WRITE>(10));
+}
+
 
 Data< VecCoord_t<defaulttype::Vec1Types> >* LossState::write(core::VecCoordId v)
 {
@@ -60,14 +64,14 @@ const Data< VecCoord_t<defaulttype::Vec1Types> >* LossState::read(core::ConstVec
 
 Data< VecDeriv_t<defaulttype::Vec1Types> >* LossState::write(core::VecDerivId v)
 {
-    if (v.index == 6)
+    if (v.index == 10)
         return &d_gradient;
     return nullptr;
 }
 
 const Data< VecDeriv_t<defaulttype::Vec1Types> >* LossState::read(core::ConstVecDerivId v) const
 {
-    if (v.index == 6)
+    if (v.index == 10)
         return &d_gradient;
     return nullptr;
 }
