@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<Node name="Root" gravity="0 -9.8 0" time="0" animate="0" bbox="-2 -20 -4 42 4 4" dt="0.01">
+<Node name="Root" gravity="0 -9.8 0" time="0" animate="0" bbox="-2 -20 -4 42 4 4" dt="0.05">
 
     <Node name="Plugins">
         <RequiredPlugin name="SofaDiff" pluginName="SofaDiff"/>
@@ -22,15 +22,15 @@
         <RequiredPlugin name="Sofa.GL.Component.Rendering3D"/> <!-- Needed to use components [OglModel] -->
     </Node>
 
-<!--    <GradientDescentOptimizationLoop/>-->
+    <GradientDescentOptimizationLoop timesteps="30"/>
     <DifferentiableAnimationLoop computeBoundingBox="false"/>
     <VisualStyle displayFlags="showBehavior showBehaviorModels showForceFields hideMappings"/>
 
     <Node name="Parameters">
-        <TrainableParameterVector name="youngModulus1" value="50000" learningRate="10000000"/>
-        <TrainableParameterVector name="youngModulus2" value="50000" learningRate="10000000"/>
+        <TrainableParameterVector name="youngModulus1" value="50000" learningRate="1000000"/>
+        <TrainableParameterVector name="youngModulus2" value="50000" learningRate="1000000"/>
         <TrainableParameterVector name="youngModulus3" value="50000" learningRate="1000000"/>
-        <TrainableParameterVector name="youngModulus4" value="50000" learningRate="10000000"/>
+        <TrainableParameterVector name="youngModulus4" value="50000" learningRate="1000000"/>
     </Node>
 
     <Node name="Topology">
@@ -38,10 +38,11 @@
     </Node>
 
     <Node name="Physics">
+        <SparseLDLSolver template="CompressedRowSparseMatrixd" name="solver"/>
         <NewtonRaphsonSolver name="newton" maxNbIterationsNewton="100" maxNbIterationsLineSearch="1" warnWhenLineSearchFails="false"/>
 <!--        <StaticSolver newtonSolver="@newton" name="static"/>-->
+<!--        <StaticAdjointSolver name="adjoint"/>-->
         <EulerImplicitSolver />
-        <SparseLDLSolver template="CompressedRowSparseMatrixd" name="solver"/>
         <ImplicitAdjointSolver name="adjoint"/>
 
         <Node name="Beam">
@@ -144,8 +145,9 @@
 
     <Node name="Loss">
         <Node name="Targets">
-            <MechanicalObject template="Vec3d" name="state" position="0.2 -2.6 0.0  10.0 -0.8 0.0  29.5 -2.9 0.0  38.5 -7.4 0.0" showObject="true" drawMode="1" showObjectScale="0.5"/>
-<!--            <MechanicalObject template="Vec3d" name="state" position="0.2 -2.6 0.0  10.0 -0.8 0.0" showObject="true" drawMode="1" showObjectScale="0.5"/>-->
+<!--            <MechanicalObject template="Vec3d" name="state" position="0.2 -2.6 0.0  10.0 -0.8 0.0  29.5 -2.9 0.0  38.5 -7.4 0.0" showObject="true" drawMode="1" showObjectScale="0.5"/>-->
+<!--            Dynamic (30 timesteps with dt=0.05, target parameters = 20k, 100k, 50k, 100k)-->
+            <MechanicalObject template="Vec3d" name="state" position="0.80 -5.00 0.08  10.10 -1.32 0.02  29.56 -2.71 0.02  38.46 -7.30 0.06" showObject="true" drawMode="1" showObjectScale="0.5"/>
         </Node>
         <Node name="Distances">
             <MechanicalObject template="Vec1d" name="output" position="0"/>

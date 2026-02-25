@@ -77,7 +77,7 @@ def createScene(root):
         ])
 
     add_object("VisualStyle", displayFlags="showBehavior showBehaviorModels showForceFields showMappings")
-    add_object("GradientDescentOptimizationLoop", name="optimizer")
+    add_object("GradientDescentOptimizationLoop", name="optimizer", timesteps=10)
     add_object("DifferentiableAnimationLoop", computeBoundingBox=False)
 
     add_object("MechanicalObject", template="Vec3d", name="state", position="0 10 0")

@@ -14,12 +14,15 @@ class SOFA_SOFADIFF_API OptimizationLoop: public core::behavior::BaseAnimationLo
 public:
     SOFA_ABSTRACT_CLASS(OptimizationLoop, core::behavior::BaseAnimationLoop);
 
+    OptimizationLoop();
+
     void init() override;
     void bwdInit() override;
 
     void step(const core::ExecParams *params, SReal dt) override;
 
 protected:
+    Data<int> m_totalTimesteps;
     BaseAnimationLoop * m_animationLoop;
     std::vector<BaseParameter *> m_parameters;
 

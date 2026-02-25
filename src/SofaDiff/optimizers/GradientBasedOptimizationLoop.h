@@ -17,7 +17,7 @@ public:
     void init() override;
     void step(const core::ExecParams *params, SReal dt) override;
 
-private:
+protected:
     DifferentiableAnimationLoop * m_differentiableAnimationLoop;
 };
 

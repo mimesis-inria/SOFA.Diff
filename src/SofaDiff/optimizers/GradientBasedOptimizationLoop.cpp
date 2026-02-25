@@ -15,8 +15,7 @@ void GradientBasedOptimizationLoop::step(const core::ExecParams *params, SReal d
 {
     OptimizationLoop::step(params, dt);
 
-    // TODO: make as many stepAdjoint() as required to go back to t=0
-    for (int i = 0; i < 60; i++)
+    for (int i = 0; i < m_totalTimesteps.getValue(); i++)
         m_differentiableAnimationLoop->stepAdjoint(params, dt);
 
     // TODO: go back to t=t_max?

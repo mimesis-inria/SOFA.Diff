@@ -1,10 +1,18 @@
 #include <SofaDiff/optimizers/OptimizationLoop.h>
 
 #include <sofa/simulation/Node.h>
+#include <sofa/simulation/Simulation.h>
 
 
 namespace sofadiff
 {
+
+OptimizationLoop::OptimizationLoop():
+    m_totalTimesteps(initData(&m_totalTimesteps, "timesteps", "Number of time steps for the optimization"))
+{
+
+}
+
 
 void OptimizationLoop::init()
 {
@@ -39,8 +47,7 @@ void OptimizationLoop::step(const core::ExecParams *params, SReal dt)
 {
     updateParameters();
 
-    // TODO: make as many steps as required to compute the loss
-    for (int i = 0; i < 60; i++)
+    for (int i = 0; i < m_totalTimesteps.getValue(); i++)
         m_animationLoop->step(params, dt);
 }
 
