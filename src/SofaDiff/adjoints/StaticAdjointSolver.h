@@ -20,6 +20,7 @@ public:
     SOFA_CLASS2(StaticAdjointSolver, AdjointSolver, core::behavior::LinearSolverAccessor);
 
     void init() override;
+    void resetGradients(const ExecParams *) override;
     void solve(const ExecParams* /*params*/, SReal /*dt*/, MultiVecCoordId /*xResult*/, MultiVecDerivId /*vResult*/) override;
 
 protected:
@@ -29,7 +30,6 @@ protected:
 
 private:
     void initializeLossGradientToOne();
-    void resetParametersGradient() const;
     void solveForPhysicalGradient();
 };
 

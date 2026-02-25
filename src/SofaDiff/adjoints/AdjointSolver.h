@@ -1,6 +1,8 @@
 #pragma once
 
 #include <SofaDiff/config.h>
+#include <SofaDiff/Parameter.h>
+#include <SofaDiff/ParameterizedForceField.h>
 
 #include <sofa/core/MultiVecId.h>
 #include <sofa/core/objectmodel/BaseObject.h>
@@ -17,6 +19,17 @@ public:
     SOFA_ABSTRACT_CLASS(AdjointSolver, objectmodel::BaseObject);
     // SOFA_BASE_CAST_IMPLEMENTATION(AdjointSolver) // TODO: What's that?
 
+    void init() override;
+
+    virtual void resetGradients(const ExecParams* /*params*/) = 0; // TODO: could use BaseObject::reset() ?
+
     virtual void solve(const ExecParams* /*params*/, SReal /*dt*/, MultiVecCoordId /*xResult*/, MultiVecDerivId /*vResult*/) = 0;
+
+protected:
+    std::vector<BaseParameter *> m_trainableParameters;
+    std::vector<Parameterized *> m_parameterizedForceFields;
+
+    void resetParametersGradient() const;
+
 };
 }

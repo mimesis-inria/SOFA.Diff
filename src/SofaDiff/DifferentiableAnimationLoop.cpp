@@ -21,6 +21,7 @@
 ******************************************************************************/
 
 #include <SofaDiff/DifferentiableAnimationLoop.h>
+#include <SofaDiff/visitors/AdjointResetVisitor.h>
 #include <SofaDiff/visitors/AdjointSolveVisitor.h>
 #include <SofaDiff/visitors/StoreStateVisitor.h>
 #include <SofaDiff/visitors/RetrieveStateVisitor.h>
@@ -73,6 +74,14 @@ void DifferentiableAnimationLoop::init()
 void DifferentiableAnimationLoop::storeState(const ExecParams* params)
 {
     m_index++;
+    if (m_node == nullptr)
+    {
+        m_node = dynamic_cast<simulation::Node*>(this->l_node.get());
+        if (m_node == nullptr)
+        {
+            msg_error("Impossible to get root node");
+        }
+    }
     if (m_index > m_positionStorage.size() + 1)
     {
         msg_error("Storage requires more than one additional VecId — This should not happen.");
@@ -112,8 +121,8 @@ void DifferentiableAnimationLoop::step(const ExecParams* params, SReal dt)
         m_totalTimesteps = m_index;
         m_solverDirection = FORWARD;
     }
-    DefaultAnimationLoop::step(params, dt);
     storeState(params);
+    DefaultAnimationLoop::step(params, dt);
     m_totalTimesteps++;
 }
 
@@ -133,6 +142,7 @@ void DifferentiableAnimationLoop::stepAdjoint(const ExecParams* params, SReal dt
     if (m_solverDirection != BACKWARD)
     {
         m_solverDirection = BACKWARD;
+        AdjointResetVisitor(params).execute(m_node);
     }
 
     // Hard coded "global loss" equal to the latest "instant loss": very dirty and temporary

@@ -25,15 +25,20 @@ void registerStaticAdjointSolver(ObjectFactory* factory)
 
 void StaticAdjointSolver::init()
 {
+    AdjointSolver::init();
     LinearSolverAccessor::init();
+
+    // TODO: remove this part (move it to DifferentiableAnimationLoop somehow)
     const auto* ctx = this->getContext();
-
-    ctx->get<BaseParameter> (&m_trainableParameters, BaseContext::SearchRoot);
-    ctx->get<Parameterized> (&m_parameterizedForceFields, BaseContext::SearchRoot);
     ctx->get<LossState> (&m_lossStates, BaseContext::SearchRoot);
-
     initializeLossGradientToOne();
 }
+
+void StaticAdjointSolver::resetGradients(const ExecParams *)
+{
+
+}
+
 
 void StaticAdjointSolver::solve(const ExecParams* params, SReal /*dt*/, MultiVecCoordId /*xResult*/, MultiVecDerivId /*vResult*/)
 {
@@ -69,15 +74,6 @@ void StaticAdjointSolver::initializeLossGradientToOne()
         lossGradient[0] = sofa::Deriv_t<defaulttype::Vec1Types> (1);
     }
 }
-
-
-void StaticAdjointSolver::resetParametersGradient() const
-{
-    SCOPED_TIMER("StaticAdjointSolver::resetParametersGradient");
-    for (auto & parameter : m_trainableParameters)
-        parameter->resetGradient();
-}
-
 
 void StaticAdjointSolver::solveForPhysicalGradient()
 {

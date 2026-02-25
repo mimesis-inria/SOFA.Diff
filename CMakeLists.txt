@@ -29,6 +29,7 @@ set(HEADER_FILES
         ${SOFADIFF_SRC_DIR}/Parameter.h
         ${SOFADIFF_SRC_DIR}/Parameter.inl
         ${SOFADIFF_SRC_DIR}/LossState.h
+        ${SOFADIFF_SRC_DIR}/visitors/AdjointResetVisitor.h
         ${SOFADIFF_SRC_DIR}/visitors/AdjointSolveVisitor.h
         ${SOFADIFF_SRC_DIR}/visitors/MechanicalAccumulateVecDeriv.h
         ${SOFADIFF_SRC_DIR}/visitors/MechanicalPropagateVecDeriv.h
@@ -54,6 +55,7 @@ set(SOURCE_FILES
         ${SOFADIFF_SRC_DIR}/Parameter.cpp
         ${SOFADIFF_SRC_DIR}/LossState.cpp
         ${SOFADIFF_SRC_DIR}/visitors/AdjointSolveVisitor.cpp
+        ${SOFADIFF_SRC_DIR}/visitors/AdjointResetVisitor.cpp
         ${SOFADIFF_SRC_DIR}/visitors/MechanicalAccumulateVecDeriv.cpp
         ${SOFADIFF_SRC_DIR}/visitors/MechanicalPropagateVecDeriv.cpp
         ${SOFADIFF_SRC_DIR}/visitors/StoreStateVisitor.cpp

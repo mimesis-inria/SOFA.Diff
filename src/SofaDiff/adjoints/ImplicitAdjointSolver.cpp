@@ -25,6 +25,7 @@ void registerImplicitAdjointSolver(ObjectFactory* factory)
 
 void ImplicitAdjointSolver::init()
 {
+    AdjointSolver::init();
     LinearSolverAccessor::init();
 
     auto* ctx = this->getContext();
@@ -46,11 +47,19 @@ void ImplicitAdjointSolver::init()
     deltaVelocityGradient.realloc(&vop, false, true, VecIdProperties{"gradient of the loss wrt dv", this->getClassName()});
     m_deltaVelocityGradientId = deltaVelocityGradient.id();
 
-    ctx->get<Parameterized> (&m_parameterizedForceFields, BaseContext::SearchRoot);
-    std::vector<BaseParameter *> parameters;
-    ctx->get<BaseParameter> (&parameters, BaseContext::SearchRoot);
-    for (const auto & parameter : parameters)
+    // TODO: why do I do that?
+    for (const auto & parameter : m_trainableParameters)
         parameter->resetGradient();
+}
+
+void ImplicitAdjointSolver::resetGradients(const ExecParams * params)
+{
+    auto *ctx = this->getContext()->getRootContext();
+    const auto mparams = MechanicalParams(*params);
+    simulation::mechanicalvisitor::MechanicalResetForceVisitor(&mparams, m_positionGradientId).execute(ctx, false);
+    simulation::mechanicalvisitor::MechanicalResetForceVisitor(&mparams, m_velocityGradientId).execute(ctx, false);
+    simulation::mechanicalvisitor::MechanicalResetForceVisitor(&mparams, m_deltaVelocityGradientId).execute(ctx, false);
+    resetParametersGradient();
 }
 
 void ImplicitAdjointSolver::solve(const ExecParams * params, SReal dt, MultiVecCoordId, MultiVecDerivId)
@@ -67,7 +76,12 @@ void ImplicitAdjointSolver::solve(const ExecParams * params, SReal dt, MultiVecC
     // xn.grad += yn.grad * dyn/dxn  <--- Only this one for now (because standard mapping are functions of x only)
     // vn.grad += yn.grad * dyn/dvn
     // ?? pn.grad += yn.grad * dyn/dpn ??
+    simulation::mechanicalvisitor::MechanicalResetForceVisitor(&mparams, s_geometricGradientId).execute(ctx, false);
     MechanicalAccumulateVecDeriv(&mparams, s_geometricGradientId).execute(ctx, false);
+
+    auto * local_ctx = this->getContext();
+    simulation::common::VectorOperations vop(&mparams, local_ctx);
+    vop.v_peq(m_positionGradientId, s_geometricGradientId);
 
     // solve the system for the "force gradient"
     // F(dv; xn, vn, pn) = 0 --> f.grad * dF/d(dv) = - dv.grad = - vn.grad - dt * xn.grad
@@ -79,7 +93,7 @@ void ImplicitAdjointSolver::solve(const ExecParams * params, SReal dt, MultiVecC
     // propagate the "force gradient" to the parameters through the ParameterizedForceFields
     // ?? pn.grad += f.grad * df/dp
     for (const auto &forceField: m_parameterizedForceFields)
-    forceField->applyParametersJacobianTranspose(&mparams, s_physicalGradientId);
+        forceField->applyParametersJacobianTranspose(&mparams, s_physicalGradientId);
 
     // update the "dofs gradient" by propagating the "force gradient"
     // this gradient replaces the previous one
@@ -99,24 +113,27 @@ void ImplicitAdjointSolver::solveForForceGradient(const ExecParams *params, SRea
     const auto mparams = MechanicalParams(*params);
     simulation::common::VectorOperations vop(&mparams, ctx);
     vop.v_eq(m_deltaVelocityGradientId, m_velocityGradientId);
-    // vop.v_peq(m_deltaVelocityGradientId, m_positionGradientId, dt);
-    vop.v_peq(m_deltaVelocityGradientId, s_geometricGradientId, dt);
-    vop.v_teq(m_deltaVelocityGradientId, dt);
+    vop.v_peq(m_deltaVelocityGradientId, m_positionGradientId, dt);
+    // vop.v_peq(m_deltaVelocityGradientId, s_geometricGradientId, dt);
 
     // dF/d(dv) = M - dt^2*K - dt*B
     auto *linearSolver = l_linearSolver.get();
     simulation::common::MechanicalOperations mop(params, ctx);
     mop->setImplicit(true);
     const MatricesFactors::M mFact (1.0); // (1 + tr * dt * d_rayleighMass.getValue());
-    const MatricesFactors::B bFact (1.0); // (-tr * dt);
-    const MatricesFactors::K kFact (1.0); // (-tr * dt * (tr * dt + d_rayleighStiffness.getValue()));
+    const MatricesFactors::B bFact (-dt); // (-tr * dt);
+    const MatricesFactors::K kFact (-dt*dt); // (-tr * dt * (tr * dt + d_rayleighStiffness.getValue()));
     mop.setSystemMBKMatrix(mFact, bFact, kFact, l_linearSolver.get());
 
     // Solve
     linearSolver->getLinearSystem()->setSystemSolution(s_physicalGradientId);
     linearSolver->getLinearSystem()->setRHS(m_deltaVelocityGradientId);
-    linearSolver->solveSystem();  // Solve -dF/d(dv) * dy/df = dy/dx
+    linearSolver->solveSystem();  // Solve dF/d(dv) * dy/df = dy/dx (note the absence of the minus sign, cf below)
     linearSolver->getLinearSystem()->dispatchSystemSolution(s_physicalGradientId);
+
+    // Multiply by dt to get the force gradient (since F = M*dv - dt*f ==> f.grad = -dt * F.grad)
+    // The minus sign cancels out with the minus sign that was omitted in the system above
+    vop.v_teq(s_physicalGradientId, dt);
 }
 
 void ImplicitAdjointSolver::updatePositionGradient(MechanicalParams mparams, SReal dt)
@@ -129,7 +146,7 @@ void ImplicitAdjointSolver::updatePositionGradient(MechanicalParams mparams, SRe
     mparams.setBFactor(0.0);
     mparams.setKFactor(1.0);
     mparams.setMFactor(0.0);
-    simulation::mechanicalvisitor::MechanicalAddMBKdxVisitor(&mparams, s_geometricGradientId, false).execute(ctx);
+    simulation::mechanicalvisitor::MechanicalAddMBKdxVisitor(&mparams, m_positionGradientId, false).execute(ctx);
     mparams.setDx(dx);
 }
 
@@ -138,7 +155,7 @@ void ImplicitAdjointSolver::updateVelocityGradient(MechanicalParams mparams, SRe
 {
     auto *ctx = this->getContext();
     simulation::common::VectorOperations vop(&mparams, ctx);
-    vop.v_peq(m_velocityGradientId, s_geometricGradientId, dt);
+    vop.v_peq(m_velocityGradientId, m_positionGradientId, dt);
 
     const ConstMultiVecDerivId dx = mparams.dx();
     mparams.setDx(s_physicalGradientId);
