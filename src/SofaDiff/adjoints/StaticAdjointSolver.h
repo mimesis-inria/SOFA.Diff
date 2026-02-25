@@ -24,8 +24,6 @@ public:
     void solve(const ExecParams* /*params*/, SReal /*dt*/, MultiVecCoordId /*xResult*/, MultiVecDerivId /*vResult*/) override;
 
 protected:
-    std::vector<BaseParameter *> m_trainableParameters;
-    std::vector<Parameterized *> m_parameterizedForceFields;
     std::vector<LossState *> m_lossStates;
 
 private:
