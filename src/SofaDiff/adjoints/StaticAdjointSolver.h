@@ -2,9 +2,6 @@
 
 #include <SofaDiff/config.h>
 #include <SofaDiff/adjoints/AdjointSolver.h>
-#include <SofaDiff/ParameterizedForceField.h>
-#include <SofaDiff/Parameter.h>
-#include <SofaDiff/LossState.h>
 
 #include <sofa/core/behavior/LinearSolverAccessor.h>
 
@@ -30,7 +27,6 @@ protected:
     MultiVecDerivId & getLossGradientId() override { return m_positionGradientId; }
 
 private:
-    void initializeLossGradientToOne();
     void solveForPhysicalGradient();
 };
 

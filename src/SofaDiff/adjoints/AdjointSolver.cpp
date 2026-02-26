@@ -15,9 +15,15 @@ void AdjointSolver::init()
     ctx->get<BaseParameter> (&m_trainableParameters, BaseContext::SearchRoot);
     ctx->get<Parameterized> (&m_parameterizedForceFields, BaseContext::SearchRoot);
     ctx->get<LossState> (&m_lossStates, BaseContext::SearchRoot);
+}
+
+void AdjointSolver::bwdInit()
+{
+    // Tell the lossStates that they should return their d_gradient when asked for the given VecId
     for (const auto loss : m_lossStates)
         loss->setGradientVecId(getLossGradientId());
 }
+
 
 MultiVecDerivId AdjointSolver::newVecId(const char * name)
 {

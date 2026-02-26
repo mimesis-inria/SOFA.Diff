@@ -3,8 +3,6 @@
 #include <SofaDiff/config.h>
 #include <SofaDiff/adjoints/AdjointSolver.h>
 #include <SofaDiff/ParameterizedForceField.h>
-#include <SofaDiff/Parameter.h>
-#include <SofaDiff/LossState.h>
 
 #include <sofa/core/behavior/LinearSolverAccessor.h>
 
@@ -28,14 +26,14 @@ protected:
     MultiVecDerivId m_positionGradientId;
     MultiVecDerivId m_velocityGradientId;
     MultiVecDerivId m_deltaVelocityGradientId;
+    MultiVecDerivId m_residualGradientId;
     MultiVecDerivId m_forceGradientId;
 
     MultiVecDerivId & getLossGradientId() override { return m_lossGradientId; }
 
 private:
-    void solveForForceGradient(const ExecParams* params, SReal dt);
-    void updatePositionGradient(MechanicalParams mparams, SReal dt);
-    void updateVelocityGradient(MechanicalParams mparams, SReal dt);
+    void solveForResidualGradient(const ExecParams* params, SReal dt);
+    void addMatrixVectorProduct(const MultiVecDerivId& outVectorId, const MultiVecDerivId &inVectorId, SReal kFact, SReal bFact);
 };
 
 }

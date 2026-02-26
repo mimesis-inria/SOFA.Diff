@@ -2,8 +2,6 @@
 #include <SofaDiff/DifferentiableAnimationLoop.h>
 #include <SofaDiff/visitors/MechanicalAccumulateVecDeriv.h>
 #include <SofaDiff/visitors/MechanicalPropagateVecDeriv.h>
-#include <SofaDiff/ParameterizedForceField.h>
-#include <SofaDiff/LossState.h>
 
 #include <sofa/core/MechanicalParams.h>
 #include <sofa/core/ObjectFactory.h>

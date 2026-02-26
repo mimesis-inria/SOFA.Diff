@@ -83,7 +83,7 @@ def createScene(root):
     add_object("MechanicalObject", template="Vec3d", name="state", position="0 10 0")
 
     with Node("Parameters"):
-        add_object("TrainableParameterVector", name="stiffness", value="10", learningRate="1000.0")
+        add_object("TrainableParameterVector", name="stiffness", value="10", learningRate="10000.0")
 
     with Node("Physics"):
         add_object("SparseLDLSolver", template="CompressedRowSparseMatrixd", name="solver", printLog="false")
