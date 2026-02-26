@@ -8,7 +8,8 @@ namespace sofadiff
 {
 
 OptimizationLoop::OptimizationLoop():
-    m_totalTimesteps(initData(&m_totalTimesteps, "timesteps", "Number of time steps for the optimization"))
+    m_totalTimesteps(initData(&m_totalTimesteps, "timesteps", "Number of time steps for the optimization")),
+    m_animationLoop(nullptr)
 {
 
 }

@@ -2,7 +2,6 @@
 
 #include <SofaDiff/config.h>
 
-#include <sofa/core/MultiVecId.h>
 #include <sofa/simulation/Visitor.h>
 
 
@@ -14,7 +13,7 @@ using namespace sofa::core;
 class SOFA_SOFADIFF_API AdjointResetVisitor: public simulation::Visitor
 {
 public:
-    AdjointResetVisitor(const ExecParams* params);
+    explicit AdjointResetVisitor(const ExecParams* params);
 
     Result processNodeTopDown(simulation::Node* node) override;
     void processNodeBottomUp(simulation::Node* /*node*/) override;

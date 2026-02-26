@@ -10,7 +10,7 @@ namespace sofadiff
 using namespace sofa::core;
 
 
-AdjointSolveVisitor::AdjointSolveVisitor(const ExecParams *params, SReal _dt, MultiVecCoordId X, MultiVecDerivId V):
+AdjointSolveVisitor::AdjointSolveVisitor(const ExecParams *params, const SReal _dt, const MultiVecCoordId & X, const MultiVecDerivId & V):
     Visitor(params),
     dt(_dt),
     x(X),
