@@ -54,7 +54,7 @@ def set_data(**kwargs):
 # =====================================================================================================================
 def createScene(root):
     set_current_node(root)
-    set_data(dt=0.01, gravity=(0, -10, 0))
+    set_data(dt=0.05, gravity=(0, -10, 0))
 
     with Node("Plugins"):
         add_object("RequiredPlugin", pluginName=[
@@ -77,13 +77,15 @@ def createScene(root):
         ])
 
     add_object("VisualStyle", displayFlags="showBehavior showBehaviorModels showForceFields showMappings")
-    add_object("GradientDescentOptimizationLoop", name="optimizer", timesteps=10)
+
+    add_object("ControlLoop", name="control", maxOptimizationIterations=50)
+    add_object("GradientDescentOptimizationLoop", name="optimizer", timesteps=5)
     add_object("DifferentiableAnimationLoop", computeBoundingBox=False)
 
     add_object("MechanicalObject", template="Vec3d", name="state", position="0 10 0")
 
     with Node("Parameters"):
-        add_object("TrainableParameterVector", name="stiffness", value="10", learningRate="10000.0")
+        add_object("TrainableParameterVector", name="stiffness", value="10", learningRate="100.0", lowerBound=0)
 
     with Node("Physics"):
         add_object("SparseLDLSolver", template="CompressedRowSparseMatrixd", name="solver", printLog="false")
@@ -99,7 +101,7 @@ def createScene(root):
         add_object("ParameterizedSpringForceField", name="spring", object1="@/Physics/state", indices1="0", object2="@/state", indices2="0", length="5", stiffness="@/Parameters/stiffness.value", damping=0)
 
     with Node("Loss"):
-        add_object("MechanicalObject", template="Vec3d", name="state", position="0 0 0", showObject="true", drawMode="1", showObjectScale="0.08")
+        add_object("MechanicalObject", template="Vec3d", name="state", position="0 -5 0", showObject="true", drawMode="1", showObjectScale="0.08")
         with Node("Distance"):
             add_object("MechanicalObject", template="Vec1d", name="state", position="0")
             add_object("DistanceFromTargetMapping", input="@Physics/state", targetPositions="@/Loss/state.position")

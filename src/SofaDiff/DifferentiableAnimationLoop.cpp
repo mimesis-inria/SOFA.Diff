@@ -42,6 +42,7 @@ namespace sofadiff
 using namespace sofa::simulation::mechanicalvisitor;
 using namespace sofa::core;
 
+
 void DifferentiableAnimationLoop::init()
 {
     DefaultAnimationLoop::init();
@@ -53,6 +54,7 @@ void DifferentiableAnimationLoop::init()
 
     m_index = 0;
     m_totalTimesteps = 0;
+    m_differentiableMode = false;
 
     ctx->get<LossState> (&m_lossStates, BaseContext::SearchRoot);
 }
@@ -103,14 +105,21 @@ void DifferentiableAnimationLoop::retrieveState(const ExecParams* params)
 
 void DifferentiableAnimationLoop::step(const ExecParams* params, SReal dt)
 {
-    if (m_solverDirection != FORWARD)
+    if (!m_differentiableMode)
     {
-        m_totalTimesteps = m_index;
-        m_solverDirection = FORWARD;
+        DefaultAnimationLoop::step(params, dt);
     }
-    storeState(params);
-    DefaultAnimationLoop::step(params, dt);
-    m_totalTimesteps++;
+    else
+    {
+        if (m_solverDirection != FORWARD)
+        {
+            m_totalTimesteps = m_index;
+            m_solverDirection = FORWARD;
+        }
+        storeState(params);
+        DefaultAnimationLoop::step(params, dt);
+        m_totalTimesteps++;
+    }
 }
 
 
@@ -133,7 +142,7 @@ void DifferentiableAnimationLoop::stepAdjoint(const ExecParams* params, SReal dt
     }
 
     // Hard coded "global loss" equal to the latest "instant loss": very dirty and temporary
-    const SReal lossGradient = (m_index == m_totalTimesteps) ? 1.0 : 0.0;
+    const SReal lossGradient = 1.0 - static_cast<SReal>(m_index) / m_totalTimesteps;
     setLossGradient(lossGradient);
 
     // TODO: use the other constructor (like DefaultAnimationLoop with SolveVisitor)
@@ -159,6 +168,13 @@ void DifferentiableAnimationLoop::setLossGradient(const SReal value)
     }
 }
 
+
+void DifferentiableAnimationLoop::setDifferentiableMode(bool differentiable)
+{
+    // TODO: check that we are not in the middle of something when switching?
+    m_differentiableMode = differentiable;
+    // TODO: reset some values like m_index when switching?
+}
 
 
 void registerDifferentiableAnimationLoop(ObjectFactory* factory)

@@ -1,4 +1,5 @@
 #include <SofaDiff/optimizers/OptimizationLoop.h>
+#include <SofaDiff/ControlLoop.h>
 
 #include <sofa/simulation/Node.h>
 #include <sofa/simulation/Simulation.h>
@@ -25,11 +26,11 @@ void OptimizationLoop::init()
     ctx->get<BaseAnimationLoop> (&loops, core::objectmodel::BaseContext::SearchRoot);
     for (const auto loop : loops)
     {
-        if (loop != this) // TODO: more robust detection (in case there are more than 2 loops)
+        if (loop == this || dynamic_cast<ControlLoop*>(loop) || dynamic_cast<OptimizationLoop*>(loop))
         {
-            m_animationLoop = loop;
-            break;
+            continue;
         }
+        m_animationLoop = loop;
     }
 
     ctx->get<BaseParameter> (&m_parameters, core::objectmodel::BaseContext::SearchRoot);

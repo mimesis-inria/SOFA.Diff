@@ -23,6 +23,10 @@ void GradientDescentOptimizationLoop::updateParameters()
         const auto gradient = parameter->getGradientVector();
         for (size_t j = 0; j < gradient.size(); j++)
             value[j] -= learningRate * gradient[j];
+        const auto lowerBound = getHyperparameter(parameter, "lowerBound");
+        for (size_t j = 0; j < gradient.size(); j++)
+            if (value[j] < lowerBound)
+                value[j] = lowerBound;
         parameter->setValueVector(value);
     }
 }

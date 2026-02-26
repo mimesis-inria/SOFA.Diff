@@ -18,6 +18,7 @@ find_package(SofaImGui REQUIRED)
 set(SOFADIFF_SRC_DIR src/SofaDiff)
 set(HEADER_FILES
         ${SOFADIFF_SRC_DIR}/config.h.in
+        ${SOFADIFF_SRC_DIR}/ControlLoop.h
         ${SOFADIFF_SRC_DIR}/optimizers/OptimizationLoop.h
         ${SOFADIFF_SRC_DIR}/optimizers/GradientBasedOptimizationLoop.h
         ${SOFADIFF_SRC_DIR}/optimizers/GradientDescentOptimizationLoop.h
@@ -44,6 +45,7 @@ set(HEADER_FILES_TO_MOC
 )
 set(SOURCE_FILES
         ${SOFADIFF_SRC_DIR}/initSofaDiff.cpp
+        ${SOFADIFF_SRC_DIR}/ControlLoop.cpp
         ${SOFADIFF_SRC_DIR}/optimizers/OptimizationLoop.cpp
         ${SOFADIFF_SRC_DIR}/optimizers/GradientBasedOptimizationLoop.cpp
         ${SOFADIFF_SRC_DIR}/optimizers/GradientDescentOptimizationLoop.cpp
