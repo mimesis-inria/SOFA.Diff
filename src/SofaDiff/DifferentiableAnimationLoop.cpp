@@ -42,6 +42,10 @@ namespace sofadiff
 using namespace sofa::simulation::mechanicalvisitor;
 using namespace sofa::core;
 
+void registerDifferentiableAnimationLoop(ObjectFactory* factory)
+{
+    factory->registerObjects(ObjectRegistrationData("Controller that performs gradient descent.").add< DifferentiableAnimationLoop >());
+}
 
 void DifferentiableAnimationLoop::init()
 {
@@ -52,17 +56,25 @@ void DifferentiableAnimationLoop::init()
     auto* params = mechanicalparams::defaultInstance();
     simulation::common::VectorOperations vop(params, ctx);
 
-    m_index = 0;
-    m_totalTimesteps = 0;
+    m_timestepIndex = 0;
+    m_timestepTotal = 0;
     m_differentiableMode = false;
 
     ctx->get<LossState> (&m_lossStates, BaseContext::SearchRoot);
 }
 
 
+void DifferentiableAnimationLoop::resetDifferentiableMode()
+{
+    m_differentiableMode = false;
+    m_timestepIndex = 0;
+    m_timestepTotal = 0;
+}
+
+
 void DifferentiableAnimationLoop::storeState(const ExecParams* params)
 {
-    m_index++;
+    m_timestepIndex++;
     if (m_node == nullptr)
     {
         m_node = dynamic_cast<simulation::Node*>(this->l_node.get());
@@ -71,35 +83,35 @@ void DifferentiableAnimationLoop::storeState(const ExecParams* params)
             msg_error("Impossible to get root node");
         }
     }
-    if (m_index > m_positionStorage.size() + 1)
+    if (m_timestepIndex > m_positionStorage.size() + 1)
     {
         msg_error("Storage requires more than one additional VecId — This should not happen.");
         return;
     }
-    if (m_index == m_positionStorage.size() + 1)
+    if (m_timestepIndex == m_positionStorage.size() + 1)
     {
         auto* ctx = this->getContext();
         simulation::common::VectorOperations vop(params, ctx);
 
         behavior::MultiVecCoord position(&vop, TMultiVecId<VecType::V_COORD, VecAccess::V_WRITE>());
-        position.realloc(&vop, false, true, VecIdProperties{"x"+std::to_string(m_index - 1), this->getClassName()});
+        position.realloc(&vop, false, true, VecIdProperties{"x"+std::to_string(m_timestepIndex - 1), this->getClassName()});
 
         behavior::MultiVecDeriv velocity(&vop, TMultiVecId<VecType::V_DERIV, VecAccess::V_WRITE>());
-        velocity.realloc(&vop, false, true, VecIdProperties{"v"+std::to_string(m_index - 1), this->getClassName()});
+        velocity.realloc(&vop, false, true, VecIdProperties{"v"+std::to_string(m_timestepIndex - 1), this->getClassName()});
 
         m_positionStorage.push_back(position.id());
         m_velocityStorage.push_back(velocity.id());
     }
-    StoreStateVisitor(params, m_positionStorage[m_index - 1], m_velocityStorage[m_index - 1]).execute(m_node);
+    StoreStateVisitor(params, m_positionStorage[m_timestepIndex - 1], m_velocityStorage[m_timestepIndex - 1]).execute(m_node);
 }
 
 void DifferentiableAnimationLoop::retrieveState(const ExecParams* params)
 {
     auto m_params = MechanicalParams(*params);
-    RetrieveStateVisitor(params, m_positionStorage[m_index - 1], m_velocityStorage[m_index - 1]).execute(m_node);
+    RetrieveStateVisitor(params, m_positionStorage[m_timestepIndex - 1], m_velocityStorage[m_timestepIndex - 1]).execute(m_node);
     MechanicalPropagateOnlyPositionAndVelocityVisitor(&m_params).execute(m_node);
     // simulation::UpdateMappingVisitor(params).execute(m_node); // TODO: useful?
-    m_index--;
+    m_timestepIndex--;
 }
 
 
@@ -113,12 +125,12 @@ void DifferentiableAnimationLoop::step(const ExecParams* params, SReal dt)
     {
         if (m_solverDirection != FORWARD)
         {
-            m_totalTimesteps = m_index;
+            m_timestepTotal = m_timestepIndex;
             m_solverDirection = FORWARD;
         }
         storeState(params);
         DefaultAnimationLoop::step(params, dt);
-        m_totalTimesteps++;
+        m_timestepTotal++;
     }
 }
 
@@ -130,7 +142,7 @@ void DifferentiableAnimationLoop::stepAdjoint(const ExecParams* params, SReal dt
         return;
     }
 
-    if (m_index < 1)
+    if (m_timestepIndex < 1)
     {
         return;
     }
@@ -142,7 +154,7 @@ void DifferentiableAnimationLoop::stepAdjoint(const ExecParams* params, SReal dt
     }
 
     // Hard coded "global loss" equal to the latest "instant loss": very dirty and temporary
-    const SReal lossGradient = 1.0 - static_cast<SReal>(m_index) / m_totalTimesteps;
+    const SReal lossGradient = 1.0 - static_cast<SReal>(m_timestepIndex) / m_timestepTotal;
     setLossGradient(lossGradient);
 
     // TODO: use the other constructor (like DefaultAnimationLoop with SolveVisitor)
@@ -168,18 +180,13 @@ void DifferentiableAnimationLoop::setLossGradient(const SReal value)
     }
 }
 
-
-void DifferentiableAnimationLoop::setDifferentiableMode(bool differentiable)
+void DifferentiableAnimationLoop::setDifferentiableMode(const bool differentiable)
 {
-    // TODO: check that we are not in the middle of something when switching?
+    if (m_differentiableMode && !differentiable) // Deactivate differentiable mode
+    {
+        resetDifferentiableMode();
+    }
     m_differentiableMode = differentiable;
-    // TODO: reset some values like m_index when switching?
-}
-
-
-void registerDifferentiableAnimationLoop(ObjectFactory* factory)
-{
-    factory->registerObjects(ObjectRegistrationData("Controller that performs gradient descent.").add< DifferentiableAnimationLoop >());
 }
 
 }

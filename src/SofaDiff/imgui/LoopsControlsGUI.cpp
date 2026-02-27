@@ -50,7 +50,7 @@ void LoopsControlsGUI::doDraw(core::sptr<simulation::Node> groot)
         const auto dt = groot->getDt();
 
         ImGui::Text("Control Loop");
-        ImGui::SameLine();
+        ImGui::SameLine(175);
         ImGui::PushButtonRepeat(true);
         const auto forwardStepButton = ImGui::Button(std::string(ICON_FA_FORWARD_STEP).append("##2").c_str());
         ImGui::SetItemTooltip("Make one step of the control");
@@ -71,7 +71,7 @@ void LoopsControlsGUI::doDraw(core::sptr<simulation::Node> groot)
         const auto dt = groot->getDt();
 
         ImGui::Text("Optimization Loop");
-        ImGui::SameLine();
+        ImGui::SameLine(175);
         ImGui::PushButtonRepeat(true);
         const auto forwardStepButton = ImGui::Button(std::string(ICON_FA_FORWARD_STEP).append("##1").c_str());
         ImGui::SetItemTooltip("Make one step of the forward solver");
@@ -90,24 +90,42 @@ void LoopsControlsGUI::doDraw(core::sptr<simulation::Node> groot)
     {
         const auto params = core::execparams::defaultInstance();
         const auto dt = groot->getDt();
+        m_recording = differentiableLoop->getDifferentiableMode();
 
-        ImGui::Text("Differentiable Animation Loop");
+        ImGui::Text("Animation Loop");
+        ImGui::BeginDisabled(m_recording);  // Classic mode
+        ImGui::SameLine(175);
+        ImGui::PushButtonRepeat(true);
+        const auto forwardStepButtonClassic = ImGui::Button(std::string(ICON_FA_FORWARD_STEP).append("##classic").c_str());
+        ImGui::SetItemTooltip("Make one step of the forward solver");
+        ImGui::PopButtonRepeat();
+        ImGui::EndDisabled();
 
-        ImGui::SameLine();
+        const auto toggleRecordButton = ImGui::Checkbox("Adjoint", &m_recording);
+        ImGui::SetItemTooltip("Toggle differentiable mode ON/OFF");
+        ImGui::BeginDisabled(!m_recording);  // Differentiable mode
+        ImGui::SameLine(150);
         ImGui::PushButtonRepeat(true);
         const auto adjointStepButton = ImGui::Button(ICON_FA_BACKWARD_STEP);
         ImGui::SetItemTooltip("Make one step of the adjoint solver");
-        ImGui::SameLine();
-        const auto forwardStepButton = ImGui::Button(ICON_FA_FORWARD_STEP);
-        ImGui::PopButtonRepeat();
+        ImGui::SameLine(175);
+        const auto forwardStepButtonDifferentiable = ImGui::Button(std::string(ICON_FA_FORWARD_STEP).append("##differentiable").c_str());
         ImGui::SetItemTooltip("Make one step of the forward solver");
+        ImGui::PopButtonRepeat();
+        ImGui::SameLine(225);
+        ImGui::Text("%d/%d", differentiableLoop->getTimestepIndex(), differentiableLoop->getTimestepTotal());
+        ImGui::EndDisabled();
 
+        if(toggleRecordButton)
+        {
+            differentiableLoop->setDifferentiableMode(m_recording);
+        }
         if(adjointStepButton)
         {
             differentiableLoop->stepAdjoint(params, dt);
             simulation::node::updateVisual(groot.get());
         }
-        if (forwardStepButton)
+        if (forwardStepButtonClassic || forwardStepButtonDifferentiable)
         {
             differentiableLoop->step(params, dt);
             simulation::node::updateVisual(groot.get());

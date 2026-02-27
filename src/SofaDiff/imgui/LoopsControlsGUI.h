@@ -36,9 +36,13 @@ namespace sofadiff
 class SOFA_SOFADIFF_API LoopsControlsGUI : public BaseAdditionalGUI
 {
 public:
+    LoopsControlsGUI(): m_recording(false) {}
+
     std::string getWindowName() const override;
     std::string getWindowIcon() const override;
 private:
+    bool m_recording;
+
     void doDraw(core::sptr<simulation::Node> groot) override;
 };
 

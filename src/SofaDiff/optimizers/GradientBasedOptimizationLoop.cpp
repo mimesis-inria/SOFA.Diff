@@ -13,6 +13,7 @@ void GradientBasedOptimizationLoop::init()
 
 void GradientBasedOptimizationLoop::step(const core::ExecParams *params, SReal dt)
 {
+    m_differentiableAnimationLoop->resetDifferentiableMode(); // In case the user played with the DifferentiableAnimationLoop
     m_differentiableAnimationLoop->setDifferentiableMode(true);
 
     OptimizationLoop::step(params, dt);

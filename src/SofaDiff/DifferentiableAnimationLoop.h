@@ -44,8 +44,13 @@ public:
     void init() override;
     void step(const core::ExecParams* params, SReal dt) override;
     void stepAdjoint(const core::ExecParams* params, SReal dt);
+    void resetDifferentiableMode();
 
     void setDifferentiableMode(bool differentiable);
+    bool getDifferentiableMode() const { return m_differentiableMode; }
+
+    unsigned int getTimestepIndex() const { return m_timestepIndex; }
+    unsigned int getTimestepTotal() const { return m_timestepTotal; }
 
 protected:
     std::vector<LossState *> m_lossStates;
@@ -55,12 +60,13 @@ protected:
     void retrieveState(const core::ExecParams* params);
 
 private:
+    bool m_differentiableMode;
+
     std::vector<core::MultiVecCoordId> m_positionStorage;
     std::vector<core::MultiVecDerivId> m_velocityStorage;
-    unsigned int m_index{}; // index of the current time step
     SolverDirection m_solverDirection;
-    unsigned int m_totalTimesteps{}; // number of consecutive time steps
-    bool m_differentiableMode;
+    unsigned int m_timestepIndex; // index of the current time step
+    unsigned int m_timestepTotal; // number of consecutive time steps
 };
 
 }
