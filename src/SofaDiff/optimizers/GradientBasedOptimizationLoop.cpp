@@ -10,6 +10,20 @@ void GradientBasedOptimizationLoop::init()
     m_differentiableAnimationLoop = dynamic_cast<DifferentiableAnimationLoop *>(m_animationLoop);
 }
 
+bool GradientBasedOptimizationLoop::isUpdateReady()
+{
+    if (m_differentiableAnimationLoop->getTimestepIndex() == 0 && m_differentiableAnimationLoop->getTimestepTotal() > 0)
+    {
+        return true;
+    }
+    return false;
+}
+
+void GradientBasedOptimizationLoop::updateParameters()
+{
+    applyGradient();
+    m_differentiableAnimationLoop->resetDifferentiableMode();
+}
 
 void GradientBasedOptimizationLoop::step(const core::ExecParams *params, SReal dt)
 {

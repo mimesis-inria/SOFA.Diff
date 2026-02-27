@@ -71,12 +71,21 @@ void LoopsControlsGUI::doDraw(core::sptr<simulation::Node> groot)
         const auto dt = groot->getDt();
 
         ImGui::Text("Optimization Loop");
+        ImGui::SameLine(150);
+        ImGui::BeginDisabled(!optimizationLoop->isUpdateReady());
+        const auto updateParametersButton = ImGui::Button(ICON_FA_ARROW_DOWN);
+        ImGui::SetItemTooltip("Update the parameters");
+        ImGui::EndDisabled();
         ImGui::SameLine(175);
         ImGui::PushButtonRepeat(true);
         const auto forwardStepButton = ImGui::Button(std::string(ICON_FA_FORWARD_STEP).append("##1").c_str());
         ImGui::SetItemTooltip("Make one step of the forward solver");
         ImGui::PopButtonRepeat();
 
+        if (updateParametersButton)
+        {
+            optimizationLoop->updateParameters();
+        }
         if (forwardStepButton)
         {
             optimizationLoop->step(params, dt);

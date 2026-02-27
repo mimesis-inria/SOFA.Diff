@@ -66,7 +66,6 @@ void DifferentiableAnimationLoop::init()
 
 void DifferentiableAnimationLoop::resetDifferentiableMode()
 {
-    m_differentiableMode = false;
     m_timestepIndex = 0;
     m_timestepTotal = 0;
 }

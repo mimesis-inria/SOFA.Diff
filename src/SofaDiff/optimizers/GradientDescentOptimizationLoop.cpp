@@ -14,7 +14,7 @@ void registerGradientDescentOptimizationLoop(ObjectFactory* factory)
 }
 
 
-void GradientDescentOptimizationLoop::updateParameters()
+void GradientDescentOptimizationLoop::applyGradient()
 {
     for (const auto parameter : m_parameters)
     {

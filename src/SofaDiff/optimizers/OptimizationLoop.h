@@ -19,6 +19,8 @@ public:
     void init() override;
     void bwdInit() override;
 
+    virtual bool isUpdateReady() { return true; }
+    virtual void updateParameters() = 0;
     void step(const core::ExecParams *params, SReal dt) override;
 
 protected:
@@ -26,7 +28,6 @@ protected:
     BaseAnimationLoop * m_animationLoop;
     std::vector<BaseParameter *> m_parameters;
 
-    virtual void updateParameters() = 0;
     SReal getHyperparameter(const BaseParameter *parameter, const std::string &hyperparameterName) const;
 
 
