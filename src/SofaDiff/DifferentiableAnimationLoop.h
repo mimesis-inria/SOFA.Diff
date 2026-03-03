@@ -41,13 +41,15 @@ class SOFA_SOFADIFF_API DifferentiableAnimationLoop:
 public:
     SOFA_CLASS2(DifferentiableAnimationLoop, sofa::simulation::DefaultAnimationLoop, core::behavior::LinearSolverAccessor);
 
+    DifferentiableAnimationLoop();
+
     void init() override;
     void step(const core::ExecParams* params, SReal dt) override;
     void stepAdjoint(const core::ExecParams* params, SReal dt);
     void resetDifferentiableMode();
 
     void setDifferentiableMode(bool differentiable);
-    bool getDifferentiableMode() const { return m_differentiableMode; }
+    bool getDifferentiableMode() const { return d_differentiableMode.getValue(); }
 
     unsigned int getTimestepIndex() const { return m_timestepIndex; }
     unsigned int getTimestepTotal() const { return m_timestepTotal; }
@@ -60,7 +62,8 @@ protected:
     void retrieveState(const core::ExecParams* params);
 
 private:
-    bool m_differentiableMode;
+    // bool m_differentiableMode;
+    Data<bool> d_differentiableMode;
 
     std::vector<core::MultiVecCoordId> m_positionStorage;
     std::vector<core::MultiVecDerivId> m_velocityStorage;

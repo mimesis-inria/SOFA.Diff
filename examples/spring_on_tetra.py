@@ -49,6 +49,33 @@ def set_data(**kwargs):
     for data, value in kwargs.items():
         setattr(node, data, value)
 
+
+# =====================================================================================================================
+# A controller to extract data
+# =====================================================================================================================
+import numpy as np
+
+
+class WriteDataController(Sofa.Core.Controller):
+    """
+    Store the value from the given data in a file
+    """
+    def __init__(self, path, data_fields, animation_loop, *args, **kwargs):
+        Sofa.Core.Controller.__init__(self, *args, **kwargs)
+        self.path = path
+        self.data_fields = data_fields
+        self.animation_loop = animation_loop  # For a dirty hack
+
+        self._trajectories = [[] for _ in self.data_fields]
+
+    def onAnimateEndEvent(self, _):
+        if not self.animation_loop.differentiableMode.getValue():
+            for trajectory, data_field in zip(self._trajectories, self.data_fields):
+                value = float(data_field.getValue())  # Conversion to float to get an actual value and not a reference
+                trajectory.append(value)
+            np.savetxt(self.path, np.stack(self._trajectories))
+
+
 # =====================================================================================================================
 # The scene
 # =====================================================================================================================
@@ -80,7 +107,7 @@ def createScene(root):
 
     add_object("ControlLoop", name="control", maxOptimizationIterations=50)
     add_object("GradientDescentOptimizationLoop", name="optimizer", timesteps=5)
-    add_object("DifferentiableAnimationLoop", computeBoundingBox=False)
+    add_object("DifferentiableAnimationLoop", name="simulator", computeBoundingBox=False)
 
     add_object("MechanicalObject", template="Vec3d", name="state", position="0 10 0")
 
@@ -108,3 +135,5 @@ def createScene(root):
             with Node("MSE"):
                 add_object("LossState", name="state")
                 add_object("MeanSquaredErrorMapping")
+
+    add_object(WriteDataController("data_control.txt", [root.Parameters.stiffness.value, root.Loss.Distance.MSE.state.value], root.simulator))

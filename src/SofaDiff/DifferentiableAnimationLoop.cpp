@@ -47,6 +47,10 @@ void registerDifferentiableAnimationLoop(ObjectFactory* factory)
     factory->registerObjects(ObjectRegistrationData("Controller that performs gradient descent.").add< DifferentiableAnimationLoop >());
 }
 
+DifferentiableAnimationLoop::DifferentiableAnimationLoop():
+    d_differentiableMode(initData(&d_differentiableMode, "differentiableMode", "whether differentiable mode is ON or OFF"))
+{}
+
 void DifferentiableAnimationLoop::init()
 {
     DefaultAnimationLoop::init();
@@ -58,7 +62,7 @@ void DifferentiableAnimationLoop::init()
 
     m_timestepIndex = 0;
     m_timestepTotal = 0;
-    m_differentiableMode = false;
+    d_differentiableMode.setValue(false);
 
     ctx->get<LossState> (&m_lossStates, BaseContext::SearchRoot);
 }
@@ -116,7 +120,7 @@ void DifferentiableAnimationLoop::retrieveState(const ExecParams* params)
 
 void DifferentiableAnimationLoop::step(const ExecParams* params, SReal dt)
 {
-    if (!m_differentiableMode)
+    if (!d_differentiableMode.getValue())
     {
         DefaultAnimationLoop::step(params, dt);
     }
@@ -181,11 +185,11 @@ void DifferentiableAnimationLoop::setLossGradient(const SReal value)
 
 void DifferentiableAnimationLoop::setDifferentiableMode(const bool differentiable)
 {
-    if (m_differentiableMode && !differentiable) // Deactivate differentiable mode
+    if (d_differentiableMode.getValue() && !differentiable) // Deactivate differentiable mode
     {
         resetDifferentiableMode();
     }
-    m_differentiableMode = differentiable;
+    d_differentiableMode.setValue(differentiable);
 }
 
 }
