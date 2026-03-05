@@ -54,6 +54,13 @@ void OptimizationLoop::step(const core::ExecParams *params, SReal dt)
 }
 
 
+bool OptimizationLoop::hasHyperparameter(const BaseParameter *parameter, const std::string &hyperparameterName)
+{
+    const auto * baseData = parameter->findData(hyperparameterName);
+    return baseData != nullptr;
+}
+
+
 SReal OptimizationLoop::getHyperparameter(const BaseParameter *parameter, const std::string &hyperparameterName) const
 {
     const auto * baseData = parameter->findData(hyperparameterName);

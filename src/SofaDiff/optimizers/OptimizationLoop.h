@@ -28,9 +28,8 @@ protected:
     BaseAnimationLoop * m_animationLoop;
     std::vector<BaseParameter *> m_parameters;
 
+    static bool hasHyperparameter(const BaseParameter *parameter, const std::string &hyperparameterName) ;
     SReal getHyperparameter(const BaseParameter *parameter, const std::string &hyperparameterName) const;
-
-
 };
 
 }
