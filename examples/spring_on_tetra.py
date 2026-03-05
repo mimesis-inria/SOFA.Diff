@@ -136,4 +136,4 @@ def createScene(root):
                 add_object("LossState", name="state")
                 add_object("MeanSquaredErrorMapping")
 
-    add_object(WriteDataController("data_control.txt", [root.Parameters.stiffness.value, root.Loss.Distance.MSE.state.value], root.simulator))
+    # add_object(WriteDataController("data_control.txt", [root.Parameters.stiffness.value, root.Loss.Distance.MSE.state.value], root.simulator))
