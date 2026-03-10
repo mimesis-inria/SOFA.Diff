@@ -23,8 +23,9 @@ def createScene(root):
     root.findData("gravity").value=[0, 0, -9810]
 
     root.addObject("VisualStyle", displayFlags="showCollision showVisualModels showForceFields showInteractionForceFields")
-    root.addObject("DefaultVisualManagerLoop")
-    root.addObject("DifferentiableAnimationLoop", computeBoundingBox=False)
+
+    root.addObject("GradientDescentOptimizationLoop", name="optimizer", timesteps=1)
+    root.addObject("DifferentiableAnimationLoop", name="simulator", computeBoundingBox=False)
 
     with root.addChild("Parameters") as parameters:
         # length = 88.28363382  # length at rest configuration
@@ -39,6 +40,7 @@ def createScene(root):
         robot.addObject("NewtonRaphsonSolver", name="newton", maxNbIterationsNewton="100", maxNbIterationsLineSearch="1", warnWhenLineSearchFails="false")
         robot.addObject("StaticSolver", newtonSolver="@newton", name="static")
         robot.addObject("SparseLDLSolver", template="CompressedRowSparseMatrixd", name="solver")
+        robot.addObject("StaticAdjointSolver", name="adjoint")
 
         robot.addObject("MeshVTKLoader", name="loader", filename="meshes/diamond.vtk")
         robot.addObject("MeshTopology", src="@loader")
@@ -86,8 +88,6 @@ def createScene(root):
             with distance.addChild("MSE") as mse:
                 mse.addObject("LossState", name="state")
                 mse.addObject("MeanSquaredErrorMapping")
-
-    root.addObject("GradientDescentController", name="optimizer")
 
     return root
 

@@ -157,8 +157,7 @@ void DifferentiableAnimationLoop::stepAdjoint(const ExecParams* params, SReal dt
     }
 
     // Hard coded "global loss" equal to the latest "instant loss": very dirty and temporary
-    const SReal lossGradient = 1.0 - static_cast<SReal>(m_timestepIndex) / m_timestepTotal;
-    setLossGradient(lossGradient);
+    setLossGradient(1.0);
 
     // TODO: use the other constructor (like DefaultAnimationLoop with SolveVisitor)
     AdjointSolveVisitor(params, dt, vec_id::write_access::position, vec_id::write_access::velocity).execute(m_node);

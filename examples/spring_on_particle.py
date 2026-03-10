@@ -105,22 +105,19 @@ def createScene(root):
 
     add_object("VisualStyle", displayFlags="showBehavior showBehaviorModels showForceFields showMappings")
 
-    add_object("ControlLoop", name="control", maxOptimizationIterations=50)
-    add_object("GradientDescentOptimizationLoop", name="optimizer", timesteps=5)
+    add_object("GradientDescentOptimizationLoop", name="optimizer", timesteps=1)
     add_object("DifferentiableAnimationLoop", name="simulator", computeBoundingBox=False)
 
     add_object("MechanicalObject", template="Vec3d", name="state", position="0 10 0")
 
     with Node("Parameters"):
-        add_object("TrainableParameterVector", name="stiffness", value="10", learningRate="100.0", lowerBound=0, upperBound=50)
+        add_object("TrainableParameterVector", name="stiffness", value="10", learningRate="1.0", lowerBound=0, upperBound=50)
 
     with Node("Physics"):
         add_object("SparseLDLSolver", template="CompressedRowSparseMatrixd", name="solver", printLog="false")
-        # add_object("NewtonRaphsonSolver", name="newton", maxNbIterationsNewton="100", maxNbIterationsLineSearch="1", warnWhenLineSearchFails="false")
-        # add_object("StaticSolver", newtonSolver="@newton", name="static")
-        # add_object("StaticAdjointSolver", name="adjoint")
-        add_object("EulerImplicitSolver", name="euler")
-        add_object("ImplicitAdjointSolver", name="adjoint")
+        add_object("NewtonRaphsonSolver", name="newton", maxNbIterationsNewton="100", maxNbIterationsLineSearch="1", warnWhenLineSearchFails="false")
+        add_object("StaticSolver", newtonSolver="@newton", name="static")
+        add_object("StaticAdjointSolver", name="adjoint")
 
         add_object("MechanicalObject", template="Vec3d", name="state", position="0 0 0", showObject="true", drawMode="1", showObjectScale="0.1")
         add_object("UniformMass", template="Vec3d", name="mass", totalMass="10")
@@ -128,7 +125,7 @@ def createScene(root):
         add_object("ParameterizedSpringForceField", name="spring", object1="@/Physics/state", indices1="0", object2="@/state", indices2="0", length="5", stiffness="@/Parameters/stiffness.value", damping=0)
 
     with Node("Loss"):
-        add_object("MechanicalObject", template="Vec3d", name="state", position="0 -5 0", showObject="true", drawMode="1", showObjectScale="0.08")
+        add_object("MechanicalObject", template="Vec3d", name="state", position="0 -2 0", showObject="true", drawMode="1", showObjectScale="0.08")
         with Node("Distance"):
             add_object("MechanicalObject", template="Vec1d", name="state", position="0")
             add_object("DistanceFromTargetMapping", input="@Physics/state", targetPositions="@/Loss/state.position")

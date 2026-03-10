@@ -20,7 +20,6 @@
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
 #include <SofaDiff/imgui/LoopsControlsGUI.h>
-#include <SofaDiff/ControlLoop.h>
 #include <SofaDiff/DifferentiableAnimationLoop.h>
 #include <SofaDiff/optimizers/OptimizationLoop.h>
 
@@ -42,27 +41,6 @@ void registerLoopsControlsGUI()
 
 void LoopsControlsGUI::doDraw(core::sptr<simulation::Node> groot)
 {
-    ControlLoop * controlLoop;
-    groot->get(controlLoop);
-    if (controlLoop)
-    {
-        const auto params = core::execparams::defaultInstance();
-        const auto dt = groot->getDt();
-
-        ImGui::Text("Control Loop");
-        ImGui::SameLine(175);
-        ImGui::PushButtonRepeat(true);
-        const auto forwardStepButton = ImGui::Button(std::string(ICON_FA_FORWARD_STEP).append("##2").c_str());
-        ImGui::SetItemTooltip("Make one step of the control");
-        ImGui::PopButtonRepeat();
-
-        if (forwardStepButton)
-        {
-            controlLoop->step(params, dt);
-            simulation::node::updateVisual(groot.get());
-        }
-    }
-
     OptimizationLoop * optimizationLoop;
     groot->get(optimizationLoop);
     if (optimizationLoop)

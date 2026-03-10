@@ -21,7 +21,8 @@
         <RequiredPlugin name="Sofa.Component.Topology.Mapping"/> <!-- Needed to use components [Hexa2TetraTopologicalMapping] -->
     </Node>
 
-    <DifferentiableAnimationLoop computeBoundingBox="false"/>
+    <GradientDescentOptimizationLoop name="optimizer" timesteps="1"/>
+    <DifferentiableAnimationLoop name="simulator" computeBoundingBox="false"/>
     <VisualStyle displayFlags="showBehavior showBehaviorModels showForceFields hideMappings"/>
 
     <Node name="Parameters">
@@ -37,6 +38,7 @@
         <NewtonRaphsonSolver name="newton" maxNbIterationsNewton="100" maxNbIterationsLineSearch="1" warnWhenLineSearchFails="false"/>
         <StaticSolver newtonSolver="@newton" name="static"/>
         <SparseLDLSolver template="CompressedRowSparseMatrixd" name="solver"/>
+        <StaticAdjointSolver name="adjoint"/>
 
         <Node name="Beam">
             <TetrahedronSetGeometryAlgorithms/>
@@ -78,6 +80,4 @@
             </Node>
         </Node>
     </Node>
-
-    <GradientDescentController name="optimizer"/>
 </Node>

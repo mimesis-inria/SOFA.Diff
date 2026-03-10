@@ -19,7 +19,8 @@
         <RequiredPlugin name="Sofa.Component.Mapping.NonLinear"/> <!-- Needed to use components [DistanceFromTargetMapping] -->
     </Node>
 
-    <DifferentiableAnimationLoop computeBoundingBox="false"/>
+    <GradientDescentOptimizationLoop name="optimizer" timesteps="1"/>
+    <DifferentiableAnimationLoop name="simulator" computeBoundingBox="false"/>
     <VisualStyle displayFlags="showBehavior showBehaviorModels showForceFields showMappings"/>
 
     <Node name="Parameters">
@@ -31,6 +32,7 @@
         <NewtonRaphsonSolver name="newton" maxNbIterationsNewton="100" maxNbIterationsLineSearch="1" warnWhenLineSearchFails="false"/>
         <StaticSolver newtonSolver="@newton" name="static"/>
         <SparseLDLSolver template="CompressedRowSparseMatrixd" name="solver"/>
+        <StaticAdjointSolver name="adjoint"/>
 
         <Node name="TopBeam">
             <RegularGridTopology name="grid" min="0 18 -2" max="40 22 2" n="31 4 4"/>
@@ -99,5 +101,4 @@
             </Node>
         </Node>
     </Node>
-    <GradientDescentController name="optimizer"/>
 </Node>

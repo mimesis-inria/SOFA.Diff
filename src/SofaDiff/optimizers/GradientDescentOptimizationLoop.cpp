@@ -19,6 +19,7 @@ void GradientDescentOptimizationLoop::applyGradient()
     for (const auto parameter : m_parameters)
     {
         auto value = parameter->getValueVector();
+
         const auto learningRate = getHyperparameter(parameter, "learningRate");
         const auto gradient = parameter->getGradientVector();
         for (size_t j = 0; j < gradient.size(); j++)
@@ -30,7 +31,6 @@ void GradientDescentOptimizationLoop::applyGradient()
             for (size_t j = 0; j < gradient.size(); j++)
                 if (value[j] < lowerBound)
                     value[j] = lowerBound;
-            parameter->setValueVector(value);
         }
 
         if (hasHyperparameter(parameter, "upperBound"))
@@ -39,8 +39,9 @@ void GradientDescentOptimizationLoop::applyGradient()
             for (size_t j = 0; j < gradient.size(); j++)
                 if (value[j] > upperBound)
                     value[j] = upperBound;
-            parameter->setValueVector(value);
         }
+
+        parameter->setValueVector(value);
     }
 }
 

@@ -22,8 +22,8 @@
         <RequiredPlugin name="Sofa.GL.Component.Rendering3D"/> <!-- Needed to use components [OglModel] -->
     </Node>
 
-    <GradientDescentOptimizationLoop timesteps="30"/>
-    <DifferentiableAnimationLoop computeBoundingBox="false"/>
+    <GradientDescentOptimizationLoop name="optimizer" timesteps="1"/>
+    <DifferentiableAnimationLoop name="simulator" computeBoundingBox="false"/>
     <VisualStyle displayFlags="showBehavior showBehaviorModels showForceFields hideMappings"/>
 
     <Node name="Parameters">
@@ -40,10 +40,8 @@
     <Node name="Physics">
         <SparseLDLSolver template="CompressedRowSparseMatrixd" name="solver"/>
         <NewtonRaphsonSolver name="newton" maxNbIterationsNewton="100" maxNbIterationsLineSearch="1" warnWhenLineSearchFails="false"/>
-<!--        <StaticSolver newtonSolver="@newton" name="static"/>-->
-<!--        <StaticAdjointSolver name="adjoint"/>-->
-        <EulerImplicitSolver />
-        <ImplicitAdjointSolver name="adjoint"/>
+        <StaticSolver newtonSolver="@newton" name="static"/>
+        <StaticAdjointSolver name="adjoint"/>
 
         <Node name="Beam">
             <TetrahedronSetGeometryAlgorithms/>
