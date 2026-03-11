@@ -21,25 +21,16 @@
 ******************************************************************************/
 
 #include <SofaDiff/DifferentiableAnimationLoop.h>
-#include <SofaDiff/visitors/AdjointResetVisitor.h>
-#include <SofaDiff/visitors/AdjointSolveVisitor.h>
 #include <SofaDiff/visitors/StoreStateVisitor.h>
 #include <SofaDiff/visitors/RetrieveStateVisitor.h>
-#include <SofaDiff/ParameterizedForceField.h>
+#include <SofaDiff/adjoints/AdjointSolver.h>
+#include <SofaDiff/utils.h>
 
-#include <sofa/core/MechanicalParams.h>
 #include <sofa/core/ObjectFactory.h>
-#include <sofa/helper/ScopedAdvancedTimer.h>
-#include <sofa/simulation/MechanicalOperations.h>
-#include <sofa/simulation/Node.h>
-// #include <sofa/simulation/UpdateMappingVisitor.h>  // cf TODO below
-#include <sofa/simulation/mechanicalvisitor/MechanicalPropagateOnlyPositionAndVelocityVisitor.h>
-#include <sofa/simulation/VectorOperations.h>
 
 
 namespace sofadiff
 {
-using namespace sofa::simulation::mechanicalvisitor;
 using namespace sofa::core;
 
 void registerDifferentiableAnimationLoop(ObjectFactory* factory)
@@ -48,7 +39,8 @@ void registerDifferentiableAnimationLoop(ObjectFactory* factory)
 }
 
 DifferentiableAnimationLoop::DifferentiableAnimationLoop():
-    d_differentiableMode(initData(&d_differentiableMode, "differentiableMode", "whether differentiable mode is ON or OFF"))
+    d_totalTimesteps(initData(&d_totalTimesteps, 0, "timesteps", "Number of timesteps for the simulation to be complete. Default is 0, meaning indefinite simulation.")),
+    m_currentTimestep(0)
 {}
 
 void DifferentiableAnimationLoop::init()
@@ -56,139 +48,92 @@ void DifferentiableAnimationLoop::init()
     DefaultAnimationLoop::init();
     LinearSolverAccessor::init();
 
-    auto* ctx = this->getContext();
-    auto* params = mechanicalparams::defaultInstance();
-    simulation::common::VectorOperations vop(params, ctx);
-
-    m_timestepIndex = 0;
-    m_timestepTotal = 0;
-    d_differentiableMode.setValue(false);
-
-    ctx->get<LossState> (&m_lossStates, BaseContext::SearchRoot);
+    BaseContext * rootContext = this->getContext()->getRootContext();
+    m_startPositionId = newVecId<V_COORD>(rootContext, "startPosition", this->getClassName());
+    m_startVelocityId = newVecId<V_DERIV>(rootContext, "startVelocity", this->getClassName());
 }
 
-
-void DifferentiableAnimationLoop::resetDifferentiableMode()
+void DifferentiableAnimationLoop::step(const ExecParams* params, const SReal dt)
 {
-    m_timestepIndex = 0;
-    m_timestepTotal = 0;
-}
-
-
-void DifferentiableAnimationLoop::storeState(const ExecParams* params)
-{
-    m_timestepIndex++;
-    if (m_node == nullptr)
-    {
-        m_node = dynamic_cast<simulation::Node*>(this->l_node.get());
-        if (m_node == nullptr)
-        {
-            msg_error("Impossible to get root node");
-        }
-    }
-    if (m_timestepIndex > m_positionStorage.size() + 1)
-    {
-        msg_error("Storage requires more than one additional VecId — This should not happen.");
+    if (!isStepAllowed())
         return;
-    }
-    if (m_timestepIndex == m_positionStorage.size() + 1)
+
+    if (m_currentTimestep == 0)
     {
-        auto* ctx = this->getContext();
-        simulation::common::VectorOperations vop(params, ctx);
-
-        behavior::MultiVecCoord position(&vop, TMultiVecId<VecType::V_COORD, VecAccess::V_WRITE>());
-        position.realloc(&vop, false, true, VecIdProperties{"x"+std::to_string(m_timestepIndex - 1), this->getClassName()});
-
-        behavior::MultiVecDeriv velocity(&vop, TMultiVecId<VecType::V_DERIV, VecAccess::V_WRITE>());
-        velocity.realloc(&vop, false, true, VecIdProperties{"v"+std::to_string(m_timestepIndex - 1), this->getClassName()});
-
-        m_positionStorage.push_back(position.id());
-        m_velocityStorage.push_back(velocity.id());
+        StoreStateVisitor visitor(execparams::defaultInstance(), m_startPositionId, m_startVelocityId);
+        visitor.execute(this->getContext());
     }
-    StoreStateVisitor(params, m_positionStorage[m_timestepIndex - 1], m_velocityStorage[m_timestepIndex - 1]).execute(m_node);
+
+    DefaultAnimationLoop::step(params, dt);
+    m_currentTimestep++;
 }
-
-void DifferentiableAnimationLoop::retrieveState(const ExecParams* params)
-{
-    auto m_params = MechanicalParams(*params);
-    RetrieveStateVisitor(params, m_positionStorage[m_timestepIndex - 1], m_velocityStorage[m_timestepIndex - 1]).execute(m_node);
-    MechanicalPropagateOnlyPositionAndVelocityVisitor(&m_params).execute(m_node);
-    // simulation::UpdateMappingVisitor(params).execute(m_node); // TODO: useful?
-    m_timestepIndex--;
-}
-
-
-void DifferentiableAnimationLoop::step(const ExecParams* params, SReal dt)
-{
-    if (!d_differentiableMode.getValue())
-    {
-        DefaultAnimationLoop::step(params, dt);
-    }
-    else
-    {
-        if (m_solverDirection != FORWARD)
-        {
-            m_timestepTotal = m_timestepIndex;
-            m_solverDirection = FORWARD;
-        }
-        storeState(params);
-        DefaultAnimationLoop::step(params, dt);
-        m_timestepTotal++;
-    }
-}
-
 
 void DifferentiableAnimationLoop::stepAdjoint(const ExecParams* params, SReal dt)
 {
-    if (this->d_componentState.getValue() != objectmodel::ComponentState::Valid)
-    {
+    if (!isStepAdjointAllowed())
         return;
-    }
 
-    if (m_timestepIndex < 1)
-    {
-        return;
-    }
+    // Get adjoints and losses
+    std::vector<AdjointSolver*> adjoints;
+    this->getContext()->get<AdjointSolver>(&adjoints, BaseContext::SearchDown);
+    std::vector<LossState*> lossStates;
+    this->getContext()->get<LossState>(&lossStates, BaseContext::SearchDown);
 
-    if (m_solverDirection != BACKWARD)
-    {
-        m_solverDirection = BACKWARD;
-        AdjointResetVisitor(params).execute(m_node);
-    }
+    // Reset the gradients
+    for (const auto adjoint : adjoints)
+        adjoint->resetGradients(params);
 
-    // Hard coded "global loss" equal to the latest "instant loss": very dirty and temporary
-    setLossGradient(1.0);
+    // Initialize backpropagation
+    for (const auto loss : lossStates)
+        loss->d_gradient.setValue(std::vector {1, type::Vec1d(1.0)});
 
-    // TODO: use the other constructor (like DefaultAnimationLoop with SolveVisitor)
-    AdjointSolveVisitor(params, dt, vec_id::write_access::position, vec_id::write_access::velocity).execute(m_node);
-    updateSimulationContext(params, -dt, m_node->getTime());
-    retrieveState(params);
+    // Perform backpropagation
+    for (const auto adjoint : adjoints)
+        adjoint->solve(params, dt, vec_id::write_access::position, vec_id::write_access::velocity);
+
+    // Reset simulation
+    resetSimulation();
 }
 
-
-void DifferentiableAnimationLoop::setLossGradient(const SReal value)
+void DifferentiableAnimationLoop::resetSimulation()
 {
-    for (const auto loss : m_lossStates)
-    {
-        if (loss == nullptr)
-        {
-            msg_error() << "Bad link to the loss object";
-            this->d_componentState.setValue(ComponentState::Invalid);
-            return;
-        }
-        // TODO: handle case where we cannot write in gradient
-        helper::WriteAccessor<Data<VecDeriv_t<defaulttype::Vec1Types>> > lossGradient = helper::getWriteAccessor(loss->d_gradient);
-        lossGradient[0] = sofa::Deriv_t<defaulttype::Vec1Types> (value);
-    }
+    if (!isResetSimulationAllowed())
+        return;
+
+    m_currentTimestep = 0;
+    RetrieveStateVisitor visitor(execparams::defaultInstance(), m_startPositionId, m_startVelocityId);
+    visitor.execute(this->getContext());
 }
 
-void DifferentiableAnimationLoop::setDifferentiableMode(const bool differentiable)
+bool DifferentiableAnimationLoop::isStepAllowed() const
 {
-    if (d_differentiableMode.getValue() && !differentiable) // Deactivate differentiable mode
-    {
-        resetDifferentiableMode();
-    }
-    d_differentiableMode.setValue(differentiable);
+    if (this->d_componentState.getValue() != ComponentState::Valid)
+        return false;
+    const int totalTimesteps = this->getTotalTimesteps();
+    if (totalTimesteps > 0 && this->getCurrentTimestep() >= totalTimesteps)
+        return false;
+    return true;
+}
+
+bool DifferentiableAnimationLoop::isStepAdjointAllowed() const
+{
+    if (this->d_componentState.getValue() != ComponentState::Valid)
+        return false;
+    const int totalTimesteps = this->getTotalTimesteps();
+    if (totalTimesteps > 0 && this->getCurrentTimestep() != totalTimesteps)
+        return false;
+    if (this->getCurrentTimestep() == 0)
+        return false;
+    return true;
+}
+
+bool DifferentiableAnimationLoop::isResetSimulationAllowed() const
+{
+    if (this->d_componentState.getValue() != ComponentState::Valid)
+        return false;
+    if (this->getCurrentTimestep() == 0)
+        return false;
+    return true;
 }
 
 }

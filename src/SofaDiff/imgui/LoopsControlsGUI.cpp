@@ -77,46 +77,57 @@ void LoopsControlsGUI::doDraw(core::sptr<simulation::Node> groot)
     {
         const auto params = core::execparams::defaultInstance();
         const auto dt = groot->getDt();
-        m_recording = differentiableLoop->getDifferentiableMode();
+        bool clicked = false;
 
-        ImGui::Text("Animation Loop");
-        ImGui::BeginDisabled(m_recording);  // Classic mode
-        ImGui::SameLine(175);
+        ImGui::Text("Simulation Loop");
+
+        ImGui::SameLine();
+        ImGui::BeginDisabled(!differentiableLoop->isStepAllowed());
         ImGui::PushButtonRepeat(true);
-        const auto forwardStepButtonClassic = ImGui::Button(std::string(ICON_FA_FORWARD_STEP).append("##classic").c_str());
+        clicked = ImGui::Button(std::string(ICON_FA_FORWARD_STEP).append("##classic").c_str());
         ImGui::SetItemTooltip("Make one step of the forward solver");
         ImGui::PopButtonRepeat();
         ImGui::EndDisabled();
-
-        const auto toggleRecordButton = ImGui::Checkbox("Adjoint", &m_recording);
-        ImGui::SetItemTooltip("Toggle differentiable mode ON/OFF");
-        ImGui::BeginDisabled(!m_recording);  // Differentiable mode
-        ImGui::SameLine(150);
-        ImGui::PushButtonRepeat(true);
-        const auto adjointStepButton = ImGui::Button(ICON_FA_BACKWARD_STEP);
-        ImGui::SetItemTooltip("Make one step of the adjoint solver");
-        ImGui::SameLine(175);
-        const auto forwardStepButtonDifferentiable = ImGui::Button(std::string(ICON_FA_FORWARD_STEP).append("##differentiable").c_str());
-        ImGui::SetItemTooltip("Make one step of the forward solver");
-        ImGui::PopButtonRepeat();
-        ImGui::SameLine(225);
-        ImGui::Text("%d/%d", differentiableLoop->getTimestepIndex(), differentiableLoop->getTimestepTotal());
-        ImGui::EndDisabled();
-
-        if(toggleRecordButton)
-        {
-            differentiableLoop->setDifferentiableMode(m_recording);
-        }
-        if(adjointStepButton)
-        {
-            differentiableLoop->stepAdjoint(params, dt);
-            simulation::node::updateVisual(groot.get());
-        }
-        if (forwardStepButtonClassic || forwardStepButtonDifferentiable)
-        {
+        if (clicked)
             differentiableLoop->step(params, dt);
-            simulation::node::updateVisual(groot.get());
-        }
+
+        ImGui::SameLine();
+        ImGui::BeginDisabled(!differentiableLoop->isStepAllowed() || differentiableLoop->getTotalTimesteps() <= 0);
+        clicked = ImGui::Button(std::string(ICON_FA_FORWARD_FAST).append("##classic").c_str());
+        ImGui::SetItemTooltip("Make all the steps of the forward solver");
+        ImGui::EndDisabled();
+        if (clicked)
+            while (differentiableLoop->isStepAllowed())
+                differentiableLoop->step(params, dt);
+
+        ImGui::SameLine();
+        ImGui::Text("%d / ", differentiableLoop->getCurrentTimestep());
+
+        int totalTimesteps = differentiableLoop->getTotalTimesteps();
+        ImGui::SameLine();
+        ImGui::SetNextItemWidth(150);
+        clicked = ImGui::InputInt("##totalTimesteps", &totalTimesteps);
+        if (clicked)
+            differentiableLoop->setTotalTimesteps(totalTimesteps);
+
+        ImGui::SameLine();
+        ImGui::BeginDisabled(!differentiableLoop->isStepAdjointAllowed());
+        ImGui::PushButtonRepeat(true);
+        clicked = ImGui::Button(std::string(ICON_FA_BACKWARD_STEP).append("##classic").c_str());
+        ImGui::SetItemTooltip("Make one step of the adjoint solver");
+        ImGui::PopButtonRepeat();
+        ImGui::EndDisabled();
+        if (clicked)
+            differentiableLoop->stepAdjoint(params, dt);
+
+        ImGui::SameLine();
+        ImGui::BeginDisabled(true);
+        clicked = ImGui::Button(std::string(ICON_FA_BACKWARD_FAST).append("##classic").c_str());
+        ImGui::SetItemTooltip("Make all the steps of the adjoint solver");
+        ImGui::EndDisabled();
+        if (clicked)
+            while (differentiableLoop->isStepAdjointAllowed())
+                differentiableLoop->stepAdjoint(params, dt);
     }
     else
     {

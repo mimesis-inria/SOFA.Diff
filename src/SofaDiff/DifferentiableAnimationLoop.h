@@ -32,44 +32,39 @@
 
 namespace sofadiff
 {
-enum SolverDirection {NONE, FORWARD, BACKWARD};
-
 class SOFA_SOFADIFF_API DifferentiableAnimationLoop:
     public simulation::DefaultAnimationLoop,
     public core::behavior::LinearSolverAccessor
 {
 public:
     SOFA_CLASS2(DifferentiableAnimationLoop, sofa::simulation::DefaultAnimationLoop, core::behavior::LinearSolverAccessor);
-
     DifferentiableAnimationLoop();
 
+// Inherited methods
     void init() override;
     void step(const core::ExecParams* params, SReal dt) override;
+
+// New methods
     void stepAdjoint(const core::ExecParams* params, SReal dt);
-    void resetDifferentiableMode();
+    void resetSimulation();
 
-    void setDifferentiableMode(bool differentiable);
-    bool getDifferentiableMode() const { return d_differentiableMode.getValue(); }
+    bool isStepAllowed() const;
+    bool isStepAdjointAllowed() const;
+    bool isResetSimulationAllowed() const;
 
-    unsigned int getTimestepIndex() const { return m_timestepIndex; }
-    unsigned int getTimestepTotal() const { return m_timestepTotal; }
+    int getTotalTimesteps() const { return d_totalTimesteps.getValue(); }
+    int getCurrentTimestep() const { return m_currentTimestep; }
+
+    void setTotalTimesteps(const int totalTimesteps) { d_totalTimesteps.setValue(totalTimesteps); }
+
+// New attributes
+    Data<int> d_totalTimesteps;
 
 protected:
-    std::vector<LossState *> m_lossStates;
-    void setLossGradient(SReal value);
+    int m_currentTimestep;
 
-    void storeState(const core::ExecParams* params);
-    void retrieveState(const core::ExecParams* params);
-
-private:
-    // bool m_differentiableMode;
-    Data<bool> d_differentiableMode;
-
-    std::vector<core::MultiVecCoordId> m_positionStorage;
-    std::vector<core::MultiVecDerivId> m_velocityStorage;
-    SolverDirection m_solverDirection;
-    unsigned int m_timestepIndex; // index of the current time step
-    unsigned int m_timestepTotal; // number of consecutive time steps
+    core::MultiVecCoordId m_startPositionId;
+    core::MultiVecDerivId m_startVelocityId;
 };
 
 }
