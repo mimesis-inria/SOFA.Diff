@@ -41,109 +41,140 @@ void registerLoopsControlsGUI()
 
 void LoopsControlsGUI::doDraw(core::sptr<simulation::Node> groot)
 {
-    OptimizationLoop * optimizationLoop;
-    groot->get(optimizationLoop);
-    if (optimizationLoop)
+    std::vector<core::behavior::BaseAnimationLoop*> loops;
+    groot->get<core::behavior::BaseAnimationLoop>(&loops, BaseContext::SearchDown);
+    for (auto * loop : loops)
     {
-        const auto params = core::execparams::defaultInstance();
-        const auto dt = groot->getDt();
-        bool clicked = false;
+        if (auto * optimizer = dynamic_cast<OptimizationLoop*>(loop))
+            doDrawOptimizer(groot, optimizer);
 
-        ImGui::Text("Optimization Loop");
+        else if (auto * differentiableSimulator = dynamic_cast<DifferentiableAnimationLoop*>(loop))
+            doDrawDifferentiableSimulator(groot, differentiableSimulator);
 
-        ImGui::SameLine(150);
-        ImGui::BeginDisabled(!optimizationLoop->isStepAllowed());
-        ImGui::PushButtonRepeat(true);
-        clicked = ImGui::Button(std::string(ICON_FA_FORWARD_STEP).append("##optimizer").c_str());
-        ImGui::SetItemTooltip("Make one iteration of the optimizer");
-        ImGui::PopButtonRepeat();
-        ImGui::EndDisabled();
-        if (clicked)
-            optimizationLoop->step(params, dt);
-
-        ImGui::SameLine();
-        ImGui::BeginDisabled(!optimizationLoop->isStepAllowed() || optimizationLoop->getTotalIterations() <= 0);
-        clicked = ImGui::Button(std::string(ICON_FA_FORWARD_FAST).append("##optimizer").c_str());
-        ImGui::SetItemTooltip("Make all the iterations of the optimizer");
-        ImGui::EndDisabled();
-        if (clicked)
-            while (optimizationLoop->isStepAllowed())
-                optimizationLoop->step(params, dt);
-
-        ImGui::SameLine();
-        ImGui::Text("%d / ", optimizationLoop->getCurrentIteration());
-
-        int totalIterations = optimizationLoop->getTotalIterations();
-        ImGui::SameLine();
-        ImGui::SetNextItemWidth(150);
-        clicked = ImGui::InputInt("##totalIterations", &totalIterations);
-        if (clicked)
-            optimizationLoop->setTotalIterations(totalIterations);
-    }
-
-    DifferentiableAnimationLoop * differentiableLoop;
-    groot->get(differentiableLoop);
-    if (differentiableLoop)
-    {
-        const auto params = core::execparams::defaultInstance();
-        const auto dt = groot->getDt();
-        bool clicked = false;
-
-        ImGui::Text("Simulation Loop");
-
-        ImGui::SameLine(150);
-        ImGui::BeginDisabled(!differentiableLoop->isStepAllowed());
-        ImGui::PushButtonRepeat(true);
-        clicked = ImGui::Button(std::string(ICON_FA_FORWARD_STEP).append("##classic").c_str());
-        ImGui::SetItemTooltip("Make one step of the forward solver");
-        ImGui::PopButtonRepeat();
-        ImGui::EndDisabled();
-        if (clicked)
-            differentiableLoop->step(params, dt);
-
-        ImGui::SameLine();
-        ImGui::BeginDisabled(!differentiableLoop->isStepAllowed() || differentiableLoop->getTotalTimesteps() <= 0);
-        clicked = ImGui::Button(std::string(ICON_FA_FORWARD_FAST).append("##classic").c_str());
-        ImGui::SetItemTooltip("Make all the steps of the forward solver");
-        ImGui::EndDisabled();
-        if (clicked)
-            while (differentiableLoop->isStepAllowed())
-                differentiableLoop->step(params, dt);
-
-        ImGui::SameLine();
-        ImGui::Text("%d / ", differentiableLoop->getCurrentTimestep());
-
-        int totalTimesteps = differentiableLoop->getTotalTimesteps();
-        ImGui::SameLine();
-        ImGui::SetNextItemWidth(150);
-        clicked = ImGui::InputInt("##totalTimesteps", &totalTimesteps);
-        if (clicked)
-            differentiableLoop->setTotalTimesteps(totalTimesteps);
-
-        ImGui::SameLine();
-        ImGui::BeginDisabled(!differentiableLoop->isStepAdjointAllowed());
-        ImGui::PushButtonRepeat(true);
-        clicked = ImGui::Button(std::string(ICON_FA_BACKWARD_STEP).append("##classic").c_str());
-        ImGui::SetItemTooltip("Make one step of the adjoint solver");
-        ImGui::PopButtonRepeat();
-        ImGui::EndDisabled();
-        if (clicked)
-            differentiableLoop->stepAdjoint(params, dt);
-
-        ImGui::SameLine();
-        ImGui::BeginDisabled(true);
-        clicked = ImGui::Button(std::string(ICON_FA_BACKWARD_FAST).append("##classic").c_str());
-        ImGui::SetItemTooltip("Make all the steps of the adjoint solver");
-        ImGui::EndDisabled();
-        if (clicked)
-            while (differentiableLoop->isStepAdjointAllowed())
-                differentiableLoop->stepAdjoint(params, dt);
-    }
-    else
-    {
-        ImGui::Text("No differentiable animation loop");
+        else if (auto * defaultSimulator = dynamic_cast<simulation::DefaultAnimationLoop*>(loop))
+            doDrawDefaultSimulator(groot, defaultSimulator);
     }
 }
+
+void LoopsControlsGUI::doDrawOptimizer(const core::sptr<simulation::Node>& groot, OptimizationLoop * optimizer)
+{
+    const auto params = core::execparams::defaultInstance();
+    const auto dt = groot->getDt();
+    bool clicked = false;
+    std::string suffix = std::string("##").append(optimizer->getName());
+
+    ImGui::Text("Optimization Loop");
+
+    ImGui::SameLine(150);
+    ImGui::BeginDisabled(!optimizer->isStepAllowed());
+    ImGui::PushButtonRepeat(true);
+    clicked = ImGui::Button(std::string(ICON_FA_FORWARD_STEP).append(suffix).c_str());
+    ImGui::SetItemTooltip("Make one iteration of the optimizer");
+    ImGui::PopButtonRepeat();
+    ImGui::EndDisabled();
+    if (clicked)
+        optimizer->step(params, dt);
+
+    ImGui::SameLine();
+    ImGui::BeginDisabled(!optimizer->isStepAllowed() || optimizer->getTotalIterations() <= 0);
+    clicked = ImGui::Button(std::string(ICON_FA_FORWARD_FAST).append(suffix).c_str());
+    ImGui::SetItemTooltip("Make all the iterations of the optimizer");
+    ImGui::EndDisabled();
+    if (clicked)
+        while (optimizer->isStepAllowed())
+            optimizer->step(params, dt);
+
+    ImGui::SameLine();
+    ImGui::Text("%d", optimizer->getCurrentIteration());
+    ImGui::SameLine(260);
+    ImGui::Text("/");
+
+    int totalIterations = optimizer->getTotalIterations();
+    ImGui::SameLine();
+    ImGui::SetNextItemWidth(150);
+    clicked = ImGui::InputInt(suffix.append("-totalIterations").c_str(), &totalIterations);
+    if (clicked)
+        optimizer->setTotalIterations(totalIterations);
+}
+
+void LoopsControlsGUI::doDrawDifferentiableSimulator(const core::sptr<simulation::Node>& groot, DifferentiableAnimationLoop * simulator)
+{
+    const auto params = core::execparams::defaultInstance();
+    const auto dt = groot->getDt();
+    bool clicked = false;
+    std::string suffix = std::string("##").append(simulator->getName());
+
+    ImGui::Text("Simulation Loop");
+
+    ImGui::SameLine(150);
+    ImGui::BeginDisabled(!simulator->isStepAllowed());
+    ImGui::PushButtonRepeat(true);
+    clicked = ImGui::Button(std::string(ICON_FA_FORWARD_STEP).append(suffix).c_str());
+    ImGui::SetItemTooltip("Make one step of the forward solver");
+    ImGui::PopButtonRepeat();
+    ImGui::EndDisabled();
+    if (clicked)
+        simulator->step(params, dt);
+
+    ImGui::SameLine();
+    ImGui::BeginDisabled(!simulator->isStepAllowed() || simulator->getTotalTimesteps() <= 0);
+    clicked = ImGui::Button(std::string(ICON_FA_FORWARD_FAST).append(suffix).c_str());
+    ImGui::SetItemTooltip("Make all the steps of the forward solver");
+    ImGui::EndDisabled();
+    if (clicked)
+        while (simulator->isStepAllowed())
+            simulator->step(params, dt);
+
+    ImGui::SameLine();
+    ImGui::Text("%d", simulator->getCurrentTimestep());
+    ImGui::SameLine(260);
+    ImGui::Text("/");
+
+    int totalTimesteps = simulator->getTotalTimesteps();
+    ImGui::SameLine();
+    ImGui::SetNextItemWidth(150);
+    clicked = ImGui::InputInt(suffix.append("-totalTimesteps").c_str(), &totalTimesteps);
+    if (clicked)
+        simulator->setTotalTimesteps(totalTimesteps);
+
+    ImGui::SameLine();
+    ImGui::BeginDisabled(!simulator->isStepAdjointAllowed());
+    ImGui::PushButtonRepeat(true);
+    clicked = ImGui::Button(std::string(ICON_FA_BACKWARD_STEP).append(suffix).c_str());
+    ImGui::SetItemTooltip("Make one step of the adjoint solver");
+    ImGui::PopButtonRepeat();
+    ImGui::EndDisabled();
+    if (clicked)
+        simulator->stepAdjoint(params, dt);
+
+    ImGui::SameLine();
+    ImGui::BeginDisabled(true);
+    clicked = ImGui::Button(std::string(ICON_FA_BACKWARD_FAST).append(suffix).c_str());
+    ImGui::SetItemTooltip("Make all the steps of the adjoint solver");
+    ImGui::EndDisabled();
+    if (clicked)
+        while (simulator->isStepAdjointAllowed())
+            simulator->stepAdjoint(params, dt);
+}
+
+void LoopsControlsGUI::doDrawDefaultSimulator(const core::sptr<simulation::Node> &groot, simulation::DefaultAnimationLoop *simulator)
+{
+    const auto params = core::execparams::defaultInstance();
+    const auto dt = groot->getDt();
+    bool clicked = false;
+    std::string suffix = std::string("##").append(simulator->getName());
+
+    ImGui::Text("Simulation Loop");
+
+    ImGui::SameLine(150);
+    ImGui::PushButtonRepeat(true);
+    clicked = ImGui::Button(std::string(ICON_FA_FORWARD_STEP).append(suffix).c_str());
+    ImGui::SetItemTooltip("Make one step of the forward solver");
+    ImGui::PopButtonRepeat();
+    if (clicked)
+        simulator->step(params, dt);
+}
+
 
 
 std::string LoopsControlsGUI::getWindowName() const

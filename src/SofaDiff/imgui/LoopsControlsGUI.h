@@ -22,8 +22,12 @@
 #pragma once
 
 #include <SofaDiff/config.h>
+#include <SofaDiff/DifferentiableAnimationLoop.h>
+#include <SofaDiff/optimizers/OptimizationLoop.h>
 
 #include <SofaImGui/guis/BaseAdditionalGUI.h>
+
+
 
 using sofaimgui::guis::BaseAdditionalGUI;
 
@@ -44,6 +48,10 @@ private:
     bool m_recording;
 
     void doDraw(core::sptr<simulation::Node> groot) override;
+
+    static void doDrawOptimizer(const core::sptr<simulation::Node>& groot, OptimizationLoop * optimizer);
+    static void doDrawDifferentiableSimulator(const core::sptr<simulation::Node>& groot, DifferentiableAnimationLoop * simulator);
+    static void doDrawDefaultSimulator(const core::sptr<simulation::Node>& groot, simulation::DefaultAnimationLoop * simulator);
 };
 
 }
