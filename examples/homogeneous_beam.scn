@@ -21,7 +21,7 @@
         <RequiredPlugin name="Sofa.Component.Topology.Mapping"/> <!-- Needed to use components [Hexa2TetraTopologicalMapping] -->
     </Node>
 
-    <GradientDescentOptimizationLoop name="optimizer" timesteps="1"/>
+    <GradientDescentOptimizationLoop name="optimizer"/>
     <DifferentiableAnimationLoop name="simulator" computeBoundingBox="false"/>
     <VisualStyle displayFlags="showBehavior showBehaviorModels showForceFields hideMappings"/>
 

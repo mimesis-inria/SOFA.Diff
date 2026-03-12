@@ -24,7 +24,7 @@ def createScene(root):
 
     root.addObject("VisualStyle", displayFlags="showCollision showVisualModels showForceFields showInteractionForceFields")
 
-    root.addObject("GradientDescentOptimizationLoop", name="optimizer", timesteps=1)
+    root.addObject("GradientDescentOptimizationLoop", name="optimizer")
     root.addObject("DifferentiableAnimationLoop", name="simulator", computeBoundingBox=False)
 
     with root.addChild("Parameters") as parameters:

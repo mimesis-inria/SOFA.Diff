@@ -16,20 +16,31 @@ public:
 
     OptimizationLoop();
 
+// Inherited methods
     void init() override;
     void bwdInit() override;
-
-    virtual bool isUpdateReady() { return true; }
-    virtual void updateParameters() = 0;
     void step(const core::ExecParams *params, SReal dt) override;
 
-protected:
-    Data<int> m_totalTimesteps;
-    BaseAnimationLoop * m_animationLoop;
-    std::vector<BaseParameter *> m_parameters;
+// New methods
+    void resetOptimization();
 
-    static bool hasHyperparameter(const BaseParameter *parameter, const std::string &hyperparameterName) ;
-    SReal getHyperparameter(const BaseParameter *parameter, const std::string &hyperparameterName) const;
+    bool isStepAllowed() const;
+    bool isResetOptimizationAllowed() const;
+
+    int getTotalIterations() const { return d_totalIterations.getValue(); }
+    int getCurrentIteration() const { return m_currentIteration; }
+
+    void setTotalIterations(const int totalIterations) { d_totalIterations.setValue(totalIterations); }
+
+protected:
+    virtual void updateParameters() = 0;
+
+// New attributes
+public:
+    Data<int> d_totalIterations;
+
+protected:
+    int m_currentIteration;
 };
 
 }

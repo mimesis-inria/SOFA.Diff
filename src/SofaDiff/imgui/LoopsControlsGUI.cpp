@@ -47,28 +47,38 @@ void LoopsControlsGUI::doDraw(core::sptr<simulation::Node> groot)
     {
         const auto params = core::execparams::defaultInstance();
         const auto dt = groot->getDt();
+        bool clicked = false;
 
         ImGui::Text("Optimization Loop");
-        ImGui::SameLine(150);
-        ImGui::BeginDisabled(!optimizationLoop->isUpdateReady());
-        const auto updateParametersButton = ImGui::Button(ICON_FA_ARROW_DOWN);
-        ImGui::SetItemTooltip("Update the parameters");
-        ImGui::EndDisabled();
-        ImGui::SameLine(175);
-        ImGui::PushButtonRepeat(true);
-        const auto forwardStepButton = ImGui::Button(std::string(ICON_FA_FORWARD_STEP).append("##1").c_str());
-        ImGui::SetItemTooltip("Make one step of the forward solver");
-        ImGui::PopButtonRepeat();
 
-        if (updateParametersButton)
-        {
-            optimizationLoop->updateParameters();
-        }
-        if (forwardStepButton)
-        {
+        ImGui::SameLine(150);
+        ImGui::BeginDisabled(!optimizationLoop->isStepAllowed());
+        ImGui::PushButtonRepeat(true);
+        clicked = ImGui::Button(std::string(ICON_FA_FORWARD_STEP).append("##optimizer").c_str());
+        ImGui::SetItemTooltip("Make one iteration of the optimizer");
+        ImGui::PopButtonRepeat();
+        ImGui::EndDisabled();
+        if (clicked)
             optimizationLoop->step(params, dt);
-            simulation::node::updateVisual(groot.get());
-        }
+
+        ImGui::SameLine();
+        ImGui::BeginDisabled(!optimizationLoop->isStepAllowed() || optimizationLoop->getTotalIterations() <= 0);
+        clicked = ImGui::Button(std::string(ICON_FA_FORWARD_FAST).append("##optimizer").c_str());
+        ImGui::SetItemTooltip("Make all the iterations of the optimizer");
+        ImGui::EndDisabled();
+        if (clicked)
+            while (optimizationLoop->isStepAllowed())
+                optimizationLoop->step(params, dt);
+
+        ImGui::SameLine();
+        ImGui::Text("%d / ", optimizationLoop->getCurrentIteration());
+
+        int totalIterations = optimizationLoop->getTotalIterations();
+        ImGui::SameLine();
+        ImGui::SetNextItemWidth(150);
+        clicked = ImGui::InputInt("##totalIterations", &totalIterations);
+        if (clicked)
+            optimizationLoop->setTotalIterations(totalIterations);
     }
 
     DifferentiableAnimationLoop * differentiableLoop;
@@ -81,7 +91,7 @@ void LoopsControlsGUI::doDraw(core::sptr<simulation::Node> groot)
 
         ImGui::Text("Simulation Loop");
 
-        ImGui::SameLine();
+        ImGui::SameLine(150);
         ImGui::BeginDisabled(!differentiableLoop->isStepAllowed());
         ImGui::PushButtonRepeat(true);
         clicked = ImGui::Button(std::string(ICON_FA_FORWARD_STEP).append("##classic").c_str());

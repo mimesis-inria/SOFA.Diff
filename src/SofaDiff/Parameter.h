@@ -39,6 +39,8 @@ public:
     virtual void setValueVector(const type::vector<SReal> & vector) = 0;
 
     void parse(core::objectmodel::BaseObjectDescription *arg) override;
+    bool hasHyperparameter(const std::string &hyperparameterName) const;
+    SReal getHyperparameter(const std::string &hyperparameterName) const;
 
 private:
     // To prevent memory leak

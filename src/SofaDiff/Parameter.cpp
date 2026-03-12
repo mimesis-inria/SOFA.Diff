@@ -46,6 +46,32 @@ void BaseParameter::parse(core::objectmodel::BaseObjectDescription *arg)
     }
 }
 
+bool BaseParameter::hasHyperparameter(const std::string &hyperparameterName) const
+{
+    const auto * baseData = this->findData(hyperparameterName);
+    return baseData != nullptr;
+}
+
+SReal BaseParameter::getHyperparameter(const std::string &hyperparameterName) const
+{
+    const auto * baseData = this->findData(hyperparameterName);
+    if (baseData == nullptr)
+    {
+        msg_error() << "Parameter " << this->getName() << " does not have hyperparameter " << hyperparameterName;
+        return 0.0;
+    }
+
+    const auto * data = dynamic_cast<const Data<SReal>*>(baseData);
+    if (data == nullptr)
+    {
+        // Unlikely to trigger since the parsing converts the string value of the hyperparameter to a double with std::stod()
+        msg_error() << "Hyperparameter " << hyperparameterName << " of parameter " << this->getName() << " is not a scalar";
+        return 0.0;
+    }
+
+    return data->getValue();
+}
+
 
 template<>
 std::string Parameter<type::vector<SReal>>::GetCustomClassName()
