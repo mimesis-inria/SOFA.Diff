@@ -76,7 +76,7 @@ void LoopsControlsGUI::doDrawOptimizer(const core::sptr<simulation::Node>& groot
         optimizer->step(params, dt);
 
     ImGui::SameLine();
-    ImGui::BeginDisabled(!optimizer->isStepAllowed() || optimizer->getTotalIterations() <= 0);
+    ImGui::BeginDisabled(!optimizer->isStepAllowed() || optimizer->getMaxOptimizationSteps() <= 0);
     clicked = ImGui::Button(std::string(ICON_FA_FORWARD_FAST).append(suffix).c_str());
     ImGui::SetItemTooltip("Make all the iterations of the optimizer");
     ImGui::EndDisabled();
@@ -85,16 +85,16 @@ void LoopsControlsGUI::doDrawOptimizer(const core::sptr<simulation::Node>& groot
             optimizer->step(params, dt);
 
     ImGui::SameLine();
-    ImGui::Text("%d", optimizer->getCurrentIteration());
+    ImGui::Text("%d", optimizer->getCurrentOptimizationStep());
     ImGui::SameLine(260);
     ImGui::Text("/");
 
-    int totalIterations = optimizer->getTotalIterations();
+    int totalIterations = optimizer->getMaxOptimizationSteps();
     ImGui::SameLine();
     ImGui::SetNextItemWidth(150);
     clicked = ImGui::InputInt(suffix.append("-totalIterations").c_str(), &totalIterations);
     if (clicked)
-        optimizer->setTotalIterations(totalIterations);
+        optimizer->setMaxSimulationSteps(totalIterations);
 }
 
 void LoopsControlsGUI::doDrawDifferentiableSimulator(const core::sptr<simulation::Node>& groot, DifferentiableAnimationLoop * simulator)
@@ -117,7 +117,7 @@ void LoopsControlsGUI::doDrawDifferentiableSimulator(const core::sptr<simulation
         simulator->step(params, dt);
 
     ImGui::SameLine();
-    ImGui::BeginDisabled(!simulator->isStepAllowed() || simulator->getTotalTimesteps() <= 0);
+    ImGui::BeginDisabled(!simulator->isStepAllowed() || simulator->getMaxSimulationSteps() <= 0);
     clicked = ImGui::Button(std::string(ICON_FA_FORWARD_FAST).append(suffix).c_str());
     ImGui::SetItemTooltip("Make all the steps of the forward solver");
     ImGui::EndDisabled();
@@ -126,16 +126,16 @@ void LoopsControlsGUI::doDrawDifferentiableSimulator(const core::sptr<simulation
             simulator->step(params, dt);
 
     ImGui::SameLine();
-    ImGui::Text("%d", simulator->getCurrentTimestep());
+    ImGui::Text("%d", simulator->getCurrentSimulationStep());
     ImGui::SameLine(260);
     ImGui::Text("/");
 
-    int totalTimesteps = simulator->getTotalTimesteps();
+    int totalTimesteps = simulator->getMaxSimulationSteps();
     ImGui::SameLine();
     ImGui::SetNextItemWidth(150);
     clicked = ImGui::InputInt(suffix.append("-totalTimesteps").c_str(), &totalTimesteps);
     if (clicked)
-        simulator->setTotalTimesteps(totalTimesteps);
+        simulator->setMaxSimulationSteps(totalTimesteps);
 
     ImGui::SameLine();
     ImGui::BeginDisabled(!simulator->isStepAdjointAllowed());

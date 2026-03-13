@@ -116,7 +116,7 @@ def createScene(root):
     with Node("Physics"):
         add_object("SparseLDLSolver", template="CompressedRowSparseMatrixd", name="solver", printLog="false")
         add_object("NewtonRaphsonSolver", name="newton", maxNbIterationsNewton="100", maxNbIterationsLineSearch="1", warnWhenLineSearchFails="false")
-        add_object("StaticSolver", newtonSolver="@newton", name="static")
+        add_object("StaticSolver", name="static", newtonSolver="@newton")
         add_object("StaticAdjointSolver", name="adjoint")
 
         add_object("MechanicalObject", template="Vec3d", name="state", position="0 0 0", showObject="true", drawMode="1", showObjectScale="0.1")

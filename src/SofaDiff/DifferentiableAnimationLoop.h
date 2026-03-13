@@ -52,19 +52,16 @@ public:
     bool isStepAdjointAllowed() const;
     bool isResetSimulationAllowed() const;
 
-    int getTotalTimesteps() const { return d_totalTimesteps.getValue(); }
-    int getCurrentTimestep() const { return m_currentTimestep; }
+    int getMaxSimulationSteps() const { return d_maxSimulationSteps.getValue(); }
+    int getCurrentSimulationStep() const { return m_currentSimulationStep; }
 
-    void setTotalTimesteps(const int totalTimesteps) { d_totalTimesteps.setValue(totalTimesteps); }
+    void setMaxSimulationSteps(const int maxSteps) { d_maxSimulationSteps.setValue(maxSteps); }
 
 // New attributes
-    Data<int> d_totalTimesteps;
+    Data<int> d_maxSimulationSteps;
 
 protected:
-    int m_currentTimestep;
-
-    core::MultiVecCoordId m_startPositionId;
-    core::MultiVecDerivId m_startVelocityId;
+    int m_currentSimulationStep;
 };
 
 }

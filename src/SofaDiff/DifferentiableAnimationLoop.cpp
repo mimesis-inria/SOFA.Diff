@@ -21,8 +21,6 @@
 ******************************************************************************/
 
 #include <SofaDiff/DifferentiableAnimationLoop.h>
-#include <SofaDiff/visitors/StoreStateVisitor.h>
-#include <SofaDiff/visitors/RetrieveStateVisitor.h>
 #include <SofaDiff/adjoints/AdjointSolver.h>
 #include <SofaDiff/utils.h>
 
@@ -39,18 +37,14 @@ void registerDifferentiableAnimationLoop(ObjectFactory* factory)
 }
 
 DifferentiableAnimationLoop::DifferentiableAnimationLoop():
-    d_totalTimesteps(initData(&d_totalTimesteps, 0, "timesteps", "Number of timesteps for the simulation to be complete. Default is 0, meaning indefinite simulation.")),
-    m_currentTimestep(0)
+    d_maxSimulationSteps(initData(&d_maxSimulationSteps, 0, "timesteps", "Number of timesteps for the simulation to be complete. Default is 0, meaning indefinite simulation.")),
+    m_currentSimulationStep(0)
 {}
 
 void DifferentiableAnimationLoop::init()
 {
     DefaultAnimationLoop::init();
     LinearSolverAccessor::init();
-
-    BaseContext * rootContext = this->getContext()->getRootContext();
-    m_startPositionId = newVecId<V_COORD>(rootContext, "startPosition", this->getClassName());
-    m_startVelocityId = newVecId<V_DERIV>(rootContext, "startVelocity", this->getClassName());
 }
 
 void DifferentiableAnimationLoop::step(const ExecParams* params, const SReal dt)
@@ -58,14 +52,8 @@ void DifferentiableAnimationLoop::step(const ExecParams* params, const SReal dt)
     if (!isStepAllowed())
         return;
 
-    if (m_currentTimestep == 0)
-    {
-        StoreStateVisitor visitor(execparams::defaultInstance(), m_startPositionId, m_startVelocityId);
-        visitor.execute(this->getContext());
-    }
-
     DefaultAnimationLoop::step(params, dt);
-    m_currentTimestep++;
+    m_currentSimulationStep++;
 }
 
 void DifferentiableAnimationLoop::stepAdjoint(const ExecParams* params, SReal dt)
@@ -90,9 +78,6 @@ void DifferentiableAnimationLoop::stepAdjoint(const ExecParams* params, SReal dt
     // Perform backpropagation
     for (const auto adjoint : adjoints)
         adjoint->solve(params, dt, vec_id::write_access::position, vec_id::write_access::velocity);
-
-    // Reset simulation
-    resetSimulation();
 }
 
 void DifferentiableAnimationLoop::resetSimulation()
@@ -100,17 +85,15 @@ void DifferentiableAnimationLoop::resetSimulation()
     if (!isResetSimulationAllowed())
         return;
 
-    m_currentTimestep = 0;
-    RetrieveStateVisitor visitor(execparams::defaultInstance(), m_startPositionId, m_startVelocityId);
-    visitor.execute(this->getContext());
+    m_currentSimulationStep = 0;
 }
 
 bool DifferentiableAnimationLoop::isStepAllowed() const
 {
     if (this->d_componentState.getValue() != ComponentState::Valid)
         return false;
-    const int totalTimesteps = this->getTotalTimesteps();
-    if (totalTimesteps > 0 && this->getCurrentTimestep() >= totalTimesteps)
+    const int totalTimesteps = this->getMaxSimulationSteps();
+    if (totalTimesteps > 0 && this->getCurrentSimulationStep() >= totalTimesteps)
         return false;
     return true;
 }
@@ -119,10 +102,10 @@ bool DifferentiableAnimationLoop::isStepAdjointAllowed() const
 {
     if (this->d_componentState.getValue() != ComponentState::Valid)
         return false;
-    const int totalTimesteps = this->getTotalTimesteps();
-    if (totalTimesteps > 0 && this->getCurrentTimestep() != totalTimesteps)
+    const int totalTimesteps = this->getMaxSimulationSteps();
+    if (totalTimesteps > 0 && this->getCurrentSimulationStep() != totalTimesteps)
         return false;
-    if (this->getCurrentTimestep() == 0)
+    if (this->getCurrentSimulationStep() == 0)
         return false;
     return true;
 }
@@ -131,7 +114,7 @@ bool DifferentiableAnimationLoop::isResetSimulationAllowed() const
 {
     if (this->d_componentState.getValue() != ComponentState::Valid)
         return false;
-    if (this->getCurrentTimestep() == 0)
+    if (this->getCurrentSimulationStep() == 0)
         return false;
     return true;
 }
