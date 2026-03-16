@@ -7,6 +7,7 @@ using namespace sofa::core;
 
 namespace sofadiff
 {
+using namespace sofa::core::objectmodel;
 
 void registerGradientDescentOptimizationLoop(ObjectFactory* factory)
 {

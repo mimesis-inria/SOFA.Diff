@@ -7,6 +7,7 @@
 
 namespace sofadiff
 {
+using namespace sofa::core::objectmodel;
 
 OptimizationLoop::OptimizationLoop():
     l_simulationLoop(initLink("simulationLoop", "Link to a SimulationLoop")),
@@ -67,7 +68,7 @@ void OptimizationLoop::step(const ExecParams *params, const SReal dt)
     for (int i = 0; i < simulationSteps; i++)
         l_simulationLoop->step(params, dt);
 
-    // TODO: maybe improve the naming? Maybe work on GridSearch at the same time to make sure things work well
+    // TODO: maybe improve the naming?
     computeParametersNextValue(params, dt);
     m_readyToUpdateParameters = true;
 
@@ -75,6 +76,13 @@ void OptimizationLoop::step(const ExecParams *params, const SReal dt)
     // 1. The parameters' next value are computed here, before anything can alter the state of the simulation.
     // 2. The actual update is delayed to the beginning of the next optimization step, to keep the consistency between
     //    the displayed value of the parameters and the displayed solution (computed with said value).
+
+    // This way of doing things is not very compatible with multiple OptimizationLoops: switching from one to another
+    // applies the update of the previous optimizer, and no reset occurs at any point. One way to fix the first point
+    // would be to have each optimizer have its "own" nextValue for each parameter. For the second point, some
+    // optimizers should be reset when "switched out" (e.g. gradient descent, because the gradient is no longer valid),
+    // but others should not (e.g. grid search, because the different steps are independent). Unless they optimize
+    // different parameters... But this is not a feature provided for now.
 
     // Also, the computing of the parameters' next value should not change the state of the simulation, so that the
     // step() ends showing the final state, which is typically the most interesting one. If that is not possible (e.g.
@@ -86,11 +94,18 @@ void OptimizationLoop::step(const ExecParams *params, const SReal dt)
 
 void OptimizationLoop::resetOptimization()
 {
+    if (!isResetOptimizationAllowed())
+        return;
+
     m_currentOptimizationStep = 0;
+    m_readyToUpdateParameters = false;
 }
 
 void OptimizationLoop::setStartingState()
 {
+    if (!isSetStartingStateAllowed())
+        return;
+
     // Store the current state for later retrieval
     m_startingTime = this->getTime();
     StoreStateVisitor visitor(execparams::defaultInstance(), m_startingPositionId, m_startingVelocityId);

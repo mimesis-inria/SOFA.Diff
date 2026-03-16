@@ -27,6 +27,7 @@ using sofa::core::ObjectFactory;
 
 namespace sofadiff
 {
+    extern void registerGridSearchOptimizationLoop(sofa::core::ObjectFactory* factory);
     extern void registerGradientDescentOptimizationLoop(sofa::core::ObjectFactory* factory);
     extern void registerDifferentiableAnimationLoop(sofa::core::ObjectFactory* factory);
     extern void registerStaticAdjointSolver(sofa::core::ObjectFactory* factory);
@@ -82,6 +83,7 @@ namespace sofadiff
 
     void registerObjects(sofa::core::ObjectFactory* factory)
     {
+        registerGridSearchOptimizationLoop(factory);
         registerGradientDescentOptimizationLoop(factory);
         registerDifferentiableAnimationLoop(factory);
         registerStaticAdjointSolver(factory);

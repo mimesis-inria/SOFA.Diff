@@ -3,6 +3,7 @@
 
 namespace sofadiff
 {
+using namespace sofa::core::objectmodel;
 
 void GradientBasedOptimizationLoop::initializeSimulationLink()
 {

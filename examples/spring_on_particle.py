@@ -105,13 +105,15 @@ def createScene(root):
 
     add_object("VisualStyle", displayFlags="showBehavior showBehaviorModels showForceFields showMappings")
 
-    add_object("GradientDescentOptimizationLoop", name="optimizer")
+    # add_object("GradientDescentOptimizationLoop", name="gd-optimizer")
+    add_object("GridSearchOptimizationLoop", name="gs-optimizer")
     add_object("DifferentiableAnimationLoop", name="simulator", computeBoundingBox=False)
+    # add_object("DefaultAnimationLoop", name="simulator", computeBoundingBox=False)
 
     add_object("MechanicalObject", template="Vec3d", name="state", position="0 10 0")
 
     with Node("Parameters"):
-        add_object("TrainableParameterVector", name="stiffness", value="10", learningRate="1.0", lowerBound=0, upperBound=50)
+        add_object("TrainableParameterVector", name="stiffness", value="10", learningRate="1.0", lowerBound=1, upperBound=50, resolution=50)
 
     with Node("Physics"):
         add_object("SparseLDLSolver", template="CompressedRowSparseMatrixd", name="solver", printLog="false")

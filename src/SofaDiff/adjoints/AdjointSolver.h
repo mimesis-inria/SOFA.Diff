@@ -15,7 +15,7 @@ namespace sofadiff
 using namespace sofa::core;
 
 
-class SOFA_SOFADIFF_API AdjointSolver: public virtual BaseObject
+class SOFA_SOFADIFF_API AdjointSolver: public virtual objectmodel::BaseObject
 {
 public:
     SOFA_ABSTRACT_CLASS(AdjointSolver, BaseObject);

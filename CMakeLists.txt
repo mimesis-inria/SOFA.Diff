@@ -20,6 +20,7 @@ set(HEADER_FILES
         ${SOFADIFF_SRC_DIR}/config.h.in
         ${SOFADIFF_SRC_DIR}/utils.h
         ${SOFADIFF_SRC_DIR}/optimizers/OptimizationLoop.h
+        ${SOFADIFF_SRC_DIR}/optimizers/GridSearchOptimizationLoop.h
         ${SOFADIFF_SRC_DIR}/optimizers/GradientBasedOptimizationLoop.h
         ${SOFADIFF_SRC_DIR}/optimizers/GradientDescentOptimizationLoop.h
         ${SOFADIFF_SRC_DIR}/DifferentiableAnimationLoop.h
@@ -46,6 +47,7 @@ set(SOURCE_FILES
         ${SOFADIFF_SRC_DIR}/initSofaDiff.cpp
         ${SOFADIFF_SRC_DIR}/utils.cpp
         ${SOFADIFF_SRC_DIR}/optimizers/OptimizationLoop.cpp
+        ${SOFADIFF_SRC_DIR}/optimizers/GridSearchOptimizationLoop.cpp
         ${SOFADIFF_SRC_DIR}/optimizers/GradientBasedOptimizationLoop.cpp
         ${SOFADIFF_SRC_DIR}/optimizers/GradientDescentOptimizationLoop.cpp
         ${SOFADIFF_SRC_DIR}/DifferentiableAnimationLoop.cpp

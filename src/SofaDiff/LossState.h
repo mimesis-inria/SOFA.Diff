@@ -30,8 +30,6 @@
 
 namespace sofadiff
 {
-using namespace core::objectmodel;
-
 
 class LossState: public core::State<defaulttype::Vec1Types>
 {

@@ -22,7 +22,7 @@ public:
     void bwdInit() override;
 
     void step(const ExecParams *params, SReal dt) override;
-    void resetOptimization();
+    virtual void resetOptimization();
     void setStartingState();
 
     bool isStepAllowed() const;

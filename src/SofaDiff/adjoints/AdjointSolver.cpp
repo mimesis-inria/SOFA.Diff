@@ -8,6 +8,7 @@ namespace sofadiff
 {
 
 using namespace sofa::core;
+using namespace sofa::core::objectmodel;
 
 void AdjointSolver::init()
 {

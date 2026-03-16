@@ -33,6 +33,7 @@
 
 namespace sofadiff
 {
+using namespace sofa::core::objectmodel;
 
 void registerLoopsControlsGUI()
 {
