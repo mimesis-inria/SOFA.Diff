@@ -12,7 +12,7 @@ class SOFA_SOFADIFF_API GradientDescentOptimizationLoop: public GradientBasedOpt
 public:
     SOFA_CLASS(GradientDescentOptimizationLoop, GradientBasedOptimizationLoop);
 
-    void updateParameters(const ExecParams *params, SReal dt) override;
+    void computeParametersNextValue(const ExecParams *params, SReal dt) override;
 };
 
 }

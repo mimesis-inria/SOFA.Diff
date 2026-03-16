@@ -56,35 +56,33 @@ void DifferentiableAnimationLoop::step(const ExecParams* params, const SReal dt)
     m_currentSimulationStep++;
 }
 
-void DifferentiableAnimationLoop::stepAdjoint(const ExecParams* params, SReal dt)
+void DifferentiableAnimationLoop::stepAdjoint(const ExecParams* params, const SReal dt)
 {
     if (!isStepAdjointAllowed())
         return;
 
-    // Get adjoints and losses
-    std::vector<AdjointSolver*> adjoints;
-    this->getContext()->get<AdjointSolver>(&adjoints, BaseContext::SearchDown);
+    // Initialize backpropagation
     std::vector<LossState*> lossStates;
     this->getContext()->get<LossState>(&lossStates, BaseContext::SearchDown);
-
-    // Reset the gradients
-    for (const auto adjoint : adjoints)
-        adjoint->resetGradients(params);
-
-    // Initialize backpropagation
     for (const auto loss : lossStates)
         loss->d_gradient.setValue(std::vector {1, type::Vec1d(1.0)});
 
     // Perform backpropagation
+    std::vector<AdjointSolver*> adjoints;
+    this->getContext()->get<AdjointSolver>(&adjoints, BaseContext::SearchDown);
     for (const auto adjoint : adjoints)
         adjoint->solve(params, dt, vec_id::write_access::position, vec_id::write_access::velocity);
 }
 
-void DifferentiableAnimationLoop::resetSimulation()
+void DifferentiableAnimationLoop::resetAdjoint(const ExecParams* params)
 {
-    if (!isResetSimulationAllowed())
+    if (!isResetAdjointAllowed())
         return;
 
+    std::vector<AdjointSolver*> adjoints;
+    this->getContext()->get<AdjointSolver>(&adjoints, BaseContext::SearchDown);
+    for (const auto adjoint : adjoints)
+        adjoint->resetGradients(params);
     m_currentSimulationStep = 0;
 }
 
@@ -92,8 +90,7 @@ bool DifferentiableAnimationLoop::isStepAllowed() const
 {
     if (this->d_componentState.getValue() != ComponentState::Valid)
         return false;
-    const int totalTimesteps = this->getMaxSimulationSteps();
-    if (totalTimesteps > 0 && this->getCurrentSimulationStep() >= totalTimesteps)
+    if (this->getMaxSimulationSteps() > 0 && this->getCurrentSimulationStep() >= this->getMaxSimulationSteps())
         return false;
     return true;
 }
@@ -102,19 +99,14 @@ bool DifferentiableAnimationLoop::isStepAdjointAllowed() const
 {
     if (this->d_componentState.getValue() != ComponentState::Valid)
         return false;
-    const int totalTimesteps = this->getMaxSimulationSteps();
-    if (totalTimesteps > 0 && this->getCurrentSimulationStep() != totalTimesteps)
-        return false;
-    if (this->getCurrentSimulationStep() == 0)
+    if (this->getCurrentSimulationStep() <= 0)
         return false;
     return true;
 }
 
-bool DifferentiableAnimationLoop::isResetSimulationAllowed() const
+bool DifferentiableAnimationLoop::isResetAdjointAllowed() const
 {
     if (this->d_componentState.getValue() != ComponentState::Valid)
-        return false;
-    if (this->getCurrentSimulationStep() == 0)
         return false;
     return true;
 }

@@ -10,11 +10,6 @@ void GradientBasedOptimizationLoop::initializeSimulationLink()
         return;
 
     const auto * ctx = this->getContext();
-
-    l_simulationLoop.set(ctx->get<simulation::DefaultAnimationLoop>(ctx->getTags(), BaseContext::SearchDown));
-    if (l_simulationLoop)
-        return;
-
     l_simulationLoop.set(ctx->get<DifferentiableAnimationLoop>(ctx->getTags(), BaseContext::SearchDown));
     if (l_simulationLoop)
         return;
@@ -26,7 +21,7 @@ void GradientBasedOptimizationLoop::initializeSimulationLink()
     l_simulationLoop.set(simulationLoop);
 }
 
-void GradientBasedOptimizationLoop::updateParameters(const ExecParams *params, const SReal dt)
+void GradientBasedOptimizationLoop::computeParametersNextValue(const ExecParams *params, const SReal dt)
 {
     const auto simulationLoop = dynamic_cast<DifferentiableAnimationLoop*>(l_simulationLoop.get());
 

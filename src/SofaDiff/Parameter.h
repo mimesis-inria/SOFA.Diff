@@ -35,8 +35,11 @@ public:
 
     virtual void resetGradient() = 0;
     virtual const type::vector<SReal> & getValueVector() = 0;
+    virtual const type::vector<SReal> & getNextValueVector() = 0;
     virtual const type::vector<SReal> & getGradientVector() = 0;
     virtual void setValueVector(const type::vector<SReal> & vector) = 0;
+    virtual void setNextValueVector(const type::vector<SReal> & vector) = 0;
+    virtual void updateValue() = 0;
 
     void parse(core::objectmodel::BaseObjectDescription *arg) override;
     bool hasHyperparameter(const std::string &hyperparameterName) const;
@@ -55,10 +58,12 @@ public:
     SOFA_CLASS(Parameter, BaseParameter);
 
     Data<T> d_value;
+    Data<T> d_nextValue;
     Data<T> d_gradient;
 
 protected:
     type::vector<SReal> m_value;
+    type::vector<SReal> m_nextValue;
     type::vector<SReal> m_gradient;
 
     virtual type::vector<SReal> getVectorFromData(const Data<T> & data);
@@ -71,8 +76,11 @@ public:
 
     void resetGradient() override;
     const type::vector<SReal> & getValueVector() override;
+    const type::vector<SReal> & getNextValueVector() override;
     const type::vector<SReal> & getGradientVector() override;
     void setValueVector(const type::vector<SReal>& vector) override;
+    void setNextValueVector(const type::vector<SReal>& vector) override;
+    void updateValue() override { d_value.setValue(d_nextValue.getValue()); }
 };
 
 }

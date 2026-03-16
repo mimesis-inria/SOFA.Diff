@@ -12,6 +12,7 @@ OptimizationLoop::OptimizationLoop():
     l_simulationLoop(initLink("simulationLoop", "Link to a SimulationLoop")),
     d_maxOptimizationSteps(initData(&d_maxOptimizationSteps, "maxOptimizationSteps", "Maximum number of optimization steps for the optimization to be complete. Default is 0, meaning indefinite optimization.")),
     d_maxSimulationSteps(initData(&d_maxSimulationSteps, 1, "maxSimulationSteps", "Maximum number of simulation steps to optimize. 0 means as many as required for the simulation to be complete. Default is 1.")),
+    m_readyToUpdateParameters(false),
     m_currentOptimizationStep(0),
     m_startingTime(0)
 {}
@@ -43,9 +44,15 @@ void OptimizationLoop::step(const ExecParams *params, const SReal dt)
     if (!isStepAllowed())
         return;
 
-    // Process the results from the previous optimization step and update the parameters
-    if (m_currentOptimizationStep > 0)
-        updateParameters(params, dt);
+    // Update the parameters
+    if (m_readyToUpdateParameters)
+    {
+        std::vector<BaseParameter*> parameters;
+        this->getContext()->get<BaseParameter>(&parameters, BaseContext::SearchDown);
+        for (auto * parameter : parameters)
+            parameter->updateValue();
+        m_readyToUpdateParameters = false;
+    }
 
     // Prepare for the update of the loss with the new parameters
     dynamic_cast<simulation::Node*>(this->l_node.get())->setTime(m_startingTime);
@@ -53,24 +60,26 @@ void OptimizationLoop::step(const ExecParams *params, const SReal dt)
     visitor.execute(this->getContext());
 
     if (auto * differentiableLoop = dynamic_cast<DifferentiableAnimationLoop*>(l_simulationLoop.get()))
-        differentiableLoop->resetSimulation();
+        differentiableLoop->resetAdjoint(params);
 
     // Update the loss
     const int simulationSteps = getSimulationSteps();
     for (int i = 0; i < simulationSteps; i++)
         l_simulationLoop->step(params, dt);
 
-    // Note: I do things in this order (first update parameters, then compute loss) so that the parameters and solution
-    // accessible to the user are consistent, instead of having the solution coming from the previous parameters, and
-    // the current parameters being for the next optimization step.
-    // The downside is that the user could mess with the simulation between here and the update of the parameters... So
-    // we should reset the optimization (m_currentStep = 0) if that were to happen. But that seems impossible.
-    // A better solution would be to process the results here, while the user cannot intervene, and store the parameters
-    // to be used in the next optimization step, and show both the parameters that were used, and the future parameters.
-    // However, in the differentiable + dynamic case, processing the results means doing the adjoint solve, which brings
-    // the system back to the starting state; thus showing useless stuff to the user.
-    // A solution for this issue could be to store the final state and retrieve it once the adjoint is done. This seems
-    // like a good idea.
+    // TODO: maybe improve the naming? Maybe work on GridSearch at the same time to make sure things work well
+    computeParametersNextValue(params, dt);
+    m_readyToUpdateParameters = true;
+
+    // Note:
+    // 1. The parameters' next value are computed here, before anything can alter the state of the simulation.
+    // 2. The actual update is delayed to the beginning of the next optimization step, to keep the consistency between
+    //    the displayed value of the parameters and the displayed solution (computed with said value).
+
+    // Also, the computing of the parameters' next value should not change the state of the simulation, so that the
+    // step() ends showing the final state, which is typically the most interesting one. If that is not possible (e.g.
+    // for computing the gradient in the dynamic case), then the final state should be stored before the computations,
+    // and retrieved afterward.
 
     m_currentOptimizationStep++;
 }
@@ -92,8 +101,7 @@ bool OptimizationLoop::isStepAllowed() const
 {
     if (this->d_componentState.getValue() != ComponentState::Valid)
         return false;
-    const int totalIterations = this->getMaxOptimizationSteps();
-    if (totalIterations > 0 && this->getCurrentOptimizationStep() >= totalIterations)
+    if (this->getMaxOptimizationSteps() > 0 && this->getCurrentOptimizationStep() >= this->getMaxOptimizationSteps())
         return false;
     return true;
 }
@@ -122,18 +130,13 @@ void OptimizationLoop::initializeSimulationLink()
         return;
 
     const auto * ctx = this->getContext();
-
     l_simulationLoop.set(ctx->get<simulation::DefaultAnimationLoop>(ctx->getTags(), BaseContext::SearchDown));
     if (l_simulationLoop)
         return;
 
-    l_simulationLoop.set(ctx->get<DifferentiableAnimationLoop>(ctx->getTags(), BaseContext::SearchDown));
-    if (l_simulationLoop)
-        return;
-
     msg_warning() << "A SimulationLoop is required by this component but has not been found. It will be created automatically";
-    const auto simulationLoop = core::objectmodel::New<simulation::DefaultAnimationLoop>();
-    simulationLoop->setName(this->getContext()->getNameHelper().resolveName(simulationLoop->getClassName(), core::ComponentNameHelper::Convention::xml));
+    const auto simulationLoop = objectmodel::New<simulation::DefaultAnimationLoop>();
+    simulationLoop->setName(this->getContext()->getNameHelper().resolveName(simulationLoop->getClassName(), ComponentNameHelper::Convention::xml));
     this->getContext()->addObject(simulationLoop);
     l_simulationLoop.set(simulationLoop);
 }

@@ -86,15 +86,25 @@ void LoopsControlsGUI::doDrawOptimizer(const core::sptr<simulation::Node>& groot
 
     ImGui::SameLine();
     ImGui::Text("%d", optimizer->getCurrentOptimizationStep());
+    ImGui::SetItemTooltip("Current number of optimization steps performed");
     ImGui::SameLine(260);
     ImGui::Text("/");
 
-    int totalIterations = optimizer->getMaxOptimizationSteps();
+    int maxOptimizationSteps = optimizer->getMaxOptimizationSteps();
     ImGui::SameLine();
-    ImGui::SetNextItemWidth(150);
-    clicked = ImGui::InputInt(suffix.append("-totalIterations").c_str(), &totalIterations);
+    ImGui::SetNextItemWidth(120);
+    clicked = ImGui::InputInt(suffix.append("-maxOptimizationSteps").c_str(), &maxOptimizationSteps);
+    ImGui::SetItemTooltip("Maximum number of optimization steps to perform");
     if (clicked)
-        optimizer->setMaxSimulationSteps(totalIterations);
+        optimizer->setMaxOptimizationSteps(maxOptimizationSteps);
+
+    int maxSimulationSteps = optimizer->getMaxSimulationSteps();
+    ImGui::SameLine(0, 30);
+    ImGui::SetNextItemWidth(120);
+    clicked = ImGui::InputInt(suffix.append("-maxSimulationSteps").c_str(), &maxSimulationSteps);
+    ImGui::SetItemTooltip("Maximum number of simulation steps to optimize");
+    if (clicked)
+        optimizer->setMaxSimulationSteps(maxSimulationSteps);
 }
 
 void LoopsControlsGUI::doDrawDifferentiableSimulator(const core::sptr<simulation::Node>& groot, DifferentiableAnimationLoop * simulator)
@@ -127,13 +137,15 @@ void LoopsControlsGUI::doDrawDifferentiableSimulator(const core::sptr<simulation
 
     ImGui::SameLine();
     ImGui::Text("%d", simulator->getCurrentSimulationStep());
+    ImGui::SetItemTooltip("Current number of simulation steps performed");
     ImGui::SameLine(260);
     ImGui::Text("/");
 
     int totalTimesteps = simulator->getMaxSimulationSteps();
     ImGui::SameLine();
-    ImGui::SetNextItemWidth(150);
+    ImGui::SetNextItemWidth(120);
     clicked = ImGui::InputInt(suffix.append("-totalTimesteps").c_str(), &totalTimesteps);
+    ImGui::SetItemTooltip("Number of simulation steps to perform for the simulation to be complete.");
     if (clicked)
         simulator->setMaxSimulationSteps(totalTimesteps);
 

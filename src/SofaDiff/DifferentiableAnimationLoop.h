@@ -32,25 +32,27 @@
 
 namespace sofadiff
 {
+using namespace sofa::core;
+
 class SOFA_SOFADIFF_API DifferentiableAnimationLoop:
     public simulation::DefaultAnimationLoop,
-    public core::behavior::LinearSolverAccessor
+    public behavior::LinearSolverAccessor
 {
 public:
-    SOFA_CLASS2(DifferentiableAnimationLoop, sofa::simulation::DefaultAnimationLoop, core::behavior::LinearSolverAccessor);
+    SOFA_CLASS2(DifferentiableAnimationLoop, sofa::simulation::DefaultAnimationLoop, behavior::LinearSolverAccessor);
     DifferentiableAnimationLoop();
 
 // Inherited methods
     void init() override;
-    void step(const core::ExecParams* params, SReal dt) override;
+    void step(const ExecParams* params, SReal dt) override;
 
 // New methods
-    void stepAdjoint(const core::ExecParams* params, SReal dt);
-    void resetSimulation();
+    void stepAdjoint(const ExecParams* params, SReal dt);
+    void resetAdjoint(const ExecParams* params);
 
     bool isStepAllowed() const;
     bool isStepAdjointAllowed() const;
-    bool isResetSimulationAllowed() const;
+    bool isResetAdjointAllowed() const;
 
     int getMaxSimulationSteps() const { return d_maxSimulationSteps.getValue(); }
     int getCurrentSimulationStep() const { return m_currentSimulationStep; }
