@@ -77,6 +77,16 @@ class WriteDataController(Sofa.Core.Controller):
 
 
 # =====================================================================================================================
+# Custom gradient descent
+# =====================================================================================================================
+import Sofa.SofaDiff
+
+class MyGradientDescent(Sofa.SofaDiff.GradientBasedOptimizationLoop):
+    def get_next_value(self, value, gradient, learning_rate):
+        return value - learning_rate * gradient
+
+
+# =====================================================================================================================
 # The scene
 # =====================================================================================================================
 def createScene(root):
@@ -106,7 +116,8 @@ def createScene(root):
     add_object("VisualStyle", displayFlags="showBehavior showBehaviorModels showForceFields showMappings")
 
     # add_object("GradientDescentOptimizationLoop", name="gd-optimizer")
-    add_object("GridSearchOptimizationLoop", name="gs-optimizer")
+    # add_object("GridSearchOptimizationLoop", name="gs-optimizer")
+    add_object(MyGradientDescent(name="my_optimizer"))
     add_object("DifferentiableAnimationLoop", name="simulator", computeBoundingBox=False)
     # add_object("DefaultAnimationLoop", name="simulator", computeBoundingBox=False)
 

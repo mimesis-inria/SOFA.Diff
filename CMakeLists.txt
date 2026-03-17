@@ -83,6 +83,11 @@ target_link_libraries(${PROJECT_NAME} Sofa.Framework Sofa.Component.Controller S
 #    target_link_libraries(${PROJECT_NAME} Sofa.GUI.Qt)
 #endif()
 
+find_package(SofaPython3 QUIET)
+if(SofaPython3_FOUND)
+    add_subdirectory(src/SofaDiff/bindings/)
+endif()
+
 # Create package Config, Version & Target files.
 # Deploy the headers, resources, scenes & examples.
 # Set the plugin 'relocatable' if built within SOFA.
