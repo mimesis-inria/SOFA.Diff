@@ -29,14 +29,15 @@ def add_child(*args, **kwargs):
 
 
 class Node:
-    def __init__(self, name):
+    def __init__(self, name, **kwargs):
         self.name = name
+        self.kwargs = kwargs
         self.parent = None
         self.child = None
 
     def __enter__(self):
         self.parent = get_current_node()
-        self.child = add_child(self.name)
+        self.child = add_child(self.name, **self.kwargs)
         set_current_node(self.child)
         return self.child
 
@@ -116,9 +117,9 @@ def createScene(root):
     add_object("VisualStyle", displayFlags="showBehavior showBehaviorModels showForceFields showMappings")
 
     # add_object("GradientDescentOptimizationLoop", name="gd-optimizer")
-    # add_object("GridSearchOptimizationLoop", name="gs-optimizer")
-    add_object(MyGradientDescent(name="my_optimizer"))
-    add_object("DifferentiableAnimationLoop", name="simulator", computeBoundingBox=False)
+    add_object("GridSearchOptimizationLoop", name="gs-optimizer")
+    # add_object(MyGradientDescent(name="my_optimizer"))
+    # add_object("DifferentiableAnimationLoop", name="simulator", computeBoundingBox=False)
     # add_object("DefaultAnimationLoop", name="simulator", computeBoundingBox=False)
 
     add_object("MechanicalObject", template="Vec3d", name="state", position="0 10 0")
@@ -137,7 +138,7 @@ def createScene(root):
 
         add_object("ParameterizedSpringForceField", name="spring", object1="@/Physics/state", indices1="0", object2="@/state", indices2="0", length="5", stiffness="@/Parameters/stiffness.value", damping=0)
 
-    with Node("Loss"):
+    with Node("Loss", tags="NoBBox"):
         add_object("MechanicalObject", template="Vec3d", name="state", position="0 -2 0", showObject="true", drawMode="1", showObjectScale="0.08")
         with Node("Distance"):
             add_object("MechanicalObject", template="Vec1d", name="state", position="0")

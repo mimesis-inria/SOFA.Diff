@@ -152,7 +152,9 @@ void OptimizationLoop::initializeSimulationLink()
     msg_warning() << "A SimulationLoop is required by this component but has not been found. It will be created automatically";
     const auto simulationLoop = objectmodel::New<simulation::DefaultAnimationLoop>();
     simulationLoop->setName(this->getContext()->getNameHelper().resolveName(simulationLoop->getClassName(), ComponentNameHelper::Convention::xml));
+    simulationLoop->d_computeBoundingBox.setValue(false);
     this->getContext()->addObject(simulationLoop);
+    simulationLoop->init();
     l_simulationLoop.set(simulationLoop);
 }
 
