@@ -62,11 +62,7 @@ public:
     Data<T> d_gradient;
 
 protected:
-    type::vector<SReal> m_value;
-    type::vector<SReal> m_nextValue;
-    type::vector<SReal> m_gradient;
-
-    virtual type::vector<SReal> getVectorFromData(const Data<T> & data);
+    virtual const type::vector<SReal>& getVectorFromData(const Data<T> & data);
     virtual void setDataFromVector(Data<T> & data, const type::vector<SReal> &vector);
 
 public:

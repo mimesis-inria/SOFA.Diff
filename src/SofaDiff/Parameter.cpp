@@ -80,7 +80,7 @@ std::string Parameter<type::vector<SReal>>::GetCustomClassName()
 }
 
 template<>
-type::vector<SReal> Parameter<type::vector<SReal>>::getVectorFromData(const Data<type::vector<SReal>> & data)
+const type::vector<SReal>& Parameter<type::vector<SReal>>::getVectorFromData(const Data<type::vector<SReal>> & data)
 {
     return data.getValue();
 }
@@ -99,7 +99,7 @@ std::string Parameter<SReal>::GetCustomClassName()
 }
 
 template<>
-type::vector<SReal> Parameter<SReal>::getVectorFromData(const Data<SReal> & data)
+const type::vector<SReal>& Parameter<SReal>::getVectorFromData(const Data<SReal> & data)
 {
     return {data.getValue()};
 }

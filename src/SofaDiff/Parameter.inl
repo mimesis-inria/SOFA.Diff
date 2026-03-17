@@ -46,22 +46,19 @@ void Parameter<T>::resetGradient()
 template<class T>
 const type::vector<SReal> & Parameter<T>::getValueVector()
 {
-    m_value = getVectorFromData(d_value);
-    return m_value;
+    return getVectorFromData(d_value);
 }
 
 template<class T>
 const type::vector<SReal> & Parameter<T>::getNextValueVector()
 {
-    m_nextValue = getVectorFromData(d_nextValue);
-    return m_nextValue;
+    return getVectorFromData(d_nextValue);;
 }
 
 template<class T>
 const type::vector<SReal> & Parameter<T>::getGradientVector()
 {
-    m_gradient = getVectorFromData(d_gradient);
-    return m_gradient;
+    return getVectorFromData(d_gradient);
 }
 
 template<class T>
