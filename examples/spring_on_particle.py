@@ -83,8 +83,14 @@ class WriteDataController(Sofa.Core.Controller):
 import Sofa.SofaDiff
 
 class MyGradientDescent(Sofa.SofaDiff.GradientBasedOptimizationLoop):
-    def get_next_value(self, value, gradient, learning_rate):
-        return value - learning_rate * gradient
+    def compute_next_value(self):
+        for parameter in self.parameters:
+            next_value = parameter.value - parameter["learningRate"] * parameter.gradient
+            if "lowerBound" in parameter:
+                next_value = np.maximum(next_value, parameter["lowerBound"])
+            if "upperBound" in parameter:
+                next_value = np.minimum(next_value, parameter["upperBound"])
+            parameter.next_value = next_value  # This assignment involves a copy, do it only at the end
 
 
 # =====================================================================================================================
@@ -117,9 +123,9 @@ def createScene(root):
     add_object("VisualStyle", displayFlags="showBehavior showBehaviorModels showForceFields showMappings")
 
     # add_object("GradientDescentOptimizationLoop", name="gd-optimizer")
-    add_object("GridSearchOptimizationLoop", name="gs-optimizer")
-    # add_object(MyGradientDescent(name="my_optimizer"))
-    # add_object("DifferentiableAnimationLoop", name="simulator", computeBoundingBox=False)
+    # add_object("GridSearchOptimizationLoop", name="gs-optimizer")
+    add_object(MyGradientDescent(name="my_optimizer"))
+    add_object("DifferentiableAnimationLoop", name="simulator", computeBoundingBox=False)
     # add_object("DefaultAnimationLoop", name="simulator", computeBoundingBox=False)
 
     add_object("MechanicalObject", template="Vec3d", name="state", position="0 10 0")

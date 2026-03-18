@@ -1,4 +1,5 @@
 #include <SofaDiff/bindings/Binding_GradientBasedOptimizationLoop.h>
+#include <SofaDiff/bindings/Binding_Parameter.h>
 #include <pybind11/pybind11.h>
 
 namespace py
@@ -11,7 +12,8 @@ namespace sofapython3
 
 PYBIND11_MODULE(SofaDiff, m)
 {
-    initGradientBasedOptimizationLoop(m);
+    moduleAddParameter(m);
+    moduleAddGradientBasedOptimizationLoop(m);
 }
 
 }

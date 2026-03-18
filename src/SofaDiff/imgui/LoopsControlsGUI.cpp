@@ -150,7 +150,7 @@ void LoopsControlsGUI::doDrawDifferentiableSimulator(const core::sptr<simulation
     if (clicked)
         simulator->setMaxSimulationSteps(totalTimesteps);
 
-    ImGui::SameLine();
+    ImGui::SameLine(0, 30);
     ImGui::BeginDisabled(!simulator->isStepAdjointAllowed());
     ImGui::PushButtonRepeat(true);
     clicked = ImGui::Button(std::string(ICON_FA_BACKWARD_STEP).append(suffix).c_str());

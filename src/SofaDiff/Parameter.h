@@ -34,9 +34,9 @@ public:
     SOFA_CLASS(BaseParameter, core::objectmodel::BaseObject);
 
     virtual void resetGradient() = 0;
-    virtual const type::vector<SReal> & getValueVector() = 0;
-    virtual const type::vector<SReal> & getNextValueVector() = 0;
-    virtual const type::vector<SReal> & getGradientVector() = 0;
+    virtual const type::vector<SReal> & getValueVector() const = 0;
+    virtual const type::vector<SReal> & getNextValueVector() const = 0;
+    virtual const type::vector<SReal> & getGradientVector() const = 0;
     virtual void setValueVector(const type::vector<SReal> & vector) = 0;
     virtual void setNextValueVector(const type::vector<SReal> & vector) = 0;
     virtual void updateValue() = 0;
@@ -62,7 +62,7 @@ public:
     Data<T> d_gradient;
 
 protected:
-    virtual const type::vector<SReal>& getVectorFromData(const Data<T> & data);
+    virtual const type::vector<SReal>& getVectorFromData(const Data<T> & data) const;
     virtual void setDataFromVector(Data<T> & data, const type::vector<SReal> &vector);
 
 public:
@@ -71,9 +71,9 @@ public:
     static std::string GetCustomClassName();
 
     void resetGradient() override;
-    const type::vector<SReal> & getValueVector() override;
-    const type::vector<SReal> & getNextValueVector() override;
-    const type::vector<SReal> & getGradientVector() override;
+    const type::vector<SReal> & getValueVector() const override;
+    const type::vector<SReal> & getNextValueVector() const override;
+    const type::vector<SReal> & getGradientVector() const override;
     void setValueVector(const type::vector<SReal>& vector) override;
     void setNextValueVector(const type::vector<SReal>& vector) override;
     void updateValue() override { d_value.setValue(d_nextValue.getValue()); }

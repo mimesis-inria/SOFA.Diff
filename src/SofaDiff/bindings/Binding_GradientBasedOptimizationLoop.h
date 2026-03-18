@@ -20,9 +20,9 @@ public:
     std::string getClassName() const override;
 
     void computeParametersNextValue(const core::ExecParams *params, SReal dt) override;
-    virtual std::vector<SReal> getNextValue(const std::vector<SReal>& value, const std::vector<SReal>& gradient, SReal learningRate);
+    virtual void computeNextValue();
 };
 
-void initGradientBasedOptimizationLoop(const pybind11::module& m);
+void moduleAddGradientBasedOptimizationLoop(const pybind11::module& m);
 
 }

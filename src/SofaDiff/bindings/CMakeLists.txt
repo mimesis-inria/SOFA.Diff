@@ -2,10 +2,12 @@ project(Bindings_SofaDiff)
 
 set(HEADER_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/Binding_GradientBasedOptimizationLoop.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/Binding_Parameter.h
 )
 
 set(SOURCE_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/Binding_GradientBasedOptimizationLoop.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/Binding_Parameter.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/Module_SofaDiff.cpp
 )
 

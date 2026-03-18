@@ -44,19 +44,19 @@ void Parameter<T>::resetGradient()
 }
 
 template<class T>
-const type::vector<SReal> & Parameter<T>::getValueVector()
+const type::vector<SReal> & Parameter<T>::getValueVector() const
 {
     return getVectorFromData(d_value);
 }
 
 template<class T>
-const type::vector<SReal> & Parameter<T>::getNextValueVector()
+const type::vector<SReal> & Parameter<T>::getNextValueVector() const
 {
     return getVectorFromData(d_nextValue);;
 }
 
 template<class T>
-const type::vector<SReal> & Parameter<T>::getGradientVector()
+const type::vector<SReal> & Parameter<T>::getGradientVector() const
 {
     return getVectorFromData(d_gradient);
 }

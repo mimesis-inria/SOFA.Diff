@@ -1,3 +1,5 @@
+#include <pybind11/stl.h>
+
 #include <SofaDiff/bindings/Binding_GradientBasedOptimizationLoop.h>
 
 #include <SofaPython3/Sofa/Core/Binding_Base.h>
@@ -29,7 +31,6 @@ void GradientBasedOptimizationLoop_Trampoline::init()
         try
         {
             override();
-            return;
         }
         catch (const py::error_already_set& e)
         {
@@ -37,65 +38,24 @@ void GradientBasedOptimizationLoop_Trampoline::init()
             throw;
         }
     }
-
-    // // Fallback to default C++ implementation
-    // this->GradientBasedOptimizationLoop::init();
 }
 
 
 void GradientBasedOptimizationLoop_Trampoline::computeParametersNextValue(const core::ExecParams *params, const SReal dt)
 {
     GradientBasedOptimizationLoop::computeParametersNextValue(params, dt);
-
-    std::vector<sofadiff::BaseParameter*> parameters;
-    this->getContext()->get<sofadiff::BaseParameter>(&parameters, core::objectmodel::BaseContext::SearchDown);
-    for (auto * parameter : parameters)
-    {
-        const auto value = parameter->getValueVector();
-        const auto learningRate = parameter->getHyperparameter("learningRate");
-        const auto gradient = parameter->getGradientVector();
-
-        const auto nextValue = this->getNextValue(value, gradient, learningRate);
-
-        // if (parameter->hasHyperparameter("lowerBound"))
-        // {
-        //     const auto lowerBound = parameter->getHyperparameter("lowerBound");
-        //     for (size_t j = 0; j < gradient.size(); j++)
-        //         if (value[j] < lowerBound)
-        //             value[j] = lowerBound;
-        // }
-        //
-        // if (parameter->hasHyperparameter("upperBound"))
-        // {
-        //     const auto upperBound = parameter->getHyperparameter("upperBound");
-        //     for (size_t j = 0; j < gradient.size(); j++)
-        //         if (value[j] > upperBound)
-        //             value[j] = upperBound;
-        // }
-
-        parameter->setNextValueVector(nextValue);
-    }
+    this->computeNextValue();
 }
 
-std::vector<SReal> GradientBasedOptimizationLoop_Trampoline::getNextValue(const std::vector<SReal>& value, const std::vector<SReal>& gradient, SReal learningRate)
+void GradientBasedOptimizationLoop_Trampoline::computeNextValue()
 {
     py::gil_scoped_acquire gil_acquire;
-    if (const py::function override = py::get_overload(static_cast<const GradientBasedOptimizationLoop*>(this), "get_next_value"))
+    // PYBIND11_OVERLOAD(std::vector<SReal>, GradientBasedOptimizationLoop, getNextValue, value, gradient, learningRate);
+    if (const py::function override = py::get_overload(static_cast<const GradientBasedOptimizationLoop*>(this), "compute_next_value"))
     {
         try
         {
-            const auto nextValue = override(
-                py::array(value.size(), value.data()),
-                py::array(gradient.size(), gradient.data()),
-                learningRate
-            );
-
-            if (py::isinstance<py::array_t<SReal>>(nextValue))
-            {
-                const auto v = py::cast<py::array_t<SReal>>(nextValue);
-                return std::vector(v.data(), v.data() + v.size());
-            }
-            throw py::type_error("The method get_next_value() must return an array");
+            override();
         }
         catch (const py::error_already_set& e)
         {
@@ -103,8 +63,6 @@ std::vector<SReal> GradientBasedOptimizationLoop_Trampoline::getNextValue(const 
             throw;
         }
     }
-
-    return value;
 }
 
 std::string GradientBasedOptimizationLoop_Trampoline::getClassName() const
@@ -128,7 +86,7 @@ std::string GradientBasedOptimizationLoop_Trampoline::getClassName() const
     }
 }
 
-void initGradientBasedOptimizationLoop(const pybind11::module& m)
+void moduleAddGradientBasedOptimizationLoop(const pybind11::module& m)
 {
     const auto pyclass_name = std::string("GradientBasedOptimizationLoop");
 
@@ -148,6 +106,12 @@ void initGradientBasedOptimizationLoop(const pybind11::module& m)
 
             return ff;
         }));
+
+    f.def_property_readonly("parameters", [](sofadiff::GradientBasedOptimizationLoop& self) {
+        std::vector<sofadiff::BaseParameter*> parameters;
+        self.getContext()->get<sofadiff::BaseParameter>(&parameters, core::objectmodel::BaseContext::SearchDown);
+        return parameters;
+    });
 
     // f.def("initAndLinkParameter",
     //       py::overload_cast<core::objectmodel::BaseData*, core::objectmodel::BaseObject*>(
