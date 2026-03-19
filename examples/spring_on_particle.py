@@ -80,17 +80,32 @@ class WriteDataController(Sofa.Core.Controller):
 # =====================================================================================================================
 # Custom gradient descent
 # =====================================================================================================================
-import Sofa.SofaDiff
+import Sofa.SofaDiff  # Don't forget that
 
 class MyGradientDescent(Sofa.SofaDiff.GradientBasedOptimizationLoop):
-    def compute_next_value(self):
+    def __init__(self, *args, **kwargs):
+        Sofa.SofaDiff.GradientBasedOptimizationLoop.__init__(self, *args, **kwargs)  # Do not use super()
+        # Here the parameters are not initialized yet...
+
+    def init(self):
+        # ... Therefore, any initialization with regard to the parameters should be done here instead
         for parameter in self.parameters:
+            print(parameter)
+
+    def compute_next_value(self):
+        # The list of parameters to be optimized can be accessed in self.parameters
+        for parameter in self.parameters:
+            # The parameter's value and gradient can be accessed like attributes
+            # Any "hyperparameter" can be added to a Parameter and accessed with parameter["key"]
             next_value = parameter.value - parameter["learningRate"] * parameter.gradient
+            # For optional hyperparameters you can check if they were provided or not
             if "lowerBound" in parameter:
                 next_value = np.maximum(next_value, parameter["lowerBound"])
             if "upperBound" in parameter:
                 next_value = np.minimum(next_value, parameter["upperBound"])
-            parameter.next_value = next_value  # This assignment involves a copy, do it only at the end
+            # The task of this method is to set the next value of each parameter:
+            parameter.next_value = next_value
+            # This assignment involves a copy, so it's preferable to do it only once
 
 
 # =====================================================================================================================
