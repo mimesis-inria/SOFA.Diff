@@ -108,6 +108,24 @@ class MyGradientDescent(Sofa.SofaDiff.GradientBasedOptimizationLoop):
             # This assignment involves a copy, so it's preferable to do it only once
 
 
+import optax
+
+class OptaxGradientDescent(Sofa.SofaDiff.GradientBasedOptimizationLoop):
+    def __init__(self, optax_optimizer, **kwargs):
+        Sofa.SofaDiff.GradientBasedOptimizationLoop.__init__(self, **kwargs)
+        self.optax_optimizer = optax_optimizer
+        self.optimizers = []
+        self.opt_states = []
+
+    def init(self):
+        self.optimizers = [self.optax_optimizer(parameter["learningRate"]) for parameter in self.parameters]
+        self.opt_states = [optimizer.init(parameter.value) for optimizer, parameter in zip(self.optimizers, self.parameters)]
+
+    def compute_next_value(self):
+        for optimizer, opt_state, parameter in zip(self.optimizers, self.opt_states, self.parameters):
+            updates, opt_state = optimizer.update(parameter.gradient, opt_state)
+            parameter.next_value = optax.apply_updates(parameter.value, updates)
+
 # =====================================================================================================================
 # The scene
 # =====================================================================================================================
@@ -138,8 +156,9 @@ def createScene(root):
     add_object("VisualStyle", displayFlags="showBehavior showBehaviorModels showForceFields showMappings")
 
     # add_object("GradientDescentOptimizationLoop", name="gd-optimizer")
-    # add_object("GridSearchOptimizationLoop", name="gs-optimizer")
-    add_object(MyGradientDescent(name="my_optimizer"))
+    add_object("GridSearchOptimizationLoop", name="gs-optimizer")
+    # add_object(MyGradientDescent(name="my_optimizer"))
+    add_object(OptaxGradientDescent(optax.sgd, name="optax-optimizer"))
     add_object("DifferentiableAnimationLoop", name="simulator", computeBoundingBox=False)
     # add_object("DefaultAnimationLoop", name="simulator", computeBoundingBox=False)
 
@@ -169,3 +188,6 @@ def createScene(root):
                 add_object("MeanSquaredErrorMapping")
 
     # add_object(WriteDataController("data_control.txt", [root.Parameters.stiffness.value, root.Loss.Distance.MSE.state.value], root.simulator))
+
+if __name__ == "__main__":
+    help(Sofa.SofaDiff)
