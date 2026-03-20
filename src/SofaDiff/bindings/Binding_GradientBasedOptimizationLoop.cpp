@@ -7,62 +7,57 @@
 
 namespace sofapython3
 {
-/// Makes an alias for the pybind11 namespace to increase readability.
 namespace py { using namespace pybind11; }
 using namespace py::literals;
+using namespace sofa::core;
+using namespace sofadiff;
 
 
-GradientBasedOptimizationLoop_Trampoline::GradientBasedOptimizationLoop_Trampoline():
-    GradientBasedOptimizationLoop()
+py_shared_ptr<GradientBasedOptimizationLoop_Trampoline> GradientBasedOptimizationLoop_Trampoline::create(const py::args& args, const py::kwargs& kwargs)
 {
-}
+    auto ff = py_shared_ptr(new GradientBasedOptimizationLoop_Trampoline());
+    ff->f_listening.setValue(true);
 
-GradientBasedOptimizationLoop_Trampoline::~GradientBasedOptimizationLoop_Trampoline()
-{
+    if (args.size() == 1) ff->setName(py::cast<std::string>(args[0]));
+
+    py::object cc = py::cast(ff);
+    for (auto [pyKey, pyValue] : kwargs)
+    {
+        auto key = py::cast<std::string>(pyKey);
+        auto value = py::reinterpret_borrow<py::object>(pyValue);
+        if (key == "name")
+        {
+            ff->setName(py::cast<std::string>(value));
+        }
+    }
+
+    return ff;
 }
 
 void GradientBasedOptimizationLoop_Trampoline::init()
 {
-    GradientBasedOptimizationLoop::init();
-
-    py::gil_scoped_acquire gil_acquire;
-    if (const py::function override = py::get_overload(static_cast<const GradientBasedOptimizationLoop*>(this), "init"))
-    {
-        try
-        {
-            override();
-        }
-        catch (const py::error_already_set& e)
-        {
-            std::cerr << "Python error in init override:\n" << e.what() << std::endl;
-            throw;
-        }
-    }
+    PYBIND11_OVERRIDE(void, GradientBasedOptimizationLoop, init, );
 }
 
+void GradientBasedOptimizationLoop_Trampoline::bwdInit()
+{
+    PYBIND11_OVERRIDE(void, GradientBasedOptimizationLoop, bwdInit, );
+}
 
-void GradientBasedOptimizationLoop_Trampoline::computeParametersNextValue(const core::ExecParams *params, const SReal dt)
+void GradientBasedOptimizationLoop_Trampoline::resetOptimization()
+{
+    PYBIND11_OVERRIDE(void, GradientBasedOptimizationLoop, resetOptimization, );
+}
+
+void GradientBasedOptimizationLoop_Trampoline::computeParametersNextValue(const ExecParams *params, const SReal dt)
 {
     GradientBasedOptimizationLoop::computeParametersNextValue(params, dt);
-    this->computeNextValue();
-}
 
-void GradientBasedOptimizationLoop_Trampoline::computeNextValue()
-{
-    py::gil_scoped_acquire gil_acquire;
-    // PYBIND11_OVERLOAD(std::vector<SReal>, GradientBasedOptimizationLoop, getNextValue, value, gradient, learningRate);
-    if (const py::function override = py::get_overload(static_cast<const GradientBasedOptimizationLoop*>(this), "compute_next_value"))
-    {
-        try
-        {
-            override();
-        }
-        catch (const py::error_already_set& e)
-        {
-            std::cerr << "Python error in get_next_value override:\n" << e.what() << std::endl;
-            throw;
-        }
-    }
+    py::gil_scoped_acquire gil;
+    const py::function py_override = py::get_override(this, "compute_next_value");
+    if (!py_override)
+        throw std::runtime_error("compute_next_value() not implemented in Python subclass");
+    (void) py_override();  // The cast tells the IDE that discarding the return value is intentional
 }
 
 std::string GradientBasedOptimizationLoop_Trampoline::getClassName() const
@@ -91,37 +86,23 @@ void moduleAddGradientBasedOptimizationLoop(const pybind11::module& m)
     const auto pyclass_name = std::string("GradientBasedOptimizationLoop");
 
     py::class_<sofadiff::GradientBasedOptimizationLoop,
-               core::objectmodel::BaseObject,
+               sofadiff::OptimizationLoop,
                GradientBasedOptimizationLoop_Trampoline,
                py_shared_ptr<sofadiff::GradientBasedOptimizationLoop>>
         f(m, pyclass_name.c_str(), py::dynamic_attr(), py::multiple_inheritance());
 
-    f.def(py::init(
-        [](const py::args& args, py::kwargs& /*kwargs*/)
+    f.def(py::init(&GradientBasedOptimizationLoop_Trampoline::create));
+    f.def("init", &GradientBasedOptimizationLoop::init);
+    f.def("bwdInit", &GradientBasedOptimizationLoop::bwdInit);
+    f.def("resetOptimization", &GradientBasedOptimizationLoop::resetOptimization);
+    f.def("compute_next_value", [](GradientBasedOptimizationLoop&) {
+        throw std::runtime_error("compute_next_value() must be overridden in a subclass");
+    }); // This def() exposes the method that has to be overridden by the derived class, for documentation purposes
+
+    PythonFactory::registerType<GradientBasedOptimizationLoop>(
+        [](objectmodel::Base* object) -> py::object
         {
-            auto ff = py_shared_ptr(new GradientBasedOptimizationLoop_Trampoline());
-            ff->f_listening.setValue(true);
-
-            if (args.size() == 1) ff->setName(py::cast<std::string>(args[0]));
-
-            return ff;
-        }));
-
-    f.def_property_readonly("parameters", [](sofadiff::GradientBasedOptimizationLoop& self) {
-        std::vector<sofadiff::BaseParameter*> parameters;
-        self.getContext()->get<sofadiff::BaseParameter>(&parameters, core::objectmodel::BaseContext::SearchDown);
-        return parameters;
-    });
-
-    // f.def("initAndLinkParameter",
-    //       py::overload_cast<core::objectmodel::BaseData*, core::objectmodel::BaseObject*>(
-    //           &sofadiff::GradientBasedOptimizationLoop::initAndLinkParameter),
-    //       py::arg("internData"), py::arg("parameter"));
-
-    PythonFactory::registerType<sofadiff::GradientBasedOptimizationLoop>(
-        [](core::objectmodel::Base* object) -> py::object
-        {
-            auto* sp = dynamic_cast<sofadiff::GradientBasedOptimizationLoop*>(object);
+            auto* sp = dynamic_cast<GradientBasedOptimizationLoop*>(object);
             if (!sp) return py::none();
             try
             {
@@ -129,7 +110,7 @@ void moduleAddGradientBasedOptimizationLoop(const pybind11::module& m)
             }
             catch (const std::exception& e)
             {
-                return py::cast(dynamic_cast<sofadiff::GradientBasedOptimizationLoop*>(object));
+                return py::cast(dynamic_cast<GradientBasedOptimizationLoop*>(object));
             }
         }
     );

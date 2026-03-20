@@ -21,7 +21,7 @@ public:
     void init() override;
     void bwdInit() override;
 
-    void step(const ExecParams *params, SReal dt) override;
+    void step(const ExecParams *params, SReal dt) final;
     virtual void resetOptimization();
     void setStartingState();
 

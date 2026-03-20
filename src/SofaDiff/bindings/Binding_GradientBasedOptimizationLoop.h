@@ -4,23 +4,28 @@
 #include <SofaDiff/optimizers/GradientBasedOptimizationLoop.h>
 
 #include <SofaPython3/PythonFactory.h>
+#include <SofaPython3/Sofa/Core/Binding_Base.h>
 
 
 namespace sofapython3
 {
-class GradientBasedOptimizationLoop_Trampoline : public sofadiff::GradientBasedOptimizationLoop
+namespace py { using namespace pybind11; }
+
+class GradientBasedOptimizationLoop_Trampoline: public sofadiff::GradientBasedOptimizationLoop
 {
 public:
     SOFA_CLASS(GradientBasedOptimizationLoop_Trampoline, sofadiff::GradientBasedOptimizationLoop);
 
-    GradientBasedOptimizationLoop_Trampoline();
-    ~GradientBasedOptimizationLoop_Trampoline() override;
+    using GradientBasedOptimizationLoop::GradientBasedOptimizationLoop;  /* Inherit constructors */
+    static py_shared_ptr<GradientBasedOptimizationLoop_Trampoline> create(const py::args& args, const py::kwargs& kwargs);
 
     void init() override;
-    std::string getClassName() const override;
+    void bwdInit() override;
 
+    void resetOptimization() override;
     void computeParametersNextValue(const core::ExecParams *params, SReal dt) override;
-    virtual void computeNextValue();
+
+    std::string getClassName() const override;
 };
 
 void moduleAddGradientBasedOptimizationLoop(const pybind11::module& m);
