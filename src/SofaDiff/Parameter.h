@@ -36,10 +36,14 @@ public:
     virtual void resetGradient() = 0;
     virtual const type::vector<SReal> & getValueVector() const = 0;
     virtual const type::vector<SReal> & getNextValueVector() const = 0;
+    virtual const type::vector<SReal> & getBestValueVector() const = 0;
     virtual const type::vector<SReal> & getGradientVector() const = 0;
     virtual void setValueVector(const type::vector<SReal> & vector) = 0;
     virtual void setNextValueVector(const type::vector<SReal> & vector) = 0;
+    virtual void setBestValueVector(const type::vector<SReal> & vector) = 0;
     virtual void updateValue() = 0;
+    virtual void storeBestValue() = 0;
+    virtual void retrieveBestValue() = 0;
 
     void parse(core::objectmodel::BaseObjectDescription *arg) override;
     bool hasHyperparameter(const std::string &hyperparameterName) const;
@@ -59,6 +63,7 @@ public:
 
     Data<T> d_value;
     Data<T> d_nextValue;
+    Data<T> d_bestValue;
     Data<T> d_gradient;
 
 protected:
@@ -73,10 +78,14 @@ public:
     void resetGradient() override;
     const type::vector<SReal> & getValueVector() const override;
     const type::vector<SReal> & getNextValueVector() const override;
+    const type::vector<SReal> & getBestValueVector() const override;
     const type::vector<SReal> & getGradientVector() const override;
     void setValueVector(const type::vector<SReal>& vector) override;
     void setNextValueVector(const type::vector<SReal>& vector) override;
+    void setBestValueVector(const type::vector<SReal>& vector) override;
     void updateValue() override { d_value.setValue(d_nextValue.getValue()); }
+    void storeBestValue() override { d_bestValue.setValue(d_value.getValue()); }
+    void retrieveBestValue() override { d_value.setValue(d_bestValue.getValue()); }
 };
 
 }

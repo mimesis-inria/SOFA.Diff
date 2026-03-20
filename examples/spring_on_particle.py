@@ -93,11 +93,13 @@ class MyGradientDescent(Sofa.SofaDiff.GradientBasedOptimizationLoop):
         # Here the parameters are not initialized yet...
 
     def init(self):
+        Sofa.SofaDiff.GradientBasedOptimizationLoop.init(self)  # Do not forget to call the parent `init()`
         # ... Therefore, any initialization with regard to the parameters should be done here instead
         for parameter in self.parameters:
             print(parameter)
 
     def compute_next_value(self):
+        # Do not call the parent `compute_next_value()`, it is pure (and not called `compute_next_value`...)
         # The list of parameters to be optimized can be accessed in self.parameters
         for parameter in self.parameters:
             # The parameter's value and gradient can be accessed like attributes
@@ -169,7 +171,7 @@ def createScene(root):
     # add_object("GradientDescentOptimizationLoop", name="cpp-gradient-descent")
     # add_object("GridSearchOptimizationLoop", name="cpp-grid-search")
     add_object(RandomOptimizer(name="numpy-random-search"))
-    # add_object(MyGradientDescent(name="numpy-gradient-descent"))
+    add_object(MyGradientDescent(name="numpy-gradient-descent"))
     # add_object(OptaxGradientDescent(optax.sgd, name="optax-gradient-descent"))
     add_object("DifferentiableAnimationLoop", name="differentiable-simulator", computeBoundingBox=False)
     # add_object("DefaultAnimationLoop", name="default-simulator", computeBoundingBox=False)

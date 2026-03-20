@@ -22,17 +22,16 @@ void GradientBasedOptimizationLoop::initializeSimulationLink()
     l_simulationLoop.set(simulationLoop);
 }
 
-void GradientBasedOptimizationLoop::computeParametersNextValue(const ExecParams *params, const SReal dt)
+void GradientBasedOptimizationLoop::processSimulation(const ExecParams *params, SReal dt)
 {
     const auto simulationLoop = dynamic_cast<DifferentiableAnimationLoop*>(l_simulationLoop.get());
-
     if (!simulationLoop)
     {
         msg_error() << "Requires a DifferentiableAnimationLoop";
         this->d_componentState.setValue(ComponentState::Invalid);
         return;
     }
-
+    // TODO: simulationLoop->resetAdjoint(); to reset the gradients
     simulationLoop->stepAdjoint(params, dt);
 }
 

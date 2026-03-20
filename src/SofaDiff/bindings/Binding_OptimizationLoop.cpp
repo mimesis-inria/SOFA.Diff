@@ -47,9 +47,9 @@ void OptimizationLoop_Trampoline::resetOptimization()
     PYBIND11_OVERRIDE(void, OptimizationLoop, resetOptimization, );
 }
 
-void OptimizationLoop_Trampoline::computeParametersNextValue(const ExecParams *params, SReal dt)
+void OptimizationLoop_Trampoline::setParametersNextValue()
 {
-    // I want to use a different signature for the Python method, so the macros won't do here
+    // I want to use a different name for the Python method, so the macros won't do here
     py::gil_scoped_acquire gil;
     const py::function py_override = py::get_override(this, "compute_next_value");
     if (!py_override)

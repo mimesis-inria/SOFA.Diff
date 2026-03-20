@@ -31,6 +31,7 @@ template<class T>
 Parameter<T>::Parameter()
 : d_value(initData(&d_value, "value", "Value of the parameter"))
 , d_nextValue(initData(&d_nextValue, "nextValue", "Next value of the parameter (during optimization)"))
+, d_bestValue(initData(&d_bestValue, "bestValue", "Best value of the parameter so far (during optimization)"))
 , d_gradient(initData(&d_gradient, "gradient", "Gradient of the parameter"))
 {}
 
@@ -56,6 +57,12 @@ const type::vector<SReal> & Parameter<T>::getNextValueVector() const
 }
 
 template<class T>
+const type::vector<SReal> & Parameter<T>::getBestValueVector() const
+{
+    return getVectorFromData(d_bestValue);;
+}
+
+template<class T>
 const type::vector<SReal> & Parameter<T>::getGradientVector() const
 {
     return getVectorFromData(d_gradient);
@@ -71,6 +78,12 @@ template<class T>
 void Parameter<T>::setNextValueVector(const type::vector<SReal>& vector)
 {
     setDataFromVector(d_nextValue, vector);
+}
+
+template<class T>
+void Parameter<T>::setBestValueVector(const type::vector<SReal>& vector)
+{
+    setDataFromVector(d_bestValue, vector);
 }
 
 }

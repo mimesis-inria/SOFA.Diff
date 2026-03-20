@@ -14,10 +14,8 @@ void registerGradientDescentOptimizationLoop(ObjectFactory* factory)
     factory->registerObjects(ObjectRegistrationData("Gradient descent algorithm for optimization.").add< GradientDescentOptimizationLoop >());
 }
 
-void GradientDescentOptimizationLoop::computeParametersNextValue(const ExecParams *params, const SReal dt)
+void GradientDescentOptimizationLoop::setParametersNextValue()
 {
-    GradientBasedOptimizationLoop::computeParametersNextValue(params, dt);
-
     std::vector<BaseParameter*> parameters;
     this->getContext()->get<BaseParameter>(&parameters, BaseContext::SearchDown);
     for (auto * parameter : parameters)

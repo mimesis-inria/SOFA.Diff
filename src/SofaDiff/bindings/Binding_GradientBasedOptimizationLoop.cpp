@@ -49,10 +49,9 @@ void GradientBasedOptimizationLoop_Trampoline::resetOptimization()
     PYBIND11_OVERRIDE(void, GradientBasedOptimizationLoop, resetOptimization, );
 }
 
-void GradientBasedOptimizationLoop_Trampoline::computeParametersNextValue(const ExecParams *params, const SReal dt)
+void GradientBasedOptimizationLoop_Trampoline::setParametersNextValue()
 {
-    GradientBasedOptimizationLoop::computeParametersNextValue(params, dt);
-
+    // I want to use a different name for the Python method, so the macros won't do here
     py::gil_scoped_acquire gil;
     const py::function py_override = py::get_override(this, "compute_next_value");
     if (!py_override)
@@ -85,10 +84,10 @@ void moduleAddGradientBasedOptimizationLoop(const pybind11::module& m)
 {
     const auto pyclass_name = std::string("GradientBasedOptimizationLoop");
 
-    py::class_<sofadiff::GradientBasedOptimizationLoop,
-               sofadiff::OptimizationLoop,
+    py::class_<GradientBasedOptimizationLoop,
+               OptimizationLoop,
                GradientBasedOptimizationLoop_Trampoline,
-               py_shared_ptr<sofadiff::GradientBasedOptimizationLoop>>
+               py_shared_ptr<GradientBasedOptimizationLoop>>
         f(m, pyclass_name.c_str(), py::dynamic_attr(), py::multiple_inheritance());
 
     f.def(py::init(&GradientBasedOptimizationLoop_Trampoline::create));

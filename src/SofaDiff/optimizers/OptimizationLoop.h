@@ -22,10 +22,12 @@ public:
     void bwdInit() override;
 
     void step(const ExecParams *params, SReal dt) final;
+    void setBestParameters(const ExecParams *params, SReal dt);
     virtual void resetOptimization();
     void setStartingState();
 
     bool isStepAllowed() const;
+    bool isSetBestParametersAllowed() const;
     bool isResetOptimizationAllowed() const;
     bool isSetStartingStateAllowed() const;
 
@@ -37,7 +39,10 @@ public:
     void setMaxOptimizationSteps(const int maxSteps) { d_maxOptimizationSteps.setValue(maxSteps); }
 
 private:
-    virtual void computeParametersNextValue(const ExecParams *params, SReal dt) = 0;
+    void updateParameters();
+    void computeLoss(const ExecParams *params, SReal dt);
+    virtual void processSimulation(const ExecParams *params, SReal dt);
+    virtual void setParametersNextValue() = 0;
     virtual void initializeSimulationLink();
     int getSimulationSteps();
 
@@ -49,6 +54,7 @@ public:
 protected:
     bool m_readyToUpdateParameters;
     int m_currentOptimizationStep;
+    SReal m_lowestLossValue;
 
     SReal m_startingTime;
     MultiVecCoordId m_startingPositionId;

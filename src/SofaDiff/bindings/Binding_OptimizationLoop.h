@@ -26,7 +26,7 @@ public:
     void bwdInit() override;
 
     void resetOptimization() override;
-    void computeParametersNextValue(const ExecParams *params, SReal dt) final;
+    void setParametersNextValue() override;
 
     std::string getClassName() const override;
 };

@@ -19,8 +19,6 @@ void GridSearchOptimizationLoop::init()
 {
     OptimizationLoop::init();
 
-    m_bestIteration = 0;
-    m_lowestLossValue = std::numeric_limits<SReal>::max();
     m_gridSize = 1;
     std::vector<BaseParameter*> parameters;
     this->getContext()->get<BaseParameter>(&parameters, objectmodel::BaseContext::SearchDown);
@@ -32,7 +30,7 @@ void GridSearchOptimizationLoop::init()
 
     if (d_maxOptimizationSteps.getValue() == 0)
     {
-        d_maxOptimizationSteps.setValue(m_gridSize + 1);
+        d_maxOptimizationSteps.setValue(m_gridSize);
     }
 
     setParameters(0);
@@ -43,35 +41,17 @@ void GridSearchOptimizationLoop::resetOptimization()
 {
     OptimizationLoop::resetOptimization();
 
-    m_bestIteration = 0;
-    m_lowestLossValue = std::numeric_limits<SReal>::max();
     // Update grid size?
 
     setParameters(0);
     m_readyToUpdateParameters = true;
 }
 
-void GridSearchOptimizationLoop::computeParametersNextValue(const ExecParams *params, const SReal dt)
+void GridSearchOptimizationLoop::setParametersNextValue()
 {
-    SOFA_UNUSED(params);
-    SOFA_UNUSED(dt);
-
     const int currentStep = this->getCurrentOptimizationStep();
-
-    SReal loss = 0;
-    std::vector<LossState*> losses;
-    this->getContext()->get<LossState>(&losses, objectmodel::BaseContext::SearchDown);
-    for (const auto lossState : losses)
-        loss += lossState->d_value.getValue()[0][0];
-
-    if (loss < m_lowestLossValue)
-    {
-        m_lowestLossValue = loss;
-        m_bestIteration = currentStep;
-    }
-
-    const int iteration = currentStep + 1 < m_gridSize ? currentStep + 1 : m_bestIteration;
-    this->setParameters(iteration);
+    if (currentStep + 1 < m_gridSize)
+        this->setParameters(currentStep + 1);
 }
 
 void GridSearchOptimizationLoop::setParameters(const int iteration)

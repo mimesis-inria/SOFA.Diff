@@ -23,7 +23,7 @@ public:
     void bwdInit() override;
 
     void resetOptimization() override;
-    void computeParametersNextValue(const core::ExecParams *params, SReal dt) override;
+    void setParametersNextValue() override;
 
     std::string getClassName() const override;
 };
