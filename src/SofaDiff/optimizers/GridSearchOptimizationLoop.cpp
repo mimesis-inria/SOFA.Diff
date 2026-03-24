@@ -5,6 +5,8 @@
 
 #include <sofa/core/ObjectFactory.h>
 
+#include "sofa/linearalgebra/CompressedRowSparseMatrixConstraintEigenUtils.h"
+
 
 namespace sofadiff
 {
@@ -25,7 +27,9 @@ void GridSearchOptimizationLoop::init()
     for (const auto parameter : parameters)
     {
         const auto resolution = static_cast<int>(parameter->getHyperparameter("resolution"));
-        m_gridSize *= resolution;
+        const auto size = parameter->getValueVector().size();
+        for (unsigned long i = 0; i < size; i++)
+            m_gridSize *= resolution;
     }
 
     if (d_maxOptimizationSteps.getValue() == 0)
@@ -56,7 +60,6 @@ void GridSearchOptimizationLoop::setParametersNextValue()
 
 void GridSearchOptimizationLoop::setParameters(const int iteration)
 {
-
     std::vector<BaseParameter*> parameters;
     this->getContext()->get<BaseParameter>(&parameters, objectmodel::BaseContext::SearchDown);
     auto global_index = iteration;
@@ -65,10 +68,17 @@ void GridSearchOptimizationLoop::setParameters(const int iteration)
         const auto lowerBound = parameter->getHyperparameter("lowerBound");
         const auto upperBound = parameter->getHyperparameter("upperBound");
         const auto resolution = static_cast<int>(parameter->getHyperparameter("resolution"));
+        const auto size = parameter->getValueVector().size();
 
-        const auto parameter_index = global_index % resolution;
-        parameter->setNextValueVector({lowerBound + parameter_index * (upperBound - lowerBound) / (resolution - 1)});
-        global_index = (global_index - parameter_index) / resolution;
+        type::vector<SReal> nextValue(size);
+        for (unsigned long i = size; i > 0; i--)
+        {
+            const auto parameter_index = global_index % resolution;
+            nextValue[i-1] = lowerBound + parameter_index * (upperBound - lowerBound) / (resolution - 1);
+            global_index = (global_index - parameter_index) / resolution;
+        }
+
+        parameter->setNextValueVector(nextValue);
     }
 }
 

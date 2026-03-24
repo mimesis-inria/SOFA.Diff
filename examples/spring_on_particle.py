@@ -169,9 +169,9 @@ def createScene(root):
     add_object("VisualStyle", displayFlags="showBehavior showBehaviorModels showForceFields showMappings")
 
     # add_object("GradientDescentOptimizationLoop", name="cpp-gradient-descent")
-    # add_object("GridSearchOptimizationLoop", name="cpp-grid-search")
-    add_object(RandomOptimizer(name="numpy-random-search"))
-    add_object(MyGradientDescent(name="numpy-gradient-descent"))
+    add_object("GridSearchOptimizationLoop", name="cpp-grid-search")
+    # add_object(RandomOptimizer(name="numpy-random-search"))
+    # add_object(MyGradientDescent(name="numpy-gradient-descent"))
     # add_object(OptaxGradientDescent(optax.sgd, name="optax-gradient-descent"))
     add_object("DifferentiableAnimationLoop", name="differentiable-simulator", computeBoundingBox=False)
     # add_object("DefaultAnimationLoop", name="default-simulator", computeBoundingBox=False)
@@ -179,7 +179,9 @@ def createScene(root):
     add_object("MechanicalObject", template="Vec3d", name="state", position="0 10 0")
 
     with Node("Parameters"):
-        add_object("TrainableParameterVector", name="stiffness", value="10", learningRate=1.0, lowerBound=1, upperBound=50, resolution=50)
+        # add_object("TrainableParameterVector", name="stiffness", value="10", learningRate=1.0, lowerBound=1, upperBound=50, resolution=50)
+        add_object("TrainableParameterVector", name="mock1", value="10 20", learningRate=1.0, lowerBound=1, upperBound=3, resolution=3)
+        add_object("TrainableParameterVector", name="mock2", value="10 20", learningRate=1.0, lowerBound=11, upperBound=13, resolution=3)
 
     with Node("Physics"):
         add_object("SparseLDLSolver", template="CompressedRowSparseMatrixd", name="solver", printLog="false")
