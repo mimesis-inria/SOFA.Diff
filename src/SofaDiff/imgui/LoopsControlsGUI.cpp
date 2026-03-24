@@ -67,6 +67,14 @@ void LoopsControlsGUI::doDrawOptimizer(const core::sptr<simulation::Node>& groot
     ImGui::Text("Optimization Loop");
 
     ImGui::SameLine(150);
+    ImGui::BeginDisabled(!optimizer->isResetOptimizationAllowed());
+    clicked = ImGui::Button(std::string(ICON_FA_ROTATE_LEFT).append(suffix).c_str());
+    ImGui::SetItemTooltip("Reset the state of the optimizer");
+    ImGui::EndDisabled();
+    if (clicked)
+        optimizer->resetOptimization();
+
+    ImGui::SameLine();
     ImGui::BeginDisabled(!optimizer->isStepAllowed());
     ImGui::PushButtonRepeat(true);
     clicked = ImGui::Button(std::string(ICON_FA_FORWARD_STEP).append(suffix).c_str());
@@ -88,7 +96,7 @@ void LoopsControlsGUI::doDrawOptimizer(const core::sptr<simulation::Node>& groot
     ImGui::SameLine();
     ImGui::Text("%d", optimizer->getCurrentOptimizationStep());
     ImGui::SetItemTooltip("Current number of optimization steps performed");
-    ImGui::SameLine(260);
+    ImGui::SameLine(300);
     ImGui::Text("/");
 
     int maxOptimizationSteps = optimizer->getMaxOptimizationSteps();
@@ -126,6 +134,12 @@ void LoopsControlsGUI::doDrawDifferentiableSimulator(const core::sptr<simulation
     ImGui::Text("Simulation Loop");
 
     ImGui::SameLine(150);
+    ImGui::BeginDisabled(true);
+    ImGui::Button(std::string(ICON_FA_ROTATE_LEFT).append(suffix).c_str());
+    ImGui::SetItemTooltip("Reset the state of the simulator");
+    ImGui::EndDisabled();
+
+    ImGui::SameLine();
     ImGui::BeginDisabled(!simulator->isStepAllowed());
     ImGui::PushButtonRepeat(true);
     clicked = ImGui::Button(std::string(ICON_FA_FORWARD_STEP).append(suffix).c_str());
@@ -147,7 +161,7 @@ void LoopsControlsGUI::doDrawDifferentiableSimulator(const core::sptr<simulation
     ImGui::SameLine();
     ImGui::Text("%d", simulator->getCurrentSimulationStep());
     ImGui::SetItemTooltip("Current number of simulation steps performed");
-    ImGui::SameLine(260);
+    ImGui::SameLine(300);
     ImGui::Text("/");
 
     int totalTimesteps = simulator->getMaxSimulationSteps();
@@ -188,6 +202,12 @@ void LoopsControlsGUI::doDrawDefaultSimulator(const core::sptr<simulation::Node>
     ImGui::Text("Simulation Loop");
 
     ImGui::SameLine(150);
+    ImGui::BeginDisabled(true);
+    ImGui::Button(std::string(ICON_FA_ROTATE_LEFT).append(suffix).c_str());
+    ImGui::SetItemTooltip("Reset the state of the simulator");
+    ImGui::EndDisabled();
+
+    ImGui::SameLine();
     ImGui::PushButtonRepeat(true);
     clicked = ImGui::Button(std::string(ICON_FA_FORWARD_STEP).append(suffix).c_str());
     ImGui::SetItemTooltip("Make one step of the forward solver");
