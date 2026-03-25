@@ -22,12 +22,11 @@ endif()
 
 SP3_add_python_module(
         TARGET       ${PROJECT_NAME}
-        PACKAGE      Bindings.Sofa
+        PACKAGE      SofaDiff
         MODULE       SofaDiff
-        DESTINATION  Sofa
         SOURCES      ${SOURCE_FILES}
         HEADERS      ${HEADER_FILES}
-        DEPENDS      SofaDiff SofaPython3::Plugin SofaPython3::Bindings.Sofa
+        DEPENDS      SofaDiff Plugin Bindings.Sofa
 )
 
 get_target_property(DIRS Bindings_SofaDiff INCLUDE_DIRECTORIES)

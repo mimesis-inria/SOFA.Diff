@@ -11,6 +11,7 @@ using namespace sofa::core::objectmodel;
 
 OptimizationLoop::OptimizationLoop():
     l_simulationLoop(initLink("simulationLoop", "Link to a SimulationLoop")),
+    l_parameters(initLink("parameters", "Link to the parameters to optimize")),
     d_maxOptimizationSteps(initData(&d_maxOptimizationSteps, "maxOptimizationSteps", "Maximum number of optimization steps for the optimization to be complete. Default is 0, meaning indefinite optimization.")),
     d_maxSimulationSteps(initData(&d_maxSimulationSteps, 1, "maxSimulationSteps", "Maximum number of simulation steps to optimize. 0 means as many as required for the simulation to be complete. Default is 1.")),
     m_readyToUpdateParameters(false),
@@ -24,6 +25,8 @@ void OptimizationLoop::init()
     Inherit1::init();
 
     this->initializeSimulationLink();
+
+    this->initializeParametersLink();
 
     BaseContext * rootContext = this->getContext()->getRootContext();
     m_startingPositionId = newVecId<V_COORD>(rootContext, "startingPosition", this->getClassName());
@@ -74,9 +77,7 @@ void OptimizationLoop::step(const ExecParams *params, const SReal dt)
 
 void OptimizationLoop::setBestParameters(const ExecParams *params, const SReal dt)
 {
-    std::vector<BaseParameter*> parameters;
-    this->getContext()->get<BaseParameter>(&parameters, BaseContext::SearchDown);
-    for (auto * parameter : parameters)
+    for (auto & parameter : l_parameters)
         parameter->retrieveBestValue();
     this->computeLoss(params, dt);
 }
@@ -142,9 +143,7 @@ void OptimizationLoop::updateParameters()
 {
     if (m_readyToUpdateParameters)
     {
-        std::vector<BaseParameter*> parameters;
-        this->getContext()->get<BaseParameter>(&parameters, BaseContext::SearchDown);
-        for (auto * parameter : parameters)
+        for (auto & parameter : l_parameters)
             parameter->updateValue();
         m_readyToUpdateParameters = false;
     }
@@ -178,9 +177,7 @@ void OptimizationLoop::processSimulation(const ExecParams *params, SReal dt)
     if (loss < m_lowestLossValue)
     {
         m_lowestLossValue = loss;
-        std::vector<BaseParameter*> parameters;
-        this->getContext()->get<BaseParameter>(&parameters, BaseContext::SearchDown);
-        for (auto * parameter : parameters)
+        for (auto & parameter : l_parameters)
             parameter->storeBestValue();
     }
 }
@@ -202,6 +199,27 @@ void OptimizationLoop::initializeSimulationLink()
     this->getContext()->addObject(simulationLoop);
     simulationLoop->init();
     l_simulationLoop.set(simulationLoop);
+}
+
+void OptimizationLoop::initializeParametersLink()
+{
+    const auto n = l_parameters.size();
+
+    if (n == 0)
+    {
+        msg_warning() << "No parameter provided. You must specify the parameters to be optimized with 'parameters=[...]'";
+        this->d_componentState.setValue(ComponentState::Invalid);
+        return;
+    }
+
+    for (unsigned int i = 0; i < n; i++)
+    {
+        if (!l_parameters.get(i))
+        {
+            msg_warning() << "Invalid parameter: " << l_parameters.getLinkedPath(i);
+            this->d_componentState.setValue(ComponentState::Invalid);
+        }
+    }
 }
 
 int OptimizationLoop::getSimulationSteps()

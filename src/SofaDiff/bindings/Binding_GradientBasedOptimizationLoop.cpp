@@ -15,23 +15,23 @@ using namespace sofadiff;
 
 py_shared_ptr<GradientBasedOptimizationLoop_Trampoline> GradientBasedOptimizationLoop_Trampoline::create(const py::args& args, const py::kwargs& kwargs)
 {
-    auto ff = py_shared_ptr(new GradientBasedOptimizationLoop_Trampoline());
-    ff->f_listening.setValue(true);
+    auto object = py_shared_ptr(new GradientBasedOptimizationLoop_Trampoline());
+    object->f_listening.setValue(true);
 
-    if (args.size() == 1) ff->setName(py::cast<std::string>(args[0]));
+    if (!args.empty())
+    {
+        msg_warning("GradientBasedOptimizationLoop") << "Positional arguments were passed to the constructor, but only keyword arguments are handled";
+    }
 
-    py::object cc = py::cast(ff);
+    const py::object pyObject = py::cast(object);
     for (auto [pyKey, pyValue] : kwargs)
     {
         auto key = py::cast<std::string>(pyKey);
-        auto value = py::reinterpret_borrow<py::object>(pyValue);
-        if (key == "name")
-        {
-            ff->setName(py::cast<std::string>(value));
-        }
+        const auto value = py::reinterpret_borrow<py::object>(pyValue);
+        setattr(pyObject, key.c_str(), value);
     }
 
-    return ff;
+    return object;
 }
 
 void GradientBasedOptimizationLoop_Trampoline::init()

@@ -80,20 +80,20 @@ class WriteDataController(Sofa.Core.Controller):
 # =====================================================================================================================
 # Custom gradient descent
 # =====================================================================================================================
-import Sofa.SofaDiff  # Don't forget that
+import SofaDiff  # Don't forget that
 
-class RandomOptimizer(Sofa.SofaDiff.OptimizationLoop):
+class RandomOptimizer(SofaDiff.OptimizationLoop):
     def compute_next_value(self):
         for parameter in self.parameters:
             parameter.next_value = np.random.uniform(parameter["lowerBound"], parameter["upperBound"], size=parameter.value.shape)
 
-class MyGradientDescent(Sofa.SofaDiff.GradientBasedOptimizationLoop):
+class MyGradientDescent(SofaDiff.GradientBasedOptimizationLoop):
     def __init__(self, *args, **kwargs):
-        Sofa.SofaDiff.GradientBasedOptimizationLoop.__init__(self, *args, **kwargs)  # Do not use super()
+        SofaDiff.GradientBasedOptimizationLoop.__init__(self, *args, **kwargs)  # Do not use super()
         # Here the parameters are not initialized yet...
 
     def init(self):
-        Sofa.SofaDiff.GradientBasedOptimizationLoop.init(self)  # Do not forget to call the parent `init()`
+        SofaDiff.GradientBasedOptimizationLoop.init(self)  # Do not forget to call the parent `init()`
         # ... Therefore, any initialization with regard to the parameters should be done here instead
         for parameter in self.parameters:
             print(parameter)
@@ -117,15 +117,15 @@ class MyGradientDescent(Sofa.SofaDiff.GradientBasedOptimizationLoop):
 
 import optax
 
-class OptaxGradientDescent(Sofa.SofaDiff.GradientBasedOptimizationLoop):
+class OptaxGradientDescent(SofaDiff.GradientBasedOptimizationLoop):
     def __init__(self, optax_optimizer, **kwargs):
-        Sofa.SofaDiff.GradientBasedOptimizationLoop.__init__(self, **kwargs)
+        SofaDiff.GradientBasedOptimizationLoop.__init__(self, **kwargs)
         self.optax_optimizer = optax_optimizer
         self.optimizers = []
         self.opt_states = []
 
     def init(self):
-        Sofa.SofaDiff.GradientBasedOptimizationLoop.init(self)
+        SofaDiff.GradientBasedOptimizationLoop.init(self)
         self.optimizers = [self.optax_optimizer(parameter["learningRate"]) for parameter in self.parameters]
         self.opt_states = [optimizer.init(parameter.value) for optimizer, parameter in zip(self.optimizers, self.parameters)]
 
@@ -168,20 +168,19 @@ def createScene(root):
 
     add_object("VisualStyle", displayFlags="showBehavior showBehaviorModels showForceFields showMappings")
 
-    # add_object("GradientDescentOptimizationLoop", name="cpp-gradient-descent")
-    add_object("GridSearchOptimizationLoop", name="cpp-grid-search")
-    # add_object(RandomOptimizer(name="numpy-random-search"))
-    # add_object(MyGradientDescent(name="numpy-gradient-descent"))
-    # add_object(OptaxGradientDescent(optax.sgd, name="optax-gradient-descent"))
+    add_object("GridSearchOptimizationLoop", name="cpp-grid-search", parameters="@/Parameters/stiffness")
+    # add_object("GradientDescentOptimizationLoop", name="cpp-gradient-descent", parameters="@/Parameters/stiffness")
+    add_object(RandomOptimizer(name="numpy-random-search", parameters="@/Parameters/stiffness"))
+    # add_object(MyGradientDescent(name="numpy-gradient-descent", parameters="@/Parameters/stiffness"))
+    add_object(OptaxGradientDescent(optax.sgd, name="optax-gradient-descent", parameters="@/Parameters/stiffness"))
+
     add_object("DifferentiableAnimationLoop", name="differentiable-simulator", computeBoundingBox=False)
     # add_object("DefaultAnimationLoop", name="default-simulator", computeBoundingBox=False)
 
     add_object("MechanicalObject", template="Vec3d", name="state", position="0 10 0")
 
     with Node("Parameters"):
-        # add_object("TrainableParameterVector", name="stiffness", value="10", learningRate=1.0, lowerBound=1, upperBound=50, resolution=50)
-        add_object("TrainableParameterVector", name="mock1", value="10 20", learningRate=1.0, lowerBound=1, upperBound=3, resolution=3)
-        add_object("TrainableParameterVector", name="mock2", value="10 20", learningRate=1.0, lowerBound=11, upperBound=13, resolution=3)
+        add_object("TrainableParameterVector", name="stiffness", value="10", learningRate=1.0, lowerBound=1, upperBound=50, resolution=50)
 
     with Node("Physics"):
         add_object("SparseLDLSolver", template="CompressedRowSparseMatrixd", name="solver", printLog="false")
@@ -206,4 +205,4 @@ def createScene(root):
     # add_object(WriteDataController("data_control.txt", [root.Parameters.stiffness.value, root.Loss.Distance.MSE.state.value], root.simulator))
 
 if __name__ == "__main__":
-    help(Sofa.SofaDiff)
+    help(SofaDiff)

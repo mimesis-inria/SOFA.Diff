@@ -13,23 +13,23 @@ using namespace py::literals;
 
 py_shared_ptr<OptimizationLoop_Trampoline> OptimizationLoop_Trampoline::create(const py::args& args, const py::kwargs& kwargs)
 {
-    auto ff = py_shared_ptr(new OptimizationLoop_Trampoline());
-    ff->f_listening.setValue(true);
+    auto object = py_shared_ptr(new OptimizationLoop_Trampoline());
+    object->f_listening.setValue(true);
 
-    if (args.size() == 1) ff->setName(py::cast<std::string>(args[0]));
+    if (!args.empty())
+    {
+        msg_warning("OptimizationLoop") << "Positional arguments were passed to the constructor, but only keyword arguments are handled";
+    }
 
-    py::object cc = py::cast(ff);
+    const py::object pyObject = py::cast(object);
     for (auto [pyKey, pyValue] : kwargs)
     {
         auto key = py::cast<std::string>(pyKey);
-        auto value = py::reinterpret_borrow<py::object>(pyValue);
-        if (key == "name")
-        {
-            ff->setName(py::cast<std::string>(value));
-        }
+        const auto value = py::reinterpret_borrow<py::object>(pyValue);
+        setattr(pyObject, key.c_str(), value);
     }
 
-    return ff;
+    return object;
 }
 
 void OptimizationLoop_Trampoline::init()
@@ -94,9 +94,10 @@ void moduleAddOptimizationLoop(const pybind11::module& m)
         throw std::runtime_error("compute_next_value() must be overridden in a subclass");
     }); // This def() exposes the method that has to be overridden by the derived class, for documentation purposes
 
-    f.def_property_readonly("parameters", [](OptimizationLoop& self) {
+    f.def_property_readonly("parameters", [](const OptimizationLoop& self) {
         std::vector<BaseParameter*> parameters;
-        self.getContext()->get<BaseParameter>(&parameters, objectmodel::BaseContext::SearchDown);
+        for (const auto& parameter : self.l_parameters)
+            parameters.push_back(parameter);
         return parameters;
     });
 

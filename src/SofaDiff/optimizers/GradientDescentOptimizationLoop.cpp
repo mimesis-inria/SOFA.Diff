@@ -16,9 +16,7 @@ void registerGradientDescentOptimizationLoop(ObjectFactory* factory)
 
 void GradientDescentOptimizationLoop::setParametersNextValue()
 {
-    std::vector<BaseParameter*> parameters;
-    this->getContext()->get<BaseParameter>(&parameters, BaseContext::SearchDown);
-    for (auto * parameter : parameters)
+    for (auto & parameter : l_parameters)
     {
         auto value = parameter->getValueVector();
 

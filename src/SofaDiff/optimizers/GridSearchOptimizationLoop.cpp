@@ -22,9 +22,7 @@ void GridSearchOptimizationLoop::init()
     OptimizationLoop::init();
 
     m_gridSize = 1;
-    std::vector<BaseParameter*> parameters;
-    this->getContext()->get<BaseParameter>(&parameters, objectmodel::BaseContext::SearchDown);
-    for (const auto parameter : parameters)
+    for (const auto & parameter : l_parameters)
     {
         const auto resolution = static_cast<int>(parameter->getHyperparameter("resolution"));
         const auto size = parameter->getValueVector().size();
@@ -60,10 +58,8 @@ void GridSearchOptimizationLoop::setParametersNextValue()
 
 void GridSearchOptimizationLoop::setParameters(const int iteration)
 {
-    std::vector<BaseParameter*> parameters;
-    this->getContext()->get<BaseParameter>(&parameters, objectmodel::BaseContext::SearchDown);
     auto global_index = iteration;
-    for (const auto & parameter : std::ranges::reverse_view(parameters))
+    for (const auto & parameter : std::ranges::reverse_view(l_parameters))
     {
         const auto lowerBound = parameter->getHyperparameter("lowerBound");
         const auto upperBound = parameter->getHyperparameter("upperBound");

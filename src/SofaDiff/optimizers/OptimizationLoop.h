@@ -44,10 +44,12 @@ private:
     virtual void processSimulation(const ExecParams *params, SReal dt);
     virtual void setParametersNextValue() = 0;
     virtual void initializeSimulationLink();
+    void initializeParametersLink();
     int getSimulationSteps();
 
 public:
     SingleLink<OptimizationLoop, BaseAnimationLoop, BaseLink::FLAG_STOREPATH | BaseLink::FLAG_STRONGLINK> l_simulationLoop;
+    MultiLink<OptimizationLoop, BaseParameter, BaseLink::FLAG_STOREPATH> l_parameters;
     Data<int> d_maxOptimizationSteps;
     Data<int> d_maxSimulationSteps;
 

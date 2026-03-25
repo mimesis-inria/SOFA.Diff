@@ -1,8 +1,9 @@
 #include <SofaDiff/bindings/Binding_GradientBasedOptimizationLoop.h>
+#include <SofaDiff/bindings/Binding_OptimizationLoop.h>
 #include <SofaDiff/bindings/Binding_Parameter.h>
+
 #include <pybind11/pybind11.h>
 
-#include "Binding_OptimizationLoop.h"
 
 namespace py
 {
