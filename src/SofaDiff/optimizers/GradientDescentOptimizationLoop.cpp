@@ -18,30 +18,30 @@ void GradientDescentOptimizationLoop::setParametersNextValue()
 {
     for (auto & parameter : l_parameters)
     {
-        auto value = parameter->getValue();
+        auto nextValue = parameter->getVectorFromData("value");
 
-        const auto learningRate = parameter->getHyperparameter("learningRate");
-        const auto gradient = parameter->getGradient();
+        const auto learningRate = parameter->getVectorFromData("learningRate");
+        const auto gradient = parameter->getVectorFromData("gradient");
         for (size_t j = 0; j < gradient.size(); j++)
-            value[j] -= learningRate[j] * gradient[j];
+            nextValue[j] -= learningRate[j] * gradient[j];
 
-        if (parameter->hasHyperparameter("lowerBound"))
+        if (parameter->hasData("lowerBound"))
         {
-            const auto lowerBound = parameter->getHyperparameter("lowerBound");
+            const auto lowerBound = parameter->getVectorFromData("lowerBound");
             for (size_t j = 0; j < gradient.size(); j++)
-                if (value[j] < lowerBound[j])
-                    value[j] = lowerBound[j];
+                if (nextValue[j] < lowerBound[j])
+                    nextValue[j] = lowerBound[j];
         }
 
-        if (parameter->hasHyperparameter("upperBound"))
+        if (parameter->hasData("upperBound"))
         {
-            const auto upperBound = parameter->getHyperparameter("upperBound");
+            const auto upperBound = parameter->getVectorFromData("upperBound");
             for (size_t j = 0; j < gradient.size(); j++)
-                if (value[j] > upperBound[j])
-                    value[j] = upperBound[j];
+                if (nextValue[j] > upperBound[j])
+                    nextValue[j] = upperBound[j];
         }
 
-        parameter->setDataInGroupFromVector("nextValue", this->getName(), value);
+        parameter->setDataFrom("nextValue", nextValue);
     }
 }
 

@@ -27,10 +27,12 @@ void OptimizationLoop::init()
     this->initializeSimulationLink();
 
     this->initializeParametersLink();
+
+    this->enterParameterGroup();
     for (const auto& parameter : l_parameters)
     {
-        parameter->newDataInGroup("nextValue", this->getName());
-        parameter->newDataInGroup("bestValue", this->getName());
+        parameter->newData("nextValue");
+        parameter->newData("bestValue");
     }
 
     BaseContext * rootContext = this->getContext()->getRootContext();
@@ -47,12 +49,16 @@ void OptimizationLoop::bwdInit()
     node->animationManager.set(this);
 
     this->setStartingState();  // By default, start the optimization from the initial state
+
+    this->leaveParameterGroup();
 }
 
 void OptimizationLoop::step(const ExecParams *params, const SReal dt)
 {
     if (!isStepAllowed())
         return;
+
+    this->enterParameterGroup();
 
     this->updateParameters();
     this->computeLoss(params, dt);
@@ -61,6 +67,8 @@ void OptimizationLoop::step(const ExecParams *params, const SReal dt)
     m_readyToUpdateParameters = true; // TODO: somehow put that in setParametersNextValue()
 
     m_currentOptimizationStep++;
+
+    this->leaveParameterGroup();
 
     // Note:
     // 1. The parameters' next value are computed here, before anything can alter the state of the simulation.
@@ -82,8 +90,15 @@ void OptimizationLoop::step(const ExecParams *params, const SReal dt)
 
 void OptimizationLoop::setBestParameters(const ExecParams *params, const SReal dt)
 {
+    this->enterParameterGroup();
+
     for (auto & parameter : l_parameters)
-        parameter->setValueFromDataInGroup("bestValue", this->getName());
+    {
+        parameter->setDataFrom("value", "bestValue");
+    }
+
+    this->leaveParameterGroup();
+
     this->computeLoss(params, dt);
 }
 
@@ -149,7 +164,9 @@ void OptimizationLoop::updateParameters()
     if (m_readyToUpdateParameters)
     {
         for (auto & parameter : l_parameters)
-            parameter->setValueFromDataInGroup("nextValue", this->getName());
+        {
+            parameter->setDataFrom("value", "nextValue");
+        }
         m_readyToUpdateParameters = false;
     }
 }
@@ -183,7 +200,9 @@ void OptimizationLoop::processSimulation(const ExecParams *params, SReal dt)
     {
         m_lowestLossValue = loss;
         for (auto & parameter : l_parameters)
-            parameter->setDataInGroupFromValue("bestValue", this->getName());
+        {
+            parameter->setDataFrom("bestValue", "value");
+        }
     }
 }
 
@@ -243,6 +262,22 @@ int OptimizationLoop::getSimulationSteps()
         this->d_componentState.setValue(ComponentState::Invalid);
     }
     return simulationSteps;
+}
+
+void OptimizationLoop::enterParameterGroup()
+{
+    for (auto & parameter : l_parameters)
+    {
+        parameter->enterGroup(this->getName());
+    }
+}
+
+void OptimizationLoop::leaveParameterGroup()
+{
+    for (auto & parameter : l_parameters)
+    {
+        parameter->leaveGroup();
+    }
 }
 
 }

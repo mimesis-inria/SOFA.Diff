@@ -38,13 +38,6 @@ public:
     void setMaxSimulationSteps(const int maxSteps)   { d_maxSimulationSteps.setValue(maxSteps); }
     void setMaxOptimizationSteps(const int maxSteps) { d_maxOptimizationSteps.setValue(maxSteps); }
 
-    void createParameterData(BaseParameter & parameter, const std::string & name) const
-        { parameter.newDataInGroup(name, this->getName()); }
-    void setParameterData(BaseParameter & parameter, const std::string & name, const type::vector<SReal> & vector) const
-        { parameter.setDataInGroupFromVector(name, this->getName(), vector); }
-    const type::vector<SReal> & getParameterData(const BaseParameter & parameter, const std::string & name) const
-        { return parameter.getVectorFromDataInGroup(name, this->getName()); }
-
 protected:
     virtual void processSimulation(const ExecParams *params, SReal dt);
 
@@ -55,6 +48,9 @@ private:
     virtual void initializeSimulationLink();
     void initializeParametersLink();
     int getSimulationSteps();
+
+    void enterParameterGroup();
+    void leaveParameterGroup();
 
 public:
     SingleLink<OptimizationLoop, BaseAnimationLoop, BaseLink::FLAG_STOREPATH | BaseLink::FLAG_STRONGLINK> l_simulationLoop;

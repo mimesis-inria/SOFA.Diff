@@ -32,120 +32,79 @@ Parameter<T>::Parameter():
     d_gradient(initData(&d_gradient, "gradient", "Gradient of the parameter"))
 {}
 
-// ==============================================================================
-// Operations on the default Data<T>
-// ==============================================================================
-template<class T>
-void Parameter<T>::setValue(const SReal & value)
+template <class T>
+core::BaseData * Parameter<T>::newData(const std::string & dataName)
 {
-    this->setDataFromVector(d_value, type::vector<SReal>(this->getVectorSize(), value));
-}
-
-template<class T>
-void Parameter<T>::setValue(const type::vector<SReal> & value)
-{
-    this->setDataFromVector(d_value, value);
-}
-
-template<class T>
-const type::vector<SReal> & Parameter<T>::getValue() const
-{
-    return this->getVectorFromData(d_value);
-}
-
-template<class T>
-void Parameter<T>::setGradient(const SReal & value)
-{
-    this->setDataFromVector(d_gradient, type::vector<SReal>(this->getVectorSize(), value));
-}
-
-template<class T>
-void Parameter<T>::setGradient(const type::vector<SReal> & value)
-{
-    this->setDataFromVector(d_gradient, value);
-}
-
-template<class T>
-const type::vector<SReal> & Parameter<T>::getGradient() const
-{
-    return this->getVectorFromData(d_gradient);
-}
-
-
-// ==============================================================================
-// Operations on data in an arbitrary group
-// ==============================================================================
-template<class T>
-void Parameter<T>::newDataInGroup(const std::string & dataName, const std::string & dataGroup)
-{
-    auto name = this->getDataInGroupFullName(dataName, dataGroup);
-    auto * data = new Data<T>();
-    data->setName(name);
-    data->setGroup(dataGroup);
-    this->addData(data, name);
-    m_dataInGroups.emplace_back(data);
-}
-
-template<class T>
-Data<T> * Parameter<T>::getDataPointer(const std::string &dataName, const std::string &dataGroup) const
-{
-    const auto name = this->getDataInGroupFullName(dataName, dataGroup);
-    auto * baseData = this->findData(name);
-    if (baseData == nullptr || baseData->getGroup() != dataGroup)
+    if (this->hasData(dataName))
     {
-        msg_error() << "Does not have Data '" << dataName << "' in group '" << dataGroup << "'.";
+        msg_error() << "Data " << dataName << " already exists.";
         return nullptr;
     }
-    auto * data = dynamic_cast<Data<T>*>(baseData);
+
+    auto * data = new Data<T>();
+    auto fullName = this->getFullName(dataName);
+    data->setName(fullName);  // TODO: try giving it the 'dataName' to see if there is collision (my guess: in the GUI yes)
+    if (!m_groupStack.empty())
+        data->setGroup(m_groupStack.back());
+    this->addData(data, fullName);
+    m_dataInGroups.emplace_back(data);
+    return data;
+}
+
+template<class T>
+Data<T> * Parameter<T>::getData(const std::string & dataName) const
+{
+    auto baseData = this->findData(dataName);
+    if (baseData == nullptr)
+        baseData = this->findData(this->getFullName(dataName));
+    if (baseData == nullptr)
+    {
+        msg_error() << "No data named \"" << dataName << "\"";
+        return nullptr;
+    }
+    auto data = dynamic_cast<Data<T>*>(baseData);
     if (data == nullptr)
     {
-        msg_error() << "Data '" << dataName << "' in group '" << dataGroup << "' is not of the correct type";
+        msg_error() << "Data named \"" << dataName << "\" is not of the correct type";
         return nullptr;
     }
     return data;
 }
 
-
 template<class T>
-void Parameter<T>::setDataInGroupFromConstant(const std::string & dataName, const std::string & dataGroup, SReal constant)
+void Parameter<T>::setDataFrom(const std::string &dataName, const std::string &fromDataName)
 {
-    this->setDataInGroup(dataName, dataGroup, type::vector(this->getVectorSize(), constant));
-}
-
-template<class T>
-void Parameter<T>::setDataInGroupFromVector(const std::string & dataName, const std::string & dataGroup, const type::vector<SReal> & vector)
-{
-    auto * data = this->getDataPointer(dataName, dataGroup);
-    if (data == nullptr)  // Note: getDataPointer() already printed an error message
+    auto data = this->getData(dataName);
+    if (data == nullptr)
         return;
-    this->setDataFromVector(*data, vector);
-}
-
-template<class T>
-const type::vector<SReal> & Parameter<T>::getVectorFromDataInGroup(const std::string & dataName, const std::string & dataGroup) const
-{
-    const auto * data = this->getDataPointer(dataName, dataGroup);
-    if (data == nullptr)  // Note: getDataPointer() already printed an error message
-        return type::vector<SReal>();
-    return this->getVectorFromData(*data);
-}
-
-template<class T>
-void Parameter<T>::setValueFromDataInGroup(const std::string & dataName, const std::string & dataGroup)
-{
-    auto * data = this->getDataPointer(dataName, dataGroup);
-    if (data == nullptr)  // Note: getDataPointer() already printed an error message
+    auto fromData = this->getData(fromDataName);
+    if (fromData == nullptr)
         return;
-    d_value.setValue(data->getValue());
+    data->setValue(fromData->getValue());
 }
 
-template<class T>
-void Parameter<T>::setDataInGroupFromValue(const std::string & dataName, const std::string & dataGroup)
+template <class T>
+void Parameter<T>::setDataFrom(const std::string & dataName, const type::vector<SReal> &vector)
 {
-    auto * data = this->getDataPointer(dataName, dataGroup);
-    if (data == nullptr)  // Note: getDataPointer() already printed an error message
+    auto data = this->getData(dataName);
+    if (data == nullptr)
         return;
-    data->setValue(d_value.getValue());
+    this->vectorToData(*data, vector);
+}
+
+template <class T>
+void Parameter<T>::setDataFrom(const std::string & dataName, const SReal constant)
+{
+    this->setDataFrom(dataName, type::vector<SReal>(this->getVectorSize(), constant));
+}
+
+template <class T>
+type::vector<SReal> Parameter<T>::getVectorFromData(const std::string & dataName) const
+{
+    auto data = this->getData(dataName);
+    if (data == nullptr)
+        return {};
+    return this->dataToVector(*data);
 }
 
 }

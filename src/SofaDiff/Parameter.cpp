@@ -40,53 +40,38 @@ void BaseParameter::parse(core::objectmodel::BaseObjectDescription *arg)
     {
         if (!attribute.isAccessed())
         {
-            if (!this->hasHyperparameter(name))
-                this->newHyperparameter(name);
-            else
-                msg_warning() << "Hyperparameter " << name << " is defined multiple times.";
-            const auto value = std::stod(attribute.c_str()); // Silently ignores additional values
-            this->setHyperparameter(name, value);
+            const auto constant = std::stod(attribute.c_str()); // Silently ignores additional values
+            auto * data = this->newData(name);
+            if (data != nullptr)
+            {
+                data->setGroup("Hyperparameters");
+                this->setDataFrom(name, constant);
+            }
             arg->removeAttribute(name);
         }
     }
 }
 
-std::string BaseParameter::getDataInGroupFullName(const std::string &dataName, const std::string &dataGroup) const
+void BaseParameter::enterGroup(const std::string & groupName)
 {
-    const auto name = std::string("").append(dataName).append(" [").append(dataGroup).append("]");
-    return name;
+    m_groupStack.push_back(groupName);
 }
 
-core::BaseData * BaseParameter::findDataInGroup(const std::string &dataName, const std::string &dataGroup) const
+void BaseParameter::leaveGroup()
 {
-    const auto name = this->getDataInGroupFullName(dataName, dataGroup);
-    return this->findData(name);
+    m_groupStack.pop_back();
 }
 
-// Operations on hyperparameters
-bool BaseParameter::hasHyperparameter(const std::string & dataName) const
+bool BaseParameter::hasData(const std::string & dataName) const
 {
-    return this->findDataInGroup(dataName, m_hyperparametersGroup) != nullptr;
+    return this->findData(dataName) != nullptr || this->findData(this->getFullName(dataName)) != nullptr;
 }
 
-void BaseParameter::newHyperparameter(const std::string & dataName)
+std::string BaseParameter::getFullName(std::string dataName) const
 {
-    this->newDataInGroup(dataName, m_hyperparametersGroup);
-}
-
-void BaseParameter::setHyperparameter(const std::string & dataName, const SReal constant)
-{
-    this->setDataInGroupFromConstant(dataName, m_hyperparametersGroup, constant);
-}
-
-void BaseParameter::setHyperparameter(const std::string & dataName, const std::vector<SReal> & vector)
-{
-    this->setDataInGroupFromVector(dataName, m_hyperparametersGroup, vector);
-}
-
-const std::vector<SReal> & BaseParameter::getHyperparameter(const std::string & dataName) const
-{
-    return this->getVectorFromDataInGroup(dataName, m_hyperparametersGroup);
+    if (m_groupStack.empty())
+        return dataName;
+    return dataName + " [" + m_groupStack.back() + "]";
 }
 
 
@@ -100,13 +85,13 @@ std::string Parameter<type::vector<SReal>>::GetCustomClassName()
 }
 
 template<>
-void Parameter<type::vector<SReal>>::setDataFromVector(Data<type::vector<SReal>> & data, const type::vector<SReal> & vector)
+void Parameter<type::vector<SReal>>::vectorToData(Data<type::vector<SReal>> & data, const type::vector<SReal> & vector)
 {
     data.setValue(vector);
 }
 
 template<>
-const type::vector<SReal>& Parameter<type::vector<SReal>>::getVectorFromData(const Data<type::vector<SReal>> & data) const
+const type::vector<SReal>& Parameter<type::vector<SReal>>::dataToVector(const Data<type::vector<SReal>> & data) const
 {
     return data.getValue();
 }
@@ -128,13 +113,13 @@ std::string Parameter<SReal>::GetCustomClassName()
 }
 
 template<>
-void Parameter<SReal>::setDataFromVector(Data<SReal> & data, const type::vector<SReal> & vector)
+void Parameter<SReal>::vectorToData(Data<SReal> & data, const type::vector<SReal> & vector)
 {
     data.setValue(vector[0]);
 }
 
 template<>
-const type::vector<SReal>& Parameter<SReal>::getVectorFromData(const Data<SReal> & data) const
+const type::vector<SReal>& Parameter<SReal>::dataToVector(const Data<SReal> & data) const
 {
     return {data.getValue()};
 }

@@ -88,8 +88,7 @@ import SofaDiff  # Don't forget that
 class RandomOptimizer(SofaDiff.OptimizationLoop):
     def compute_next_value(self):
         for parameter in self.parameters:
-            next_value = np.random.uniform(parameter["lowerBound"], parameter["upperBound"], size=parameter.value.shape)
-            self.set_parameter_data(parameter, "nextValue", next_value)
+            parameter.next_value = np.random.uniform(parameter["lowerBound"], parameter["upperBound"], size=parameter.size)
 
 class MyGradientDescent(SofaDiff.GradientBasedOptimizationLoop):
     def __init__(self, *args, **kwargs):
@@ -175,7 +174,7 @@ def createScene(root):
     # add_object("GridSearchOptimizationLoop", name="cpp-grid-search", parameters="@/Parameters/stiffness")
     # add_object("GradientDescentOptimizationLoop", name="cpp-gradient-descent", parameters="@/Parameters/stiffness")
     add_object(RandomOptimizer(name="numpy-random-search", parameters="@/Parameters/stiffness"))
-    # add_object(MyGradientDescent(name="numpy-gradient-descent", parameters="@/Parameters/stiffness"))
+    add_object(MyGradientDescent(name="numpy-gradient-descent", parameters="@/Parameters/stiffness"))
     # add_object(OptaxGradientDescent(optax.sgd, name="optax-gradient-descent", parameters="@/Parameters/stiffness"))
 
     add_object("DifferentiableAnimationLoop", name="differentiable-simulator", computeBoundingBox=False)

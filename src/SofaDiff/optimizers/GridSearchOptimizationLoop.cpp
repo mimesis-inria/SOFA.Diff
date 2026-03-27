@@ -24,7 +24,7 @@ void GridSearchOptimizationLoop::init()
     m_gridSize = 1;
     for (const auto & parameter : l_parameters)
     {
-        const auto resolution = parameter->getHyperparameter("resolution");
+        const auto resolution = parameter->getVectorFromData("resolution");
         const auto size = parameter->getVectorSize();
         for (unsigned long i = 0; i < size; i++)
             m_gridSize *= static_cast<int>(resolution[i]);
@@ -61,9 +61,9 @@ void GridSearchOptimizationLoop::setParameters(const int iteration)
     auto global_index = iteration;
     for (const auto & parameter : std::ranges::reverse_view(l_parameters))
     {
-        const auto lowerBound = parameter->getHyperparameter("lowerBound");
-        const auto upperBound = parameter->getHyperparameter("upperBound");
-        const auto resolution = parameter->getHyperparameter("resolution");
+        const auto lowerBound = parameter->getVectorFromData("lowerBound");
+        const auto upperBound = parameter->getVectorFromData("upperBound");
+        const auto resolution = parameter->getVectorFromData("resolution");
         const auto size = parameter->getVectorSize();
 
         type::vector<SReal> nextValue(size);
@@ -74,7 +74,7 @@ void GridSearchOptimizationLoop::setParameters(const int iteration)
             global_index = (global_index - parameter_index) / static_cast<int>(resolution[i-1]);
         }
 
-        parameter->setDataInGroupFromVector("nextValue", this->getName(), nextValue);
+        parameter->setDataFrom("nextValue", nextValue);
     }
 }
 

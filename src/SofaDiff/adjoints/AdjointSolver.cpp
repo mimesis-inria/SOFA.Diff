@@ -39,7 +39,7 @@ void AdjointSolver::resetParametersGradient() const
 {
     SCOPED_TIMER("AdjointSolver::resetParametersGradient");
     for (auto & parameter : m_trainableParameters)
-        parameter->setGradient(0);
+        parameter->setDataFrom("gradient", 0);
 }
 
 void AdjointSolver::propagateGradientsThroughForceFields(const MechanicalParams * mparams, const MultiVecDerivId & forceGradientId) const
