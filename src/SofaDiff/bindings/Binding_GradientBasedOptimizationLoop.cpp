@@ -34,29 +34,24 @@ py_shared_ptr<GradientBasedOptimizationLoop_Trampoline> GradientBasedOptimizatio
     return object;
 }
 
-void GradientBasedOptimizationLoop_Trampoline::init()
+void GradientBasedOptimizationLoop_Trampoline::_allocate()
 {
-    PYBIND11_OVERRIDE(void, GradientBasedOptimizationLoop, init, );
+    PYBIND11_OVERRIDE(void, GradientBasedOptimizationLoop, _allocate, );
 }
 
-void GradientBasedOptimizationLoop_Trampoline::bwdInit()
+void GradientBasedOptimizationLoop_Trampoline::_initialize()
 {
-    PYBIND11_OVERRIDE(void, GradientBasedOptimizationLoop, bwdInit, );
+    PYBIND11_OVERRIDE(void, GradientBasedOptimizationLoop, _initialize, );
 }
 
-void GradientBasedOptimizationLoop_Trampoline::resetOptimization()
+void GradientBasedOptimizationLoop_Trampoline::_processSimulation(const ExecParams * params, SReal dt)
 {
-    PYBIND11_OVERRIDE(void, GradientBasedOptimizationLoop, resetOptimization, );
+    PYBIND11_OVERRIDE(void, GradientBasedOptimizationLoop, _processSimulation, params, dt);
 }
 
-void GradientBasedOptimizationLoop_Trampoline::setParametersNextValue()
+void GradientBasedOptimizationLoop_Trampoline::_updateParameters()
 {
-    // I want to use a different name for the Python method, so the macros won't do here
-    py::gil_scoped_acquire gil;
-    const py::function py_override = py::get_override(this, "compute_next_value");
-    if (!py_override)
-        throw std::runtime_error("compute_next_value() not implemented in Python subclass");
-    (void) py_override();  // The cast tells the IDE that discarding the return value is intentional
+    PYBIND11_OVERRIDE_PURE(void, GradientBasedOptimizationLoop, _updateParameters, );
 }
 
 std::string GradientBasedOptimizationLoop_Trampoline::getClassName() const
@@ -91,12 +86,10 @@ void moduleAddGradientBasedOptimizationLoop(const pybind11::module& m)
         f(m, pyclass_name.c_str(), py::dynamic_attr(), py::multiple_inheritance());
 
     f.def(py::init(&GradientBasedOptimizationLoop_Trampoline::create));
-    f.def("init", &GradientBasedOptimizationLoop::init);
-    f.def("bwdInit", &GradientBasedOptimizationLoop::bwdInit);
-    f.def("resetOptimization", &GradientBasedOptimizationLoop::resetOptimization);
-    f.def("compute_next_value", [](GradientBasedOptimizationLoop&) {
-        throw std::runtime_error("compute_next_value() must be overridden in a subclass");
-    }); // This def() exposes the method that has to be overridden by the derived class, for documentation purposes
+    f.def("_allocate", &GradientBasedOptimizationLoop::_allocate);
+    f.def("_initialize", &GradientBasedOptimizationLoop::_initialize);
+    f.def("_processSimulation", &GradientBasedOptimizationLoop::_processSimulation);
+    f.def("_updateParameters", &GradientBasedOptimizationLoop::_updateParameters);
 
     PythonFactory::registerType<GradientBasedOptimizationLoop>(
         [](objectmodel::Base* object) -> py::object

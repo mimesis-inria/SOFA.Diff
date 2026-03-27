@@ -82,11 +82,11 @@ class WriteDataController(Sofa.Core.Controller):
 # =====================================================================================================================
 import SofaDiff  # Don't forget that
 
-# TODO: Change interface to 'init_parameter(parameter)', 'get_parameter_next_value(parameter)', ...
-#       This way the Python method can return something, instead of having to set a Data that is difficult to access
-
 class RandomOptimizer(SofaDiff.OptimizationLoop):
-    def compute_next_value(self):
+    def _initialize(self):
+        self.updateParameters()
+
+    def _updateParameters(self):
         for parameter in self.parameters:
             parameter.next_value = np.random.uniform(parameter["lowerBound"], parameter["upperBound"], size=parameter.size)
 
@@ -95,14 +95,12 @@ class MyGradientDescent(SofaDiff.GradientBasedOptimizationLoop):
         SofaDiff.GradientBasedOptimizationLoop.__init__(self, *args, **kwargs)  # Do not use super()
         # Here the parameters are not initialized yet...
 
-    def init(self):
-        SofaDiff.GradientBasedOptimizationLoop.init(self)  # Do not forget to call the parent `init()`
+    def _initialize(self):
         # ... Therefore, any initialization with regard to the parameters should be done here instead
         for parameter in self.parameters:
             print(parameter)
 
-    def compute_next_value(self):
-        # Do not call the parent `compute_next_value()`, it is pure (and not called `compute_next_value`...)
+    def _updateParameters(self):
         # The list of parameters to be optimized can be accessed in self.parameters
         for parameter in self.parameters:
             # The parameter's value and gradient can be accessed like attributes
@@ -127,12 +125,11 @@ class OptaxGradientDescent(SofaDiff.GradientBasedOptimizationLoop):
         self.optimizers = []
         self.opt_states = []
 
-    def init(self):
-        SofaDiff.GradientBasedOptimizationLoop.init(self)
+    def _initialize(self):
         self.optimizers = [self.optax_optimizer(parameter["learningRate"]) for parameter in self.parameters]
         self.opt_states = [optimizer.init(parameter.value) for optimizer, parameter in zip(self.optimizers, self.parameters)]
 
-    def compute_next_value(self):
+    def _updateParameters(self):
         for optimizer, opt_state, parameter in zip(self.optimizers, self.opt_states, self.parameters):
             updates, opt_state = optimizer.update(parameter.gradient, opt_state, parameter.value)
             next_value = optax.apply_updates(parameter.value, updates)
@@ -171,9 +168,9 @@ def createScene(root):
 
     add_object("VisualStyle", displayFlags="showBehavior showBehaviorModels showForceFields showMappings")
 
-    # add_object("GridSearchOptimizationLoop", name="cpp-grid-search", parameters="@/Parameters/stiffness")
+    add_object("GridSearchOptimizationLoop", name="cpp-grid-search", parameters="@/Parameters/stiffness")
     # add_object("GradientDescentOptimizationLoop", name="cpp-gradient-descent", parameters="@/Parameters/stiffness")
-    add_object(RandomOptimizer(name="numpy-random-search", parameters="@/Parameters/stiffness"))
+    # add_object(RandomOptimizer(name="numpy-random-search", parameters="@/Parameters/stiffness"))
     add_object(MyGradientDescent(name="numpy-gradient-descent", parameters="@/Parameters/stiffness"))
     # add_object(OptaxGradientDescent(optax.sgd, name="optax-gradient-descent", parameters="@/Parameters/stiffness"))
 

@@ -17,17 +17,21 @@ public:
     SOFA_ABSTRACT_CLASS(OptimizationLoop, behavior::BaseAnimationLoop);
 
     OptimizationLoop();
+    SingleLink<OptimizationLoop, BaseAnimationLoop, BaseLink::FLAG_STOREPATH | BaseLink::FLAG_STRONGLINK> l_simulationLoop;
+    MultiLink<OptimizationLoop, BaseParameter, BaseLink::FLAG_STOREPATH> l_parameters;
+    Data<int> d_maxOptimizationSteps;
+    Data<int> d_maxSimulationSteps;
 
-    void init() override;
-    void bwdInit() override;
+    void init() final;
+    void bwdInit() final;
 
     void step(const ExecParams *params, SReal dt) final;
-    void setBestParameters(const ExecParams *params, SReal dt);
-    virtual void resetOptimization();
+    void retrieveBestParameters(const ExecParams *params, SReal dt);
+    void resetOptimization();
     void setStartingState();
 
     bool isStepAllowed() const;
-    bool isSetBestParametersAllowed() const;
+    bool isRetrieveBestParametersAllowed() const;
     bool isResetOptimizationAllowed() const;
     bool isSetStartingStateAllowed() const;
 
@@ -38,28 +42,30 @@ public:
     void setMaxSimulationSteps(const int maxSteps)   { d_maxSimulationSteps.setValue(maxSteps); }
     void setMaxOptimizationSteps(const int maxSteps) { d_maxOptimizationSteps.setValue(maxSteps); }
 
-protected:
-    virtual void processSimulation(const ExecParams *params, SReal dt);
+// Should be private, but bindings require public
+    virtual void _allocate() {}
+    virtual void _initialize() {}
+    virtual void _processSimulation(const ExecParams * /*params*/, SReal /*dt*/) {}
+    virtual void _updateParameters() = 0;
 
-private:
-    void updateParameters();
-    void computeLoss(const ExecParams *params, SReal dt);
-    virtual void setParametersNextValue() = 0;
+public: // TODO: Temporary
     virtual void initializeSimulationLink();
+
     void initializeParametersLink();
     int getSimulationSteps();
 
     void enterParameterGroup();
     void leaveParameterGroup();
 
-public:
-    SingleLink<OptimizationLoop, BaseAnimationLoop, BaseLink::FLAG_STOREPATH | BaseLink::FLAG_STRONGLINK> l_simulationLoop;
-    MultiLink<OptimizationLoop, BaseParameter, BaseLink::FLAG_STOREPATH> l_parameters;
-    Data<int> d_maxOptimizationSteps;
-    Data<int> d_maxSimulationSteps;
+    void allocate();
+    void initialize();
+    void applyUpdate();
+    void computeLoss(const ExecParams *params, SReal dt);
+    void processSimulation(const ExecParams *params, SReal dt);
+    void updateParameters();
 
 protected:
-    bool m_readyToUpdateParameters;
+    bool m_readyToApplyUpdate;
     int m_currentOptimizationStep;
     SReal m_lowestLossValue;
 

@@ -5,8 +5,6 @@
 
 #include <sofa/core/ObjectFactory.h>
 
-#include "sofa/linearalgebra/CompressedRowSparseMatrixConstraintEigenUtils.h"
-
 
 namespace sofadiff
 {
@@ -17,10 +15,8 @@ void registerGridSearchOptimizationLoop(ObjectFactory* factory)
     factory->registerObjects(ObjectRegistrationData("Grid search algorithm for optimization.").add< GridSearchOptimizationLoop >());
 }
 
-void GridSearchOptimizationLoop::init()
+void GridSearchOptimizationLoop::_initialize()
 {
-    OptimizationLoop::init();
-
     m_gridSize = 1;
     for (const auto & parameter : l_parameters)
     {
@@ -31,25 +27,12 @@ void GridSearchOptimizationLoop::init()
     }
 
     if (d_maxOptimizationSteps.getValue() == 0)
-    {
         d_maxOptimizationSteps.setValue(m_gridSize);
-    }
 
-    setParameters(0);
-    m_readyToUpdateParameters = true;
+    this->updateParameters();
 }
 
-void GridSearchOptimizationLoop::resetOptimization()
-{
-    OptimizationLoop::resetOptimization();
-
-    // Update grid size?
-
-    setParameters(0);
-    m_readyToUpdateParameters = true;
-}
-
-void GridSearchOptimizationLoop::setParametersNextValue()
+void GridSearchOptimizationLoop::_updateParameters()
 {
     const int currentStep = this->getCurrentOptimizationStep();
     if (currentStep + 1 < m_gridSize)

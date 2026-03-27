@@ -5,6 +5,7 @@
 
 #include <SofaPython3/PythonFactory.h>
 #include <SofaPython3/Sofa/Core/Binding_Base.h>
+#include <sofa/core/ExecParams.h>
 
 
 namespace sofapython3
@@ -19,11 +20,10 @@ public:
     using GradientBasedOptimizationLoop::GradientBasedOptimizationLoop;  /* Inherit constructors */
     static py_shared_ptr<GradientBasedOptimizationLoop_Trampoline> create(const py::args& args, const py::kwargs& kwargs);
 
-    void init() override;
-    void bwdInit() override;
-
-    void resetOptimization() override;
-    void setParametersNextValue() override;
+    void _allocate() override;
+    void _initialize() override;
+    void _processSimulation(const core::ExecParams *params, SReal dt) override;
+    void _updateParameters() override;
 
     std::string getClassName() const override;
 };

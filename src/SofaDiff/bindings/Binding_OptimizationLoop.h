@@ -22,11 +22,10 @@ public:
     using OptimizationLoop::OptimizationLoop;
     static py_shared_ptr<OptimizationLoop_Trampoline> create(const py::args& args, const py::kwargs& kwargs);
 
-    void init() override;
-    void bwdInit() override;
-
-    void resetOptimization() override;
-    void setParametersNextValue() override;
+    void _allocate() override;
+    void _initialize() override;
+    void _processSimulation(const ExecParams * params, SReal dt) override;
+    void _updateParameters() override;
 
     std::string getClassName() const override;
 };

@@ -14,7 +14,7 @@ void registerGradientDescentOptimizationLoop(ObjectFactory* factory)
     factory->registerObjects(ObjectRegistrationData("Gradient descent algorithm for optimization.").add< GradientDescentOptimizationLoop >());
 }
 
-void GradientDescentOptimizationLoop::setParametersNextValue()
+void GradientDescentOptimizationLoop::_updateParameters()
 {
     for (auto & parameter : l_parameters)
     {

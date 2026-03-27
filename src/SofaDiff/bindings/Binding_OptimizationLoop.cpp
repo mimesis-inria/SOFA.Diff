@@ -32,29 +32,30 @@ py_shared_ptr<OptimizationLoop_Trampoline> OptimizationLoop_Trampoline::create(c
     return object;
 }
 
-void OptimizationLoop_Trampoline::init()
+void OptimizationLoop_Trampoline::_allocate()
 {
-    PYBIND11_OVERRIDE(void, OptimizationLoop, init, );
+    PYBIND11_OVERRIDE(void, OptimizationLoop, _allocate, );
 }
 
-void OptimizationLoop_Trampoline::bwdInit()
+void OptimizationLoop_Trampoline::_initialize()
 {
-    PYBIND11_OVERRIDE(void, OptimizationLoop, bwdInit, );
+    PYBIND11_OVERRIDE(void, OptimizationLoop, _initialize, );
 }
 
-void OptimizationLoop_Trampoline::resetOptimization()
+void OptimizationLoop_Trampoline::_processSimulation(const ExecParams * params, SReal dt)
 {
-    PYBIND11_OVERRIDE(void, OptimizationLoop, resetOptimization, );
+    PYBIND11_OVERRIDE(void, OptimizationLoop, _processSimulation, params, dt);
 }
 
-void OptimizationLoop_Trampoline::setParametersNextValue()
+void OptimizationLoop_Trampoline::_updateParameters()
 {
-    // I want to use a different name for the Python method, so the macros won't do here
-    py::gil_scoped_acquire gil;
-    const py::function py_override = py::get_override(this, "compute_next_value");
-    if (!py_override)
-        throw std::runtime_error("compute_next_value() not implemented in Python subclass");
-    (void) py_override();  // The cast tells the IDE that discarding the return value is intentional
+    PYBIND11_OVERRIDE_PURE(void, OptimizationLoop, _updateParameters, );
+    // // I want to use a different name for the Python method, so the macros won't do here
+    // py::gil_scoped_acquire gil;
+    // const py::function py_override = py::get_override(this, "update_parameters");
+    // if (!py_override)
+    //     throw std::runtime_error("update_parameters() not implemented in Python subclass");
+    // (void) py_override();  // The cast tells the IDE that discarding the return value is intentional
 }
 
 std::string OptimizationLoop_Trampoline::getClassName() const
@@ -87,12 +88,15 @@ void moduleAddOptimizationLoop(const pybind11::module& m)
         f(m, pyclass_name.c_str(), py::dynamic_attr(), py::multiple_inheritance());
 
     f.def(py::init(&OptimizationLoop_Trampoline::create));
-    f.def("init", &OptimizationLoop::init);
-    f.def("bwdInit", &OptimizationLoop::bwdInit);
-    f.def("resetOptimization", &OptimizationLoop::resetOptimization);
-    f.def("compute_next_value", [](OptimizationLoop&) {
-        throw std::runtime_error("compute_next_value() must be overridden in a subclass");
-    }); // This def() exposes the method that has to be overridden by the derived class, for documentation purposes
+    f.def("_allocate", &OptimizationLoop::_allocate);
+    f.def("_initialize", &OptimizationLoop::_initialize);
+    f.def("_processSimulation", &OptimizationLoop::_processSimulation);
+    f.def("_updateParameters", &OptimizationLoop::_updateParameters);
+    f.def("updateParameters", &OptimizationLoop::updateParameters);
+
+    // [](OptimizationLoop&) {
+    //     throw std::runtime_error("compute_next_value() must be overridden in a subclass");
+    // }); // This def() exposes the method that has to be overridden by the derived class, for documentation purposes
 
     f.def_property_readonly("parameters", [](const OptimizationLoop& self) {
         std::vector<BaseParameter*> parameters;

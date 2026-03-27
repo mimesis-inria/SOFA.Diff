@@ -14,8 +14,8 @@ class SOFA_SOFADIFF_API GradientBasedOptimizationLoop: public OptimizationLoop
 public:
     SOFA_ABSTRACT_CLASS(GradientBasedOptimizationLoop, OptimizationLoop);
 
-    void processSimulation(const ExecParams *params, SReal dt) override;
-    void setParametersNextValue() override = 0;
+    void _processSimulation(const ExecParams *params, SReal dt) override;
+    void _updateParameters() override = 0;  // Just a reminder of the abstractness of the class
 private:
     void initializeSimulationLink() override;
 };

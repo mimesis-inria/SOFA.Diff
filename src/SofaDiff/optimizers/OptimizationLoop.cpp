@@ -14,7 +14,7 @@ OptimizationLoop::OptimizationLoop():
     l_parameters(initLink("parameters", "Link to the parameters to optimize")),
     d_maxOptimizationSteps(initData(&d_maxOptimizationSteps, "maxOptimizationSteps", "Maximum number of optimization steps for the optimization to be complete. Default is 0, meaning indefinite optimization.")),
     d_maxSimulationSteps(initData(&d_maxSimulationSteps, 1, "maxSimulationSteps", "Maximum number of simulation steps to optimize. 0 means as many as required for the simulation to be complete. Default is 1.")),
-    m_readyToUpdateParameters(false),
+    m_readyToApplyUpdate(false),
     m_currentOptimizationStep(0),
     m_lowestLossValue(std::numeric_limits<SReal>::max()),
     m_startingTime(0)
@@ -23,7 +23,15 @@ OptimizationLoop::OptimizationLoop():
 void OptimizationLoop::init()
 {
     Inherit1::init();
+    this->allocate();
+    this->initialize();
 
+    if (this->d_componentState.getValue() != ComponentState::Invalid)
+        this->d_componentState.setValue(ComponentState::Valid);
+}
+
+void OptimizationLoop::allocate()
+{
     this->initializeSimulationLink();
 
     this->initializeParametersLink();
@@ -39,8 +47,16 @@ void OptimizationLoop::init()
     m_startingPositionId = newVecId<V_COORD>(rootContext, "startingPosition", this->getClassName());
     m_startingVelocityId = newVecId<V_DERIV>(rootContext, "startingVelocity", this->getClassName());
 
-    if (this->d_componentState.getValue() != ComponentState::Invalid)
-        this->d_componentState.setValue(ComponentState::Valid);
+    this->_allocate();
+}
+
+void OptimizationLoop::initialize()
+{
+    m_currentOptimizationStep = 0;
+    m_readyToApplyUpdate = false;
+    m_lowestLossValue = std::numeric_limits<SReal>::max();
+
+    this->_initialize();
 }
 
 void OptimizationLoop::bwdInit()
@@ -60,12 +76,10 @@ void OptimizationLoop::step(const ExecParams *params, const SReal dt)
 
     this->enterParameterGroup();
 
-    this->updateParameters();
+    this->applyUpdate();
     this->computeLoss(params, dt);
     this->processSimulation(params, dt);
-    this->setParametersNextValue();
-    m_readyToUpdateParameters = true; // TODO: somehow put that in setParametersNextValue()
-
+    this->updateParameters();
     m_currentOptimizationStep++;
 
     this->leaveParameterGroup();
@@ -75,20 +89,13 @@ void OptimizationLoop::step(const ExecParams *params, const SReal dt)
     // 2. The actual update is delayed to the beginning of the next optimization step, to keep the consistency between
     //    the displayed value of the parameters and the displayed solution (computed with said value).
 
-    // This way of doing things is not very compatible with multiple OptimizationLoops: switching from one to another
-    // applies the update of the previous optimizer, and no reset occurs at any point. One way to fix the first point
-    // would be to have each optimizer have its "own" nextValue for each parameter. For the second point, some
-    // optimizers should be reset when "switched out" (e.g. gradient descent, because the gradient is no longer valid),
-    // but others should not (e.g. grid search, because the different steps are independent). Unless they optimize
-    // different parameters... But this is not a feature provided for now.
-
     // Also, the computing of the parameters' next value should not change the state of the simulation, so that the
     // step() ends showing the final state, which is typically the most interesting one. If that is not possible (e.g.
     // for computing the gradient in the dynamic case), then the final state should be stored before the computations,
     // and retrieved afterward.
 }
 
-void OptimizationLoop::setBestParameters(const ExecParams *params, const SReal dt)
+void OptimizationLoop::retrieveBestParameters(const ExecParams *params, const SReal dt)
 {
     this->enterParameterGroup();
 
@@ -107,9 +114,9 @@ void OptimizationLoop::resetOptimization()
     if (!isResetOptimizationAllowed())
         return;
 
-    m_currentOptimizationStep = 0;
-    m_readyToUpdateParameters = false;
-    m_lowestLossValue = std::numeric_limits<SReal>::max();
+    this->enterParameterGroup();
+    this->initialize();
+    this->leaveParameterGroup();
 }
 
 void OptimizationLoop::setStartingState()
@@ -132,7 +139,7 @@ bool OptimizationLoop::isStepAllowed() const
     return true;
 }
 
-bool OptimizationLoop::isSetBestParametersAllowed() const
+bool OptimizationLoop::isRetrieveBestParametersAllowed() const
 {
     if (this->d_componentState.getValue() != ComponentState::Valid)
         return false;
@@ -159,15 +166,15 @@ bool OptimizationLoop::isSetStartingStateAllowed() const
     return true;
 }
 
-void OptimizationLoop::updateParameters()
+void OptimizationLoop::applyUpdate()
 {
-    if (m_readyToUpdateParameters)
+    if (m_readyToApplyUpdate)
     {
         for (auto & parameter : l_parameters)
         {
             parameter->setDataFrom("value", "nextValue");
         }
-        m_readyToUpdateParameters = false;
+        m_readyToApplyUpdate = false;
     }
 }
 
@@ -184,12 +191,8 @@ void OptimizationLoop::computeLoss(const ExecParams *params, const SReal dt)
     for (int i = 0; i < simulationSteps; i++)
         l_simulationLoop->step(params, dt);
 }
-
 void OptimizationLoop::processSimulation(const ExecParams *params, SReal dt)
 {
-    SOFA_UNUSED(params);
-    SOFA_UNUSED(dt);
-
     SReal loss = 0;
     std::vector<LossState*> losses;
     this->getContext()->get<LossState>(&losses, BaseContext::SearchDown);
@@ -200,10 +203,16 @@ void OptimizationLoop::processSimulation(const ExecParams *params, SReal dt)
     {
         m_lowestLossValue = loss;
         for (auto & parameter : l_parameters)
-        {
             parameter->setDataFrom("bestValue", "value");
-        }
     }
+
+    this->_processSimulation(params, dt);
+}
+
+void OptimizationLoop::updateParameters()
+{
+    this->_updateParameters();
+    m_readyToApplyUpdate = true;
 }
 
 void OptimizationLoop::initializeSimulationLink()

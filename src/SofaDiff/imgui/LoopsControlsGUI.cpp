@@ -116,12 +116,12 @@ void LoopsControlsGUI::doDrawOptimizer(const core::sptr<simulation::Node>& groot
         optimizer->setMaxSimulationSteps(maxSimulationSteps);
 
     ImGui::SameLine(0, 30);
-    ImGui::BeginDisabled(!optimizer->isSetBestParametersAllowed());
+    ImGui::BeginDisabled(!optimizer->isRetrieveBestParametersAllowed());
     clicked = ImGui::Button(std::string(ICON_FA_STAR).append(suffix).c_str());
     ImGui::SetItemTooltip("Retrieve the best parameters found so far");
     ImGui::EndDisabled();
     if (clicked)
-        optimizer->setBestParameters(params, dt);
+        optimizer->retrieveBestParameters(params, dt);
 }
 
 void LoopsControlsGUI::doDrawDifferentiableSimulator(const core::sptr<simulation::Node>& groot, DifferentiableAnimationLoop * simulator)
