@@ -32,14 +32,14 @@ namespace sofadiff
 void ParameterizedTetrahedronFEMForceField::init()
 {
     TetrahedronFEMForceField::init();
-    initParameter(d_youngModulus, m_youngModulusGradient);
+    m_youngModulusParameter = initParameter(d_youngModulus);
     checkForNotImplementedParameters(this->getDataFields());
 }
 
 
 void ParameterizedTetrahedronFEMForceField::applyParametersJacobianTranspose(const core::MechanicalParams* mparams, const core::MultiVecDerivId vecId)
 {
-    if (m_youngModulusGradient == nullptr)
+    if (m_youngModulusParameter == nullptr)
     {
         msg_warning() << "ParameterizedTetrahedronFEMForceField::applyParametersJacobianTranspose() skipped: no parameter to optimize. Consider using TetrahedronFEMForceField instead. Or not?";
         return;
@@ -61,7 +61,7 @@ void ParameterizedTetrahedronFEMForceField::applyParametersJacobianTranspose(con
 
     // Apply the jacobian: gradient += dot(jacobian, vector)
     const auto youngModulus = this->d_youngModulus.getValue()[0];
-    auto youngModulusGradient = helper::getWriteAccessor(*m_youngModulusGradient);
+    auto youngModulusGradient = helper::getWriteAccessor(m_youngModulusParameter->d_gradient);
     for (unsigned int i=0; i < writeAccess->size(); i++)
     {
         youngModulusGradient[0] += dot((*writeAccess)[i], vector[i]) / youngModulus;

@@ -32,26 +32,40 @@ class SOFA_SOFADIFF_API BaseParameter: public core::objectmodel::BaseObject
 {
 public:
     SOFA_CLASS(BaseParameter, core::objectmodel::BaseObject);
-
-    virtual void resetGradient() = 0;
-    virtual const type::vector<SReal> & getValueVector() const = 0;
-    virtual const type::vector<SReal> & getNextValueVector() const = 0;
-    virtual const type::vector<SReal> & getBestValueVector() const = 0;
-    virtual const type::vector<SReal> & getGradientVector() const = 0;
-    virtual void setValueVector(const type::vector<SReal> & vector) = 0;
-    virtual void setNextValueVector(const type::vector<SReal> & vector) = 0;
-    virtual void setBestValueVector(const type::vector<SReal> & vector) = 0;
-    virtual void updateValue() = 0;
-    virtual void storeBestValue() = 0;
-    virtual void retrieveBestValue() = 0;
-
     void parse(core::objectmodel::BaseObjectDescription *arg) override;
-    bool hasHyperparameter(const std::string &hyperparameterName) const;
-    SReal getHyperparameter(const std::string &hyperparameterName) const;
 
-private:
-    // To prevent memory leak
-    std::vector<std::unique_ptr<Data<SReal>>> m_dynamicallyCreatedData;
+    virtual size_t getVectorSize() const = 0;
+
+    // Operations on the default Data — implemented in template class because needs access to said Data
+    virtual void setValue(const SReal & constant) = 0;
+    virtual void setValue(const type::vector<SReal> & vector) = 0;
+    virtual const type::vector<SReal> & getValue() const = 0;
+
+    virtual void setGradient(const SReal & constant) = 0;
+    virtual void setGradient(const type::vector<SReal> & vector) = 0;
+    virtual const type::vector<SReal> & getGradient() const = 0;
+
+    // Operations on Data in an arbitrary group
+    std::string getDataInGroupFullName(const std::string & dataName, const std::string & dataGroup) const;
+
+    core::BaseData * findDataInGroup(const std::string & dataName, const std::string & dataGroup) const;
+    virtual void newDataInGroup(const std::string & dataName, const std::string & dataGroup) = 0;
+
+    virtual void setDataInGroupFromConstant(const std::string & dataName, const std::string & dataGroup, SReal constant) = 0;
+    virtual void setDataInGroupFromVector(const std::string & dataName, const std::string & dataGroup, const type::vector<SReal> & vector) = 0;
+    virtual const type::vector<SReal> & getVectorFromDataInGroup(const std::string & dataName, const std::string & dataGroup) const = 0;
+
+    virtual void setValueFromDataInGroup(const std::string & dataName, const std::string & dataGroup) = 0;
+    virtual void setDataInGroupFromValue(const std::string & dataName, const std::string & dataGroup) = 0;
+
+    // Operations on Data in the hyperparameters group
+    bool hasHyperparameter(const std::string & dataName) const;
+    void newHyperparameter(const std::string & dataName);
+    void setHyperparameter(const std::string & dataName, SReal constant);
+    void setHyperparameter(const std::string & dataName, const std::vector<SReal> & vector);
+    const std::vector<SReal> & getHyperparameter(const std::string & dataName) const;
+protected:
+    static constexpr std::string m_hyperparametersGroup = "Hyperparameters";
 };
 
 
@@ -61,31 +75,39 @@ class SOFA_SOFADIFF_API Parameter: public BaseParameter
 public:
     SOFA_CLASS(Parameter, BaseParameter);
 
+    Parameter();
     Data<T> d_value;
-    Data<T> d_nextValue;
-    Data<T> d_bestValue;
     Data<T> d_gradient;
 
-protected:
-    virtual const type::vector<SReal>& getVectorFromData(const Data<T> & data) const;
-    virtual void setDataFromVector(Data<T> & data, const type::vector<SReal> &vector);
+    // Operations on the default Data
+    void setValue(const SReal & value) override;
+    void setValue(const type::vector<SReal> & value) override;
+    const type::vector<SReal> & getValue() const override;
 
-public:
-    Parameter();
+    void setGradient(const SReal & value) override;
+    void setGradient(const type::vector<SReal> & value) override;
+    const type::vector<SReal> & getGradient() const override;
 
+    // Operations on data in an arbitrary group
+    Data<T> * getDataPointer(const std::string & dataName, const std::string & dataGroup) const;
+
+    void newDataInGroup(const std::string & dataName, const std::string & dataGroup) override;
+
+    void setDataInGroupFromConstant(const std::string & dataName, const std::string & dataGroup, SReal constant) override;
+    void setDataInGroupFromVector(const std::string & dataName, const std::string & dataGroup, const type::vector<SReal> & vector) override;
+    const type::vector<SReal> & getVectorFromDataInGroup(const std::string & dataName, const std::string & dataGroup) const override;
+
+    void setValueFromDataInGroup(const std::string & dataName, const std::string & dataGroup) override;
+    void setDataInGroupFromValue(const std::string & dataName, const std::string & dataGroup) override;
+
+private:
+    type::vector<std::unique_ptr<Data<T>>> m_dataInGroups;
+
+    // Methods to be specialized
     static std::string GetCustomClassName();
-
-    void resetGradient() override;
-    const type::vector<SReal> & getValueVector() const override;
-    const type::vector<SReal> & getNextValueVector() const override;
-    const type::vector<SReal> & getBestValueVector() const override;
-    const type::vector<SReal> & getGradientVector() const override;
-    void setValueVector(const type::vector<SReal>& vector) override;
-    void setNextValueVector(const type::vector<SReal>& vector) override;
-    void setBestValueVector(const type::vector<SReal>& vector) override;
-    void updateValue() override { d_value.setValue(d_nextValue.getValue()); }
-    void storeBestValue() override { d_bestValue.setValue(d_value.getValue()); }
-    void retrieveBestValue() override { d_value.setValue(d_bestValue.getValue()); }
+    void setDataFromVector(Data<T> & data, const type::vector<SReal> &vector);
+    const type::vector<SReal> & getVectorFromData(const Data<T> & data) const;
+    size_t getVectorSize() const override;
 };
 
 }

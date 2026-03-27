@@ -24,6 +24,8 @@ void GradientBasedOptimizationLoop::initializeSimulationLink()
 
 void GradientBasedOptimizationLoop::processSimulation(const ExecParams *params, SReal dt)
 {
+    OptimizationLoop::processSimulation(params, dt);
+
     const auto simulationLoop = dynamic_cast<DifferentiableAnimationLoop*>(l_simulationLoop.get());
     if (!simulationLoop)
     {

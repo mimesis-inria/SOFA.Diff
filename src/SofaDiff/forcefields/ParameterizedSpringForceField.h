@@ -44,8 +44,10 @@ public:
     SOFA_CLASS(ParameterizedSpringForceField, SpringForceField<Vec3Types>);
 
     // TODO: Is a pointer the correct type to use here?
-    Data<type::vector<SReal>> * m_lengthGradient;
-    Data<type::vector<SReal>> * m_stiffnessGradient;
+    // Data<type::vector<SReal>> * m_lengthGradient;
+    // Data<type::vector<SReal>> * m_stiffnessGradient;
+    Parameter<type::vector<SReal>> * m_lengthParameter;
+    Parameter<type::vector<SReal>> * m_stiffnessParameter;
 
     void init() override;
 

@@ -53,7 +53,7 @@ protected:
     static BaseParameter* getParentParameter(const core::BaseData * data);
 
     template<class T>
-    void initParameter(Data<T> & data, Data<T> * & gradientPtr);
+    Parameter<T> * initParameter(Data<T> & data);
 
     void checkForNotImplementedParameters(const type::vector<core::BaseData *> & dataFields) const;
 };
@@ -66,22 +66,22 @@ class ParameterizedForceField: public Parameterized, virtual public core::behavi
 
 
 template<class T>
-void Parameterized::initParameter(Data<T> &data, Data<T> *&gradientPtr)
+Parameter<T> * Parameterized::initParameter(Data<T> &data)
 {
     m_canBeTrained.insert(&data);
 
     auto * parameter = getParentParameter(&data);
     if (parameter == nullptr)
-        return;
+        return nullptr;
 
     auto * parameterVector = dynamic_cast<Parameter<T>*>(parameter);
     if (parameterVector == nullptr)
     {
         msg_error() << data.getName() << " parameter must be a " << Parameter<T>::GetCustomClassName();
-        return;
+        return nullptr;
     }
 
-    gradientPtr = &parameterVector->d_gradient;
+    return parameterVector;
 }
 
 }

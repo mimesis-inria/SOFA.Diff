@@ -29,6 +29,9 @@
 namespace sofadiff
 {
 
+// ==============================================================================
+// Base class methods
+// ==============================================================================
 void BaseParameter::parse(core::objectmodel::BaseObjectDescription *arg)
 {
     BaseObject::parse(arg);
@@ -37,46 +40,69 @@ void BaseParameter::parse(core::objectmodel::BaseObjectDescription *arg)
     {
         if (!attribute.isAccessed())
         {
-            auto * data = new Data<SReal>(std::stod(attribute.c_str())); // Silently ignores additional values
-            data->setName(name);
-            this->addData(data, name);
-            m_dynamicallyCreatedData.emplace_back(data);
+            if (!this->hasHyperparameter(name))
+                this->newHyperparameter(name);
+            else
+                msg_warning() << "Hyperparameter " << name << " is defined multiple times.";
+            const auto value = std::stod(attribute.c_str()); // Silently ignores additional values
+            this->setHyperparameter(name, value);
             arg->removeAttribute(name);
         }
     }
 }
 
-bool BaseParameter::hasHyperparameter(const std::string &hyperparameterName) const
+std::string BaseParameter::getDataInGroupFullName(const std::string &dataName, const std::string &dataGroup) const
 {
-    const auto * baseData = this->findData(hyperparameterName);
-    return baseData != nullptr;
+    const auto name = std::string("").append(dataName).append(" [").append(dataGroup).append("]");
+    return name;
 }
 
-SReal BaseParameter::getHyperparameter(const std::string &hyperparameterName) const
+core::BaseData * BaseParameter::findDataInGroup(const std::string &dataName, const std::string &dataGroup) const
 {
-    const auto * baseData = this->findData(hyperparameterName);
-    if (baseData == nullptr)
-    {
-        msg_error() << "Parameter " << this->getName() << " does not have hyperparameter " << hyperparameterName;
-        return 0.0;
-    }
+    const auto name = this->getDataInGroupFullName(dataName, dataGroup);
+    return this->findData(name);
+}
 
-    const auto * data = dynamic_cast<const Data<SReal>*>(baseData);
-    if (data == nullptr)
-    {
-        // Unlikely to trigger since the parsing converts the string value of the hyperparameter to a double with std::stod()
-        msg_error() << "Hyperparameter " << hyperparameterName << " of parameter " << this->getName() << " is not a scalar";
-        return 0.0;
-    }
+// Operations on hyperparameters
+bool BaseParameter::hasHyperparameter(const std::string & dataName) const
+{
+    return this->findDataInGroup(dataName, m_hyperparametersGroup) != nullptr;
+}
 
-    return data->getValue();
+void BaseParameter::newHyperparameter(const std::string & dataName)
+{
+    this->newDataInGroup(dataName, m_hyperparametersGroup);
+}
+
+void BaseParameter::setHyperparameter(const std::string & dataName, const SReal constant)
+{
+    this->setDataInGroupFromConstant(dataName, m_hyperparametersGroup, constant);
+}
+
+void BaseParameter::setHyperparameter(const std::string & dataName, const std::vector<SReal> & vector)
+{
+    this->setDataInGroupFromVector(dataName, m_hyperparametersGroup, vector);
+}
+
+const std::vector<SReal> & BaseParameter::getHyperparameter(const std::string & dataName) const
+{
+    return this->getVectorFromDataInGroup(dataName, m_hyperparametersGroup);
 }
 
 
+// ==============================================================================
+// Specialization for type::vector<SReal>
+// ==============================================================================
 template<>
 std::string Parameter<type::vector<SReal>>::GetCustomClassName()
 {
     return "TrainableParameterVector";
+}
+
+template<>
+void Parameter<type::vector<SReal>>::setDataFromVector(Data<type::vector<SReal>> & data, const type::vector<SReal> & vector)
+{
+    data.setValue(vector);
 }
 
 template<>
@@ -86,16 +112,25 @@ const type::vector<SReal>& Parameter<type::vector<SReal>>::getVectorFromData(con
 }
 
 template<>
-void Parameter<type::vector<SReal>>::setDataFromVector(Data<type::vector<SReal>> & data, const type::vector<SReal> & vector)
+size_t Parameter<type::vector<SReal>>::getVectorSize() const
 {
-    data.setValue(vector);
+    return d_value.getValue().size();
 }
 
 
+// ==============================================================================
+// Specialization for SReal
+// ==============================================================================
 template<>
 std::string Parameter<SReal>::GetCustomClassName()
 {
     return "TrainableParameterScalar";
+}
+
+template<>
+void Parameter<SReal>::setDataFromVector(Data<SReal> & data, const type::vector<SReal> & vector)
+{
+    data.setValue(vector[0]);
 }
 
 template<>
@@ -105,12 +140,15 @@ const type::vector<SReal>& Parameter<SReal>::getVectorFromData(const Data<SReal>
 }
 
 template<>
-void Parameter<SReal>::setDataFromVector(Data<SReal> & data, const type::vector<SReal> & vector)
+size_t Parameter<double>::getVectorSize() const
 {
-    data.setValue(vector[0]);
+    return 1;
 }
 
 
+// ==============================================================================
+// Registering
+// ==============================================================================
 void registerTrainableParameter(core::ObjectFactory* factory)
 {
     factory->registerObjects(core::ObjectRegistrationData("Trainable parameter of vector type.").add< Parameter<type::vector<SReal>> >());

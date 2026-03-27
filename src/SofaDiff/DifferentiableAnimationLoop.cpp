@@ -72,7 +72,10 @@ void DifferentiableAnimationLoop::stepAdjoint(const ExecParams* params, const SR
     std::vector<AdjointSolver*> adjoints;
     this->getContext()->get<AdjointSolver>(&adjoints, BaseContext::SearchDown);
     for (const auto adjoint : adjoints)
+    {
+        adjoint->resetGradients(params);  // Only for static
         adjoint->solve(params, dt, vec_id::write_access::position, vec_id::write_access::velocity);
+    }
 }
 
 void DifferentiableAnimationLoop::resetAdjoint(const ExecParams* params)

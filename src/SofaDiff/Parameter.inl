@@ -21,69 +21,131 @@
  ******************************************************************************/
 #pragma once
 
-#include <SofaDiff/config.h>
 #include <SofaDiff/Parameter.h>
 
 namespace sofadiff
 {
 
 template<class T>
-Parameter<T>::Parameter()
-: d_value(initData(&d_value, "value", "Value of the parameter"))
-, d_nextValue(initData(&d_nextValue, "nextValue", "Next value of the parameter (during optimization)"))
-, d_bestValue(initData(&d_bestValue, "bestValue", "Best value of the parameter so far (during optimization)"))
-, d_gradient(initData(&d_gradient, "gradient", "Gradient of the parameter"))
+Parameter<T>::Parameter():
+    d_value(initData(&d_value, "value", "value of the parameter")),
+    d_gradient(initData(&d_gradient, "gradient", "Gradient of the parameter"))
 {}
 
+// ==============================================================================
+// Operations on the default Data<T>
+// ==============================================================================
 template<class T>
-void Parameter<T>::resetGradient()
+void Parameter<T>::setValue(const SReal & value)
 {
-    // Not optimal, but works for all T
-    const auto vector = getVectorFromData(d_value);
-    const type::vector<SReal> gradient(vector.size(), 0.0);
-    setDataFromVector(d_gradient, gradient);
+    this->setDataFromVector(d_value, type::vector<SReal>(this->getVectorSize(), value));
 }
 
 template<class T>
-const type::vector<SReal> & Parameter<T>::getValueVector() const
+void Parameter<T>::setValue(const type::vector<SReal> & value)
 {
-    return getVectorFromData(d_value);
+    this->setDataFromVector(d_value, value);
 }
 
 template<class T>
-const type::vector<SReal> & Parameter<T>::getNextValueVector() const
+const type::vector<SReal> & Parameter<T>::getValue() const
 {
-    return getVectorFromData(d_nextValue);;
+    return this->getVectorFromData(d_value);
 }
 
 template<class T>
-const type::vector<SReal> & Parameter<T>::getBestValueVector() const
+void Parameter<T>::setGradient(const SReal & value)
 {
-    return getVectorFromData(d_bestValue);;
+    this->setDataFromVector(d_gradient, type::vector<SReal>(this->getVectorSize(), value));
 }
 
 template<class T>
-const type::vector<SReal> & Parameter<T>::getGradientVector() const
+void Parameter<T>::setGradient(const type::vector<SReal> & value)
 {
-    return getVectorFromData(d_gradient);
+    this->setDataFromVector(d_gradient, value);
 }
 
 template<class T>
-void Parameter<T>::setValueVector(const type::vector<SReal>& vector)
+const type::vector<SReal> & Parameter<T>::getGradient() const
 {
-    setDataFromVector(d_value, vector);
+    return this->getVectorFromData(d_gradient);
+}
+
+
+// ==============================================================================
+// Operations on data in an arbitrary group
+// ==============================================================================
+template<class T>
+void Parameter<T>::newDataInGroup(const std::string & dataName, const std::string & dataGroup)
+{
+    auto name = this->getDataInGroupFullName(dataName, dataGroup);
+    auto * data = new Data<T>();
+    data->setName(name);
+    data->setGroup(dataGroup);
+    this->addData(data, name);
+    m_dataInGroups.emplace_back(data);
 }
 
 template<class T>
-void Parameter<T>::setNextValueVector(const type::vector<SReal>& vector)
+Data<T> * Parameter<T>::getDataPointer(const std::string &dataName, const std::string &dataGroup) const
 {
-    setDataFromVector(d_nextValue, vector);
+    const auto name = this->getDataInGroupFullName(dataName, dataGroup);
+    auto * baseData = this->findData(name);
+    if (baseData == nullptr || baseData->getGroup() != dataGroup)
+    {
+        msg_error() << "Does not have Data '" << dataName << "' in group '" << dataGroup << "'.";
+        return nullptr;
+    }
+    auto * data = dynamic_cast<Data<T>*>(baseData);
+    if (data == nullptr)
+    {
+        msg_error() << "Data '" << dataName << "' in group '" << dataGroup << "' is not of the correct type";
+        return nullptr;
+    }
+    return data;
+}
+
+
+template<class T>
+void Parameter<T>::setDataInGroupFromConstant(const std::string & dataName, const std::string & dataGroup, SReal constant)
+{
+    this->setDataInGroup(dataName, dataGroup, type::vector(this->getVectorSize(), constant));
 }
 
 template<class T>
-void Parameter<T>::setBestValueVector(const type::vector<SReal>& vector)
+void Parameter<T>::setDataInGroupFromVector(const std::string & dataName, const std::string & dataGroup, const type::vector<SReal> & vector)
 {
-    setDataFromVector(d_bestValue, vector);
+    auto * data = this->getDataPointer(dataName, dataGroup);
+    if (data == nullptr)  // Note: getDataPointer() already printed an error message
+        return;
+    this->setDataFromVector(*data, vector);
+}
+
+template<class T>
+const type::vector<SReal> & Parameter<T>::getVectorFromDataInGroup(const std::string & dataName, const std::string & dataGroup) const
+{
+    const auto * data = this->getDataPointer(dataName, dataGroup);
+    if (data == nullptr)  // Note: getDataPointer() already printed an error message
+        return type::vector<SReal>();
+    return this->getVectorFromData(*data);
+}
+
+template<class T>
+void Parameter<T>::setValueFromDataInGroup(const std::string & dataName, const std::string & dataGroup)
+{
+    auto * data = this->getDataPointer(dataName, dataGroup);
+    if (data == nullptr)  // Note: getDataPointer() already printed an error message
+        return;
+    d_value.setValue(data->getValue());
+}
+
+template<class T>
+void Parameter<T>::setDataInGroupFromValue(const std::string & dataName, const std::string & dataGroup)
+{
+    auto * data = this->getDataPointer(dataName, dataGroup);
+    if (data == nullptr)  // Note: getDataPointer() already printed an error message
+        return;
+    data->setValue(d_value.getValue());
 }
 
 }

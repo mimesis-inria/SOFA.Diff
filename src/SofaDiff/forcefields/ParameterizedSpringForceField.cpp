@@ -10,8 +10,8 @@ namespace sofadiff
 void ParameterizedSpringForceField::init()
 {
     SpringForceField::init();
-    initParameter(d_ks, m_stiffnessGradient);
-    initParameter(d_lengths, m_lengthGradient);
+    m_stiffnessParameter = initParameter(d_ks);
+    m_lengthParameter = initParameter(d_lengths);
     checkForNotImplementedParameters(this->getDataFields());
 }
 
@@ -19,7 +19,7 @@ void ParameterizedSpringForceField::init()
 void ParameterizedSpringForceField::applyParametersJacobianTranspose(const core::MechanicalParams* mparams, const core::MultiVecDerivId vecId)
 {
     // Skip if there is nothing to optimize
-    if (m_stiffnessGradient == nullptr && m_lengthGradient == nullptr)
+    if (m_stiffnessParameter == nullptr && m_lengthParameter == nullptr)
     {
         msg_warning() << "ParameterizedSpringForceField::applyParametersJacobianTranspose() skipped: no parameter to optimize. Consider using SpringForceField instead. Or not?";
         return;
@@ -61,15 +61,15 @@ void ParameterizedSpringForceField::applyParametersJacobianTranspose(const core:
             // (dF/dk_s)^T @ v = (l-l_0).dot(U, v)
             u /= d;
             const Real elongation = d - spring.initpos;
-            if (m_stiffnessGradient != nullptr)
+            if (m_stiffnessParameter != nullptr)
             {
-                auto stiffnessGradient = helper::getWriteAccessor(*m_stiffnessGradient);
+                auto stiffnessGradient = helper::getWriteAccessor(m_stiffnessParameter->d_gradient);
                 stiffnessGradient[i] += elongation * dot(u, DataTypes::getDPos(v1[a]) - DataTypes::getDPos(v2[b]));
                 // stiffnessGradient[i] += 0.1 * 2 * spring.ks * elongation;  // Penalization
             }
-            if (m_lengthGradient != nullptr)
+            if (m_lengthParameter != nullptr)
             {
-                auto lengthGradient = helper::getWriteAccessor(*m_lengthGradient);
+                auto lengthGradient = helper::getWriteAccessor(m_lengthParameter->d_gradient);
                 lengthGradient[i] += -spring.ks * dot(u, DataTypes::getDPos(v1[a]) - DataTypes::getDPos(v2[b]));
                 // lengthGradient[i] += -0.1 * 2 * spring.ks * elongation;  // Penalization
             }

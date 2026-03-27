@@ -1,4 +1,5 @@
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>  // Actually used
 
 #include <SofaDiff/bindings/Binding_Parameter.h>
 #include <SofaDiff/Parameter.h>
@@ -18,25 +19,18 @@ void declareBaseParameter(const py::module &m) {
     py::class_<BaseParameter, py_shared_ptr<BaseParameter>> f(m, pyclass_name.c_str());
     f.def("__repr__", [](const BaseParameter & self) { return "<Parameter '" + self.getName() + "'>"; });
 
-    f.def_property("next_value",
-        [](const BaseParameter & self) {
-            const auto& next_value = self.getNextValueVector();
-            return py::array(next_value.size(), next_value.data());
-        },
-        [] (BaseParameter& self, const py::array_t<SReal>& next_value) {
-            const auto v = py::cast<py::array_t<SReal>>(next_value);
-            self.setNextValueVector(std::vector(v.data(), v.data() + v.size()));
-        }
-    );
+    // f.def("get_data_in_group", &BaseParameter::getDataInGroup);
+    // f.def("set_data_in_group", &BaseParameter::getDataInGroup);
+
     f.def_property_readonly("value",
         [](const BaseParameter & self) {
-            const auto& value = self.getValueVector();
+            const auto& value = self.getValue();
             return py::array(value.size(), value.data());
         }
     );
     f.def_property_readonly("gradient",
         [](const BaseParameter & self) {
-            const auto& gradient = self.getGradientVector();
+            const auto& gradient = self.getGradient();
             return py::array(gradient.size(), gradient.data());
         }
     );

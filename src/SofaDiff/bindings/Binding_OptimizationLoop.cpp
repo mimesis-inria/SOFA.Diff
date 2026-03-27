@@ -93,6 +93,9 @@ void moduleAddOptimizationLoop(const pybind11::module& m)
     f.def("compute_next_value", [](OptimizationLoop&) {
         throw std::runtime_error("compute_next_value() must be overridden in a subclass");
     }); // This def() exposes the method that has to be overridden by the derived class, for documentation purposes
+    f.def("create_parameter_data", &OptimizationLoop::createParameterData);
+    f.def("set_parameter_data", &OptimizationLoop::setParameterData);
+    f.def("get_parameter_data", &OptimizationLoop::getParameterData);
 
     f.def_property_readonly("parameters", [](const OptimizationLoop& self) {
         std::vector<BaseParameter*> parameters;

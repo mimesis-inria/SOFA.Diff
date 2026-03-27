@@ -27,6 +27,11 @@ void OptimizationLoop::init()
     this->initializeSimulationLink();
 
     this->initializeParametersLink();
+    for (const auto& parameter : l_parameters)
+    {
+        parameter->newDataInGroup("nextValue", this->getName());
+        parameter->newDataInGroup("bestValue", this->getName());
+    }
 
     BaseContext * rootContext = this->getContext()->getRootContext();
     m_startingPositionId = newVecId<V_COORD>(rootContext, "startingPosition", this->getClassName());
@@ -78,7 +83,7 @@ void OptimizationLoop::step(const ExecParams *params, const SReal dt)
 void OptimizationLoop::setBestParameters(const ExecParams *params, const SReal dt)
 {
     for (auto & parameter : l_parameters)
-        parameter->retrieveBestValue();
+        parameter->setValueFromDataInGroup("bestValue", this->getName());
     this->computeLoss(params, dt);
 }
 
@@ -144,7 +149,7 @@ void OptimizationLoop::updateParameters()
     if (m_readyToUpdateParameters)
     {
         for (auto & parameter : l_parameters)
-            parameter->updateValue();
+            parameter->setValueFromDataInGroup("nextValue", this->getName());
         m_readyToUpdateParameters = false;
     }
 }
@@ -178,7 +183,7 @@ void OptimizationLoop::processSimulation(const ExecParams *params, SReal dt)
     {
         m_lowestLossValue = loss;
         for (auto & parameter : l_parameters)
-            parameter->storeBestValue();
+            parameter->setDataInGroupFromValue("bestValue", this->getName());
     }
 }
 

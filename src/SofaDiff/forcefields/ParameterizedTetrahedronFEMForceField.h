@@ -46,7 +46,7 @@ public:
     using VecReal = VecReal_t<Vec3Types>;
 
     // TODO: Is a pointer the correct type to use here?
-    Data<VecReal> * m_youngModulusGradient;
+    Parameter<VecReal> * m_youngModulusParameter;
 
     void init() override;
 

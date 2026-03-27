@@ -82,10 +82,14 @@ class WriteDataController(Sofa.Core.Controller):
 # =====================================================================================================================
 import SofaDiff  # Don't forget that
 
+# TODO: Change interface to 'init_parameter(parameter)', 'get_parameter_next_value(parameter)', ...
+#       This way the Python method can return something, instead of having to set a Data that is difficult to access
+
 class RandomOptimizer(SofaDiff.OptimizationLoop):
     def compute_next_value(self):
         for parameter in self.parameters:
-            parameter.next_value = np.random.uniform(parameter["lowerBound"], parameter["upperBound"], size=parameter.value.shape)
+            next_value = np.random.uniform(parameter["lowerBound"], parameter["upperBound"], size=parameter.value.shape)
+            self.set_parameter_data(parameter, "nextValue", next_value)
 
 class MyGradientDescent(SofaDiff.GradientBasedOptimizationLoop):
     def __init__(self, *args, **kwargs):
@@ -168,11 +172,11 @@ def createScene(root):
 
     add_object("VisualStyle", displayFlags="showBehavior showBehaviorModels showForceFields showMappings")
 
-    add_object("GridSearchOptimizationLoop", name="cpp-grid-search", parameters="@/Parameters/stiffness")
+    # add_object("GridSearchOptimizationLoop", name="cpp-grid-search", parameters="@/Parameters/stiffness")
     # add_object("GradientDescentOptimizationLoop", name="cpp-gradient-descent", parameters="@/Parameters/stiffness")
     add_object(RandomOptimizer(name="numpy-random-search", parameters="@/Parameters/stiffness"))
     # add_object(MyGradientDescent(name="numpy-gradient-descent", parameters="@/Parameters/stiffness"))
-    add_object(OptaxGradientDescent(optax.sgd, name="optax-gradient-descent", parameters="@/Parameters/stiffness"))
+    # add_object(OptaxGradientDescent(optax.sgd, name="optax-gradient-descent", parameters="@/Parameters/stiffness"))
 
     add_object("DifferentiableAnimationLoop", name="differentiable-simulator", computeBoundingBox=False)
     # add_object("DefaultAnimationLoop", name="default-simulator", computeBoundingBox=False)
@@ -181,6 +185,7 @@ def createScene(root):
 
     with Node("Parameters"):
         add_object("TrainableParameterVector", name="stiffness", value="10", learningRate=1.0, lowerBound=1, upperBound=50, resolution=50)
+        add_object("TrainableParameterVector", name="mock", value="10 20 30", learningRate=1.0)
 
     with Node("Physics"):
         add_object("SparseLDLSolver", template="CompressedRowSparseMatrixd", name="solver", printLog="false")
