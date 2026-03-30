@@ -177,10 +177,10 @@ def createScene(root):
     add_object("DifferentiableAnimationLoop", name="differentiable-simulator", computeBoundingBox=False)
     # add_object("DefaultAnimationLoop", name="default-simulator", computeBoundingBox=False)
 
-    add_object("MechanicalObject", template="Vec3d", name="state", position="0 10 0")
+    add_object("MechanicalObject", template="Vec3d", name="state", position="-5 10 0  5 10 0")
 
     with Node("Parameters"):
-        add_object("TrainableParameterVector", name="stiffness", value="10", learningRate=1.0, lowerBound=1, upperBound=50, resolution=50)
+        add_object("TrainableParameterVector", name="stiffness", value="10 5", learningRate=1.0, lowerBound=1, upperBound=50, resolution=50)
         add_object("TrainableParameterVector", name="mock", value="10 20 30", learningRate=1.0)
 
     with Node("Physics"):
@@ -192,10 +192,10 @@ def createScene(root):
         add_object("MechanicalObject", template="Vec3d", name="state", position="0 0 0", showObject="true", drawMode="1", showObjectScale="0.1")
         add_object("UniformMass", template="Vec3d", name="mass", totalMass="10")
 
-        add_object("ParameterizedSpringForceField", name="spring", object1="@/Physics/state", indices1="0", object2="@/state", indices2="0", length="5", stiffness="@/Parameters/stiffness.value", damping=0)
+        add_object("ParameterizedSpringForceField", name="spring", object1="@/Physics/state", indices1="0 0", object2="@/state", indices2="0 1", length="5 5", stiffness="@/Parameters/stiffness.value", damping="0 0")
 
     with Node("Loss", tags="NoBBox"):
-        add_object("MechanicalObject", template="Vec3d", name="state", position="0 -2 0", showObject="true", drawMode="1", showObjectScale="0.08")
+        add_object("MechanicalObject", template="Vec3d", name="state", position="2 -2 0", showObject="true", drawMode="1", showObjectScale="0.08")
         with Node("Distance"):
             add_object("MechanicalObject", template="Vec1d", name="state", position="0")
             add_object("DistanceFromTargetMapping", input="@Physics/state", targetPositions="@/Loss/state.position")
