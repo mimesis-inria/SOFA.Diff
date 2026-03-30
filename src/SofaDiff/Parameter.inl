@@ -42,6 +42,12 @@ core::BaseData * Parameter<T>::newData(const std::string & dataName)
     }
 
     auto * data = new Data<T>();
+    if (data == nullptr)
+    {
+        msg_error() << "Can't create data " << dataName;
+        return nullptr;
+    }
+
     auto fullName = this->getFullName(dataName);
     data->setName(fullName);  // TODO: try giving it the 'dataName' to see if there is collision (my guess: in the GUI yes)
     if (!m_groupStack.empty())
@@ -89,6 +95,11 @@ void Parameter<T>::setDataFrom(const std::string & dataName, const type::vector<
     auto data = this->getData(dataName);
     if (data == nullptr)
         return;
+    if (vector.size() != this->getVectorSize())
+    {
+        msg_error() << "When trying to set '" << dataName<< "': expected " << this->getVectorSize() << " values, got " << vector.size() << ".";
+        return;
+    }
     this->vectorToData(*data, vector);
 }
 

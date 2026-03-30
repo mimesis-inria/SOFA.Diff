@@ -38,19 +38,39 @@ void BaseParameter::parse(core::objectmodel::BaseObjectDescription *arg)
     const auto map = arg->getAttributeMap();
     for (const auto&[name, attribute] : map)
     {
-        if (!attribute.isAccessed())
-        {
-            const auto constant = std::stod(attribute.c_str()); // Silently ignores additional values
-            auto * data = this->newData(name);
-            if (data != nullptr)
-            {
-                data->setGroup("Hyperparameters");
-                this->setDataFrom(name, constant);
-            }
-            arg->removeAttribute(name);
-        }
+        if (attribute.isAccessed())
+            continue;
+
+        this->addHyperparameter(name, attribute);
+        arg->removeAttribute(name);
     }
 }
+
+std::vector<double> parse_doubles(const std::string & s)
+{
+    std::istringstream iss(s);
+    std::vector<double> values;
+    double value;
+    while (iss >> value)
+        values.push_back(value);
+    return values;
+}
+
+void BaseParameter::addHyperparameter(const std::string & name, const std::string & value)
+{
+    auto * data = this->newData(name);
+    if (data == nullptr)
+        return;
+
+    const auto values = parse_doubles(value);
+    if (values.size() == 1)
+        this->setDataFrom(name, values[0]);
+    else
+        this->setDataFrom(name, values);
+
+    data->setGroup("Hyperparameters");
+}
+
 
 void BaseParameter::enterGroup(const std::string & groupName)
 {

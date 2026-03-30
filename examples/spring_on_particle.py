@@ -180,7 +180,7 @@ def createScene(root):
     add_object("MechanicalObject", template="Vec3d", name="state", position="-5 10 0  5 10 0")
 
     with Node("Parameters"):
-        add_object("TrainableParameterVector", name="stiffness", value="10 5", learningRate=1.0, lowerBound=1, upperBound=50, resolution=50)
+        add_object("TrainableParameterVector", name="stiffness", value="10 5", learningRate=(1, 0.5), lowerBound=1, upperBound=50, resolution=50)
         add_object("TrainableParameterVector", name="mock", value="10 20 30", learningRate=1.0)
 
     with Node("Physics"):
