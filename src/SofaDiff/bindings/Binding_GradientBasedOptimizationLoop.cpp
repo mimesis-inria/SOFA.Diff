@@ -36,22 +36,29 @@ py_shared_ptr<GradientBasedOptimizationLoop_Trampoline> GradientBasedOptimizatio
 
 void GradientBasedOptimizationLoop_Trampoline::_allocate()
 {
-    PYBIND11_OVERRIDE(void, GradientBasedOptimizationLoop, _allocate, );
+    py::gil_scoped_acquire gil;
+    const py::function py_override = py::get_override(this, "allocate");
+    if (!py_override)
+        return;  // throw std::runtime_error("allocate() not implemented in Python subclass");
+    (void) py_override();  // The cast tells the IDE that discarding the return value is intentional
 }
 
 void GradientBasedOptimizationLoop_Trampoline::_initialize()
 {
-    PYBIND11_OVERRIDE(void, GradientBasedOptimizationLoop, _initialize, );
-}
-
-void GradientBasedOptimizationLoop_Trampoline::_processSimulation(const ExecParams * params, SReal dt)
-{
-    PYBIND11_OVERRIDE(void, GradientBasedOptimizationLoop, _processSimulation, params, dt);
+    py::gil_scoped_acquire gil;
+    const py::function py_override = py::get_override(this, "initialize");
+    if (!py_override)
+        return;  // throw std::runtime_error("initialize() not implemented in Python subclass");
+    (void) py_override();  // The cast tells the IDE that discarding the return value is intentional
 }
 
 void GradientBasedOptimizationLoop_Trampoline::_updateParameters()
 {
-    PYBIND11_OVERRIDE_PURE(void, GradientBasedOptimizationLoop, _updateParameters, );
+    py::gil_scoped_acquire gil;
+    const py::function py_override = py::get_override(this, "update_parameters");
+    if (!py_override)
+        throw std::runtime_error("update_parameters() not implemented in Python subclass");
+    (void) py_override();  // The cast tells the IDE that discarding the return value is intentional
 }
 
 std::string GradientBasedOptimizationLoop_Trampoline::getClassName() const
@@ -86,10 +93,7 @@ void moduleAddGradientBasedOptimizationLoop(const pybind11::module& m)
         f(m, pyclass_name.c_str(), py::dynamic_attr(), py::multiple_inheritance());
 
     f.def(py::init(&GradientBasedOptimizationLoop_Trampoline::create));
-    f.def("_allocate", &GradientBasedOptimizationLoop::_allocate);
-    f.def("_initialize", &GradientBasedOptimizationLoop::_initialize);
-    f.def("_processSimulation", &GradientBasedOptimizationLoop::_processSimulation);
-    f.def("_updateParameters", &GradientBasedOptimizationLoop::_updateParameters);
+    // The rest of the interface is inherited from OptimizationLoop
 
     PythonFactory::registerType<GradientBasedOptimizationLoop>(
         [](objectmodel::Base* object) -> py::object

@@ -14,10 +14,10 @@ class SOFA_SOFADIFF_API GridSearchOptimizationLoop: public OptimizationLoop
 public:
     SOFA_CLASS(GridSearchOptimizationLoop, OptimizationLoop);
 
+private:
     void _initialize() override;
     void _updateParameters() override;
 
-private:
     void setParameters(int iteration);
     int m_gridSize;
 };

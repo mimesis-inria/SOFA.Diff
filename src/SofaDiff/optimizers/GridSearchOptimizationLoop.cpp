@@ -29,7 +29,7 @@ void GridSearchOptimizationLoop::_initialize()
     if (d_maxOptimizationSteps.getValue() == 0)
         d_maxOptimizationSteps.setValue(m_gridSize);
 
-    this->updateParameters();
+    d_startWithUpdate.setValue(true);
 }
 
 void GridSearchOptimizationLoop::_updateParameters()

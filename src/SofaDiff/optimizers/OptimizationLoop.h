@@ -21,6 +21,7 @@ public:
     MultiLink<OptimizationLoop, BaseParameter, BaseLink::FLAG_STOREPATH> l_parameters;
     Data<int> d_maxOptimizationSteps;
     Data<int> d_maxSimulationSteps;
+    Data<bool> d_startWithUpdate;
 
     void init() final;
     void bwdInit() final;
@@ -38,33 +39,39 @@ public:
     int getMaxSimulationSteps() const      { return d_maxSimulationSteps.getValue(); }
     int getMaxOptimizationSteps() const    { return d_maxOptimizationSteps.getValue(); }
     int getCurrentOptimizationStep() const { return m_currentOptimizationStep; }
+    int getSimulationSteps();
 
     void setMaxSimulationSteps(const int maxSteps)   { d_maxSimulationSteps.setValue(maxSteps); }
     void setMaxOptimizationSteps(const int maxSteps) { d_maxOptimizationSteps.setValue(maxSteps); }
 
-// Should be private, but bindings require public
-    virtual void _allocate() {}
-    virtual void _initialize() {}
-    virtual void _processSimulation(const ExecParams * /*params*/, SReal /*dt*/) {}
-    virtual void _updateParameters() = 0;
-
-public: // TODO: Temporary
-    virtual void initializeSimulationLink();
-
-    void initializeParametersLink();
-    int getSimulationSteps();
-
-    void enterParameterGroup();
-    void leaveParameterGroup();
-
+private:
+    /* Called in init() only */
     void allocate();
+    /* Called in init() and resetOptimization() */
     void initialize();
+    /* Called in step() */
     void applyUpdate();
     void computeLoss(const ExecParams *params, SReal dt);
     void processSimulation(const ExecParams *params, SReal dt);
     void updateParameters();
 
-protected:
+    /* Customizable methods for the concrete optimizers */
+    virtual void _allocate() {}
+    virtual void _initialize() {}
+    virtual void _updateParameters() = 0;
+
+    /* Customizable methods for the gradient based optimizer */
+    virtual void initializeSimulationLink();
+    virtual void _processSimulation(const ExecParams * /*params*/, SReal /*dt*/) {}
+
+    /* Called in the public, non-virtual, interface */
+    void enterParameterGroup() const;
+    void leaveParameterGroup() const;
+
+    /* Called in allocate() */
+    void initializeParametersLink();
+
+    /* Attributes */
     bool m_readyToApplyUpdate;
     int m_currentOptimizationStep;
     SReal m_lowestLossValue;

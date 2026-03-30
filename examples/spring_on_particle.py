@@ -83,10 +83,10 @@ class WriteDataController(Sofa.Core.Controller):
 import SofaDiff  # Don't forget that
 
 class RandomOptimizer(SofaDiff.OptimizationLoop):
-    def _initialize(self):
-        self.updateParameters()
+    def initialize(self):
+        self.start_with_update = True
 
-    def _updateParameters(self):
+    def update_parameters(self):
         for parameter in self.parameters:
             parameter.next_value = np.random.uniform(parameter["lowerBound"], parameter["upperBound"], size=parameter.size)
 
@@ -95,12 +95,12 @@ class MyGradientDescent(SofaDiff.GradientBasedOptimizationLoop):
         SofaDiff.GradientBasedOptimizationLoop.__init__(self, *args, **kwargs)  # Do not use super()
         # Here the parameters are not initialized yet...
 
-    def _initialize(self):
+    def initialize(self):
         # ... Therefore, any initialization with regard to the parameters should be done here instead
         for parameter in self.parameters:
             print(parameter)
 
-    def _updateParameters(self):
+    def update_parameters(self):
         # The list of parameters to be optimized can be accessed in self.parameters
         for parameter in self.parameters:
             # The parameter's value and gradient can be accessed like attributes
@@ -125,11 +125,11 @@ class OptaxGradientDescent(SofaDiff.GradientBasedOptimizationLoop):
         self.optimizers = []
         self.opt_states = []
 
-    def _initialize(self):
+    def initialize(self):
         self.optimizers = [self.optax_optimizer(parameter["learningRate"]) for parameter in self.parameters]
         self.opt_states = [optimizer.init(parameter.value) for optimizer, parameter in zip(self.optimizers, self.parameters)]
 
-    def _updateParameters(self):
+    def update_parameters(self):
         for optimizer, opt_state, parameter in zip(self.optimizers, self.opt_states, self.parameters):
             updates, opt_state = optimizer.update(parameter.gradient, opt_state, parameter.value)
             next_value = optax.apply_updates(parameter.value, updates)

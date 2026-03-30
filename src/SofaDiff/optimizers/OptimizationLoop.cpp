@@ -14,6 +14,7 @@ OptimizationLoop::OptimizationLoop():
     l_parameters(initLink("parameters", "Link to the parameters to optimize")),
     d_maxOptimizationSteps(initData(&d_maxOptimizationSteps, "maxOptimizationSteps", "Maximum number of optimization steps for the optimization to be complete. Default is 0, meaning indefinite optimization.")),
     d_maxSimulationSteps(initData(&d_maxSimulationSteps, 1, "maxSimulationSteps", "Maximum number of simulation steps to optimize. 0 means as many as required for the simulation to be complete. Default is 1.")),
+    d_startWithUpdate(initData(&d_startWithUpdate, false, "startWithUpdate", "Whether to start with an update of the parameters (true), or from the given current parameters (false). Default is false.")),
     m_readyToApplyUpdate(false),
     m_currentOptimizationStep(0),
     m_lowestLossValue(std::numeric_limits<SReal>::max()),
@@ -57,6 +58,9 @@ void OptimizationLoop::initialize()
     m_lowestLossValue = std::numeric_limits<SReal>::max();
 
     this->_initialize();
+
+    if (d_startWithUpdate.getValue())
+        this->updateParameters();
 }
 
 void OptimizationLoop::bwdInit()
@@ -97,16 +101,16 @@ void OptimizationLoop::step(const ExecParams *params, const SReal dt)
 
 void OptimizationLoop::retrieveBestParameters(const ExecParams *params, const SReal dt)
 {
+    if (!isRetrieveBestParametersAllowed())
+        return;
+
     this->enterParameterGroup();
 
     for (auto & parameter : l_parameters)
-    {
         parameter->setDataFrom("value", "bestValue");
-    }
+    this->computeLoss(params, dt);
 
     this->leaveParameterGroup();
-
-    this->computeLoss(params, dt);
 }
 
 void OptimizationLoop::resetOptimization()
@@ -171,9 +175,7 @@ void OptimizationLoop::applyUpdate()
     if (m_readyToApplyUpdate)
     {
         for (auto & parameter : l_parameters)
-        {
             parameter->setDataFrom("value", "nextValue");
-        }
         m_readyToApplyUpdate = false;
     }
 }
@@ -191,7 +193,8 @@ void OptimizationLoop::computeLoss(const ExecParams *params, const SReal dt)
     for (int i = 0; i < simulationSteps; i++)
         l_simulationLoop->step(params, dt);
 }
-void OptimizationLoop::processSimulation(const ExecParams *params, SReal dt)
+
+void OptimizationLoop::processSimulation(const ExecParams *params, const SReal dt)
 {
     SReal loss = 0;
     std::vector<LossState*> losses;
@@ -273,20 +276,16 @@ int OptimizationLoop::getSimulationSteps()
     return simulationSteps;
 }
 
-void OptimizationLoop::enterParameterGroup()
+void OptimizationLoop::enterParameterGroup() const
 {
     for (auto & parameter : l_parameters)
-    {
         parameter->enterGroup(this->getName());
-    }
 }
 
-void OptimizationLoop::leaveParameterGroup()
+void OptimizationLoop::leaveParameterGroup() const
 {
     for (auto & parameter : l_parameters)
-    {
         parameter->leaveGroup();
-    }
 }
 
 }

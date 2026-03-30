@@ -24,7 +24,6 @@ public:
 
     void _allocate() override;
     void _initialize() override;
-    void _processSimulation(const ExecParams * params, SReal dt) override;
     void _updateParameters() override;
 
     std::string getClassName() const override;
