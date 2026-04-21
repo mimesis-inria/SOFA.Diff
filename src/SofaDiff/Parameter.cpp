@@ -111,7 +111,7 @@ void Parameter<type::vector<SReal>>::vectorToData(Data<type::vector<SReal>> & da
 }
 
 template<>
-const type::vector<SReal>& Parameter<type::vector<SReal>>::dataToVector(const Data<type::vector<SReal>> & data) const
+type::vector<SReal> Parameter<type::vector<SReal>>::dataToVector(const Data<type::vector<SReal>> & data) const
 {
     return data.getValue();
 }
@@ -139,7 +139,7 @@ void Parameter<SReal>::vectorToData(Data<SReal> & data, const type::vector<SReal
 }
 
 template<>
-const type::vector<SReal>& Parameter<SReal>::dataToVector(const Data<SReal> & data) const
+type::vector<SReal> Parameter<SReal>::dataToVector(const Data<SReal> & data) const
 {
     return {data.getValue()};
 }

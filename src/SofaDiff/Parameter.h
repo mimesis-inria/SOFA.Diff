@@ -80,7 +80,7 @@ public:
     static std::string GetCustomClassName();
 private:
     void vectorToData(Data<T> & data, const type::vector<SReal> & vector);
-    const type::vector<SReal> & dataToVector(const Data<T> & data) const;
+    type::vector<SReal> dataToVector(const Data<T> & data) const;
 };
 
 }
