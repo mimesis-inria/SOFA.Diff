@@ -4,12 +4,14 @@ set(HEADER_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/Binding_GradientBasedOptimizationLoop.h
         ${CMAKE_CURRENT_SOURCE_DIR}/Binding_OptimizationLoop.h
         ${CMAKE_CURRENT_SOURCE_DIR}/Binding_Parameter.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/Binding_ParameterizedForceField.h
 )
 
 set(SOURCE_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/Binding_GradientBasedOptimizationLoop.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/Binding_OptimizationLoop.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/Binding_Parameter.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/Binding_ParameterizedForceField.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/Module_SofaDiff.cpp
 )
 

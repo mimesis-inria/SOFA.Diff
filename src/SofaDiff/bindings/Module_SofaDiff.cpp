@@ -1,6 +1,7 @@
 #include <SofaDiff/bindings/Binding_GradientBasedOptimizationLoop.h>
 #include <SofaDiff/bindings/Binding_OptimizationLoop.h>
 #include <SofaDiff/bindings/Binding_Parameter.h>
+#include <SofaDiff/bindings/Binding_ParameterizedForceField.h>
 
 #include <pybind11/pybind11.h>
 
@@ -18,6 +19,7 @@ PYBIND11_MODULE(SofaDiff, m)
     moduleAddParameter(m);
     moduleAddOptimizationLoop(m);
     moduleAddGradientBasedOptimizationLoop(m);
+    moduleAddParameterizedForceField(m);
 }
 
 }

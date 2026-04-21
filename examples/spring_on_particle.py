@@ -2,6 +2,9 @@
 # Some utils for easier scene description
 # =====================================================================================================================
 import Sofa
+import SofaRuntime
+import SofaImGui
+import Sofa.Gui
 
 _current_node: Sofa.Core.Node
 
@@ -76,6 +79,45 @@ class WriteDataController(Sofa.Core.Controller):
                 trajectory.append(value)
             np.savetxt(self.path, np.stack(self._trajectories))
 
+
+# =====================================================================================================================
+# Custom parameterized force field
+# =====================================================================================================================
+import SofaDiff  # Don't forget that
+import Sofa
+
+class MyForceField(SofaDiff.ParameterizedForceFieldVec3d):
+    def __init__(self, stiffness, *args, **kwargs):
+        SofaDiff.ParameterizedForceFieldVec3d.__init__(self, *args, **kwargs)
+        # Store arguments for later initialization
+        self.stiffness_arg = stiffness
+        self.stiffness_parameter = None
+
+    def init(self):
+        # Define your Data
+        self.addData("stiffness", self.stiffness_arg, type="double")
+        # Specify those that are trainable
+        self.stiffness_parameter = self.addParameter("stiffness")
+        print("self.stiffness:", self.stiffness, type(self.stiffness))
+        print("self.stiffness_parameter:", self.stiffness_parameter, type(self.stiffness_parameter))
+
+    def addForce(self, mechanical_parameters, out_force, position, velocity):
+        with out_force.writeableArray() as wa:
+            wa[:] += -self.stiffness.value * position.value
+
+    def addDForce(self, mechanical_parameters, df, dx):
+        with df.writeableArray() as wa:
+            wa[:] += -self.stiffness.value * dx * mechanical_parameters['kFactor']
+
+    def addKToMatrix(self, mechanical_parameters, n_particles, n_dimensions):
+        n_dofs = n_particles * n_dimensions
+        return np.array([[i, i, -self.stiffness.value] for i in range(n_dofs)]) * mechanical_parameters["kFactor"]
+
+    def propagate_gradient_to_parameters(self, force_gradient):
+        # If stiffness points to a Parameter, e.g. stiffness="@/Parameters/stiffness.value", rather than stiffness=5.0
+        if self.stiffness_parameter is not None:
+            # Add the contribution of the force field to the derivative of the loss wrt the parameter
+            self.stiffness_parameter.gradient -= np.sum(self.mstate.position.value * force_gradient.value, axis=1) # += d(addForce)/d(parameter) @ force_gradient
 
 # =====================================================================================================================
 # Custom gradient descent
@@ -169,9 +211,9 @@ def createScene(root):
     add_object("VisualStyle", displayFlags="showBehavior showBehaviorModels showForceFields showMappings")
 
     add_object("GridSearchOptimizationLoop", name="cpp-grid-search", parameters="@/Parameters/stiffness")
-    # add_object("GradientDescentOptimizationLoop", name="cpp-gradient-descent", parameters="@/Parameters/stiffness")
+    add_object("GradientDescentOptimizationLoop", name="cpp-gradient-descent", parameters="@/Parameters/stiffness @/Parameters/p")
     # add_object(RandomOptimizer(name="numpy-random-search", parameters="@/Parameters/stiffness"))
-    add_object(MyGradientDescent(name="numpy-gradient-descent", parameters="@/Parameters/stiffness"))
+    # add_object(MyGradientDescent(name="numpy-gradient-descent", parameters="@/Parameters/stiffness"))
     # add_object(OptaxGradientDescent(optax.sgd, name="optax-gradient-descent", parameters="@/Parameters/stiffness"))
 
     add_object("DifferentiableAnimationLoop", name="differentiable-simulator", computeBoundingBox=False)
@@ -181,7 +223,7 @@ def createScene(root):
 
     with Node("Parameters"):
         add_object("TrainableParameterVector", name="stiffness", value="10 5", learningRate=(1, 0.5), lowerBound=1, upperBound=50, resolution=50)
-        add_object("TrainableParameterVector", name="mock", value="10 20 30", learningRate=1.0)
+        p = add_object("TrainableParameterScalar", name="p", value="10", learningRate=1.0)
 
     with Node("Physics"):
         add_object("SparseLDLSolver", template="CompressedRowSparseMatrixd", name="solver", printLog="false")
@@ -193,8 +235,10 @@ def createScene(root):
         add_object("UniformMass", template="Vec3d", name="mass", totalMass="10")
 
         add_object("ParameterizedSpringForceField", name="spring", object1="@/Physics/state", indices1="0 0", object2="@/state", indices2="0 1", length="5 5", stiffness="@/Parameters/stiffness.value", damping="0 0")
+        add_object(MyForceField(stiffness="@/Parameters/p.value", name="PyForce"))
+        # add_object(MyForceField(stiffness=p.value.linkpath, name="PyForce"))  # TODO: make this work
 
-    with Node("Loss", tags="NoBBox"):
+    with Node("Loss"):
         add_object("MechanicalObject", template="Vec3d", name="state", position="2 -2 0", showObject="true", drawMode="1", showObjectScale="0.08")
         with Node("Distance"):
             add_object("MechanicalObject", template="Vec1d", name="state", position="0")
@@ -205,5 +249,19 @@ def createScene(root):
 
     # add_object(WriteDataController("data_control.txt", [root.Parameters.stiffness.value, root.Loss.Distance.MSE.state.value], root.simulator))
 
+def main():
+    # help(SofaDiff)
+
+    root=Sofa.Core.Node("root")
+    createScene(root)
+    Sofa.Simulation.initRoot(root)
+
+    Sofa.Gui.GUIManager.Init("myscene", "imgui")
+    Sofa.Gui.GUIManager.createGUI(root, __file__)
+    Sofa.Gui.GUIManager.SetDimension(1600, 900)
+    Sofa.Gui.GUIManager.MainLoop(root)
+    Sofa.Gui.GUIManager.closeGUI()
+
+
 if __name__ == "__main__":
-    help(SofaDiff)
+    main()

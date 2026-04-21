@@ -28,7 +28,7 @@
 
 #include <sofa/core/objectmodel/BaseObject.h>
 #include <sofa/core/behavior/MultiVec.h>
-#include <sofa/core/behavior/BaseForceField.h>
+#include <sofa/core/behavior/ForceField.h>
 
 
 namespace sofadiff
@@ -52,16 +52,21 @@ protected:
 
     static BaseParameter* getParentParameter(const core::BaseData * data);
 
+public:
     template<class T>
     Parameter<T> * initParameter(Data<T> & data);
 
+protected:
     void checkForNotImplementedParameters(const type::vector<core::BaseData *> & dataFields) const;
 };
 
 
-class ParameterizedForceField: public Parameterized, virtual public core::behavior::BaseForceField
+template <class T>
+class ParameterizedForceField: public Parameterized, public core::behavior::ForceField<T>
 {
-    const core::BaseClass* getClass() const override { return core::behavior::BaseForceField::getClass(); }
+public:
+    SOFA_ABSTRACT_CLASS(ParameterizedForceField, SOFA_TEMPLATE(core::behavior::ForceField, T))
+    // const core::BaseClass* getClass() const override { return core::behavior::ForceField<T>::getClass(); }
 };
 
 

@@ -43,9 +43,10 @@ void declareBaseParameter(const py::module &m) {
         "value",
         [](const BaseParameter & self) { return toNumpy(self.getVectorFromData("value")); }
     );
-    f.def_property_readonly(
+    f.def_property(
         "gradient",
-        [](const BaseParameter & self) { return toNumpy(self.getVectorFromData("gradient")); }
+        [](const BaseParameter & self) { return toNumpy(self.getVectorFromData("gradient")); },
+        [] (BaseParameter& self, const py::array & gradient) { self.setDataFrom("gradient", toVector(gradient)); }
     );
     f.def_property(
         "next_value",
