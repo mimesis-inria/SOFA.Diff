@@ -38,7 +38,7 @@ py_shared_ptr<ParameterizedForceField_Trampoline<T>> ParameterizedForceField_Tra
 }
 
 template<class T>
-BaseParameter * ParameterizedForceField_Trampoline<T>::addParameter(const std::string& name)
+const BaseParameter * ParameterizedForceField_Trampoline<T>::getParameter(const std::string& name, const BaseParameter * defaultValue)
 {
     py::gil_scoped_acquire gil_acquire;
 
@@ -58,10 +58,7 @@ BaseParameter * ParameterizedForceField_Trampoline<T>::addParameter(const std::s
 
     auto * parameter = this->initParameter(*data);
     if (parameter == nullptr)
-    {
-        msg_info() << "Data '" << name << "' was not provided with a parameter.";
-        return nullptr;
-    }
+        return defaultValue;
 
     return static_cast<BaseParameter*>(parameter);
 }
@@ -221,8 +218,11 @@ void declare_forcefield(py::module &m) {
     f(m, pyclass_name.c_str(), py::dynamic_attr(), py::multiple_inheritance());
 
     f.def(py::init(&ParameterizedForceField_Trampoline<T>::create));
-    f.def("addParameter", [](ParameterizedForceField_Trampoline<T>& self, const std::string & name) -> BaseParameter* {
-        return self.addParameter(name);
+    f.def("get_parameter", [](ParameterizedForceField_Trampoline<T>& self, const std::string & name) -> const BaseParameter* {
+        return self.getParameter(name, nullptr);
+    });
+    f.def("get_parameter", [](ParameterizedForceField_Trampoline<T>& self, const std::string & name, const BaseParameter * defaultValue) -> const BaseParameter* {
+        return self.getParameter(name, defaultValue);
     });
     f.def("init", [](ParameterizedForceField_Trampoline<T>& self) { self.init(); });
     // TODO: add interface documentation?

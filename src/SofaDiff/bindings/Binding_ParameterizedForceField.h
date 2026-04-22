@@ -29,7 +29,7 @@ public:
     using ParameterizedForceField<T>::ParameterizedForceField;
     static py_shared_ptr<ParameterizedForceField_Trampoline> create(const py::args& args, const py::kwargs& kwargs);
 
-    BaseParameter * addParameter(const std::string& name);
+    const BaseParameter * getParameter(const std::string& name, const BaseParameter * defaultValue = nullptr);
 
     void init() override;
     std::string getClassName() const override;

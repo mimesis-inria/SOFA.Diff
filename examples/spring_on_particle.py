@@ -94,12 +94,18 @@ class MyForceField(SofaDiff.ParameterizedForceFieldVec3d):
         self.stiffness_parameter = None
 
     def init(self):
-        # Define your Data
-        self.addData("stiffness", self.stiffness_arg, type="double")
-        # Specify those that are trainable
-        self.stiffness_parameter = self.addParameter("stiffness")
-        print("self.stiffness:", self.stiffness, type(self.stiffness))
-        print("self.stiffness_parameter:", self.stiffness_parameter, type(self.stiffness_parameter))
+        # Define your Data.
+        self.addData("stiffness", self.stiffness_arg, type="double")  # Note: this creates an attribute 'self.stiffness'
+        # Get the parameters passed as data (if any) with 'self.get_parameter(name, default=None)'
+        self.stiffness_parameter = self.get_parameter("stiffness", None)
+
+    def propagate_gradient_to_parameters(self, force_gradient):
+        # If stiffness points to a Parameter, e.g. stiffness="@/Parameters/stiffness.value", rather than stiffness=5.0
+        if self.stiffness_parameter is not None:
+            # Add the contribution of the force field to the derivative of the loss wrt the parameter
+            self.stiffness_parameter.gradient -= np.sum(self.mstate.position.value * force_gradient.value, axis=1) # += d(addForce)/d(parameter) @ force_gradient
+
+    # Implement the rest as a standard force field
 
     def addForce(self, mechanical_parameters, out_force, position, velocity):
         with out_force.writeableArray() as wa:
@@ -112,12 +118,6 @@ class MyForceField(SofaDiff.ParameterizedForceFieldVec3d):
     def addKToMatrix(self, mechanical_parameters, n_particles, n_dimensions):
         n_dofs = n_particles * n_dimensions
         return np.array([[i, i, -self.stiffness.value] for i in range(n_dofs)]) * mechanical_parameters["kFactor"]
-
-    def propagate_gradient_to_parameters(self, force_gradient):
-        # If stiffness points to a Parameter, e.g. stiffness="@/Parameters/stiffness.value", rather than stiffness=5.0
-        if self.stiffness_parameter is not None:
-            # Add the contribution of the force field to the derivative of the loss wrt the parameter
-            self.stiffness_parameter.gradient -= np.sum(self.mstate.position.value * force_gradient.value, axis=1) # += d(addForce)/d(parameter) @ force_gradient
 
 # =====================================================================================================================
 # Custom gradient descent
