@@ -8,6 +8,7 @@
 #include <SofaPython3/Sofa/Core/Binding_Base.h>
 #include <SofaPython3/DataHelper.h>
 #include <utility>
+#include <fmt/format.h>
 
 
 namespace sofapython3
@@ -49,18 +50,30 @@ const BaseParameter * ParameterizedForceField_Trampoline<T>::getParameter(const 
         return nullptr;
     }
 
-    auto * data = dynamic_cast<Data<SReal>*>(baseData);
-    if (data == nullptr)
+    auto * dataScalar = dynamic_cast<Data<SReal>*>(baseData);
+    auto * dataVector = dynamic_cast<Data<type::vector<SReal>>*>(baseData);
+
+    if (dataScalar == nullptr && dataVector == nullptr)
     {
-        msg_warning() << "Data '" << name << "' does not have the correct type";
+        msg_warning() << "get_parameter(): Data '" << name << "' must be a scalar or a vector (of scalars).";
         return nullptr;
     }
 
-    auto * parameter = this->initParameter(*data);
-    if (parameter == nullptr)
-        return defaultValue;
+    if (dataScalar != nullptr)
+    {
+        auto * parameter = this->initParameter(*dataScalar);
+        if (parameter == nullptr)
+            return defaultValue;
+        return static_cast<BaseParameter*>(parameter);
+    }
+    if (dataVector != nullptr)
+    {
+        auto * parameter = this->initParameter(*dataVector);
+        if (parameter == nullptr)
+            return defaultValue;
+        return static_cast<BaseParameter*>(parameter);
+    }
 
-    return static_cast<BaseParameter*>(parameter);
 }
 
 template<class T>
