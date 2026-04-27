@@ -76,7 +76,7 @@ def createScene(root):
     # In the ImGUI interface, we can display the "Loops Controls" window to interact with the optimizer
     # =================================================================================================================
 
-    add_object("DefaultAnimationLoop", name="differentiable-simulator", computeBoundingBox=False)
+    add_object("DefaultAnimationLoop", computeBoundingBox=False)
 
     add_object("MechanicalObject", template="Vec3d", name="fixed", position="-2 5 0  2 5 0")
 
@@ -84,7 +84,7 @@ def createScene(root):
     with Node("Parameters"):
         add_object("TrainableParameterVector", name="stiffness", value="5 5", lowerBound=1, upperBound=10, resolution=10)
         # We use "TrainableParameterVector" because the spring force field below expects one stiffness per spring
-        # We provide the hyperparameters "lowerBound", "upperBound" and "resolution" for the "GridSearchOptimizer"
+        # We provide the hyperparameters "lowerBound", "upperBound" and "resolution" for the grid search optimizer
     # =================================================================================================================
 
     with Node("Physics"):
