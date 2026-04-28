@@ -85,9 +85,10 @@ def createScene(root):
 
     # ============================================== 3. Add parameter(s) ==============================================
     with Node("Parameters"):
-        add_object("TrainableParameterVector", name="stiffness", value="5 5", learningRate=0.5)
+        add_object("TrainableParameterVector", name="stiffness", value="5 5", learningRate=(1.0, 2.0))
         # We use "TrainableParameterVector" because the spring force field below expects one stiffness per spring
         # We provide the "learningRate" hyperparameter for the gradient descent optimizer
+        # We provide two different learning rates, one for each spring, for illustration purposes
     # =================================================================================================================
 
     with Node("Physics"):
