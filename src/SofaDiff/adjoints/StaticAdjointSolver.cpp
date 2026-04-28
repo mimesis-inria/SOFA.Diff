@@ -68,6 +68,8 @@ void StaticAdjointSolver::solveForPhysicalGradient()
     linearSolver->getLinearSystem()->setRHS(m_positionGradientId);
     linearSolver->solveSystem();  // Solve -df/dx * lambda = dy/dx
     linearSolver->getLinearSystem()->dispatchSystemSolution(m_forceGradientId);
+
+    mop.projectResponse(m_forceGradientId);  // Take the projective constraints into account
 }
 
 }
