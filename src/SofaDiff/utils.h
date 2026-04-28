@@ -8,9 +8,6 @@ namespace sofadiff
 {
 using namespace sofa;
 
-// core::MultiVecCoordId newCoordId(core::objectmodel::BaseContext* ctx, const char * name, const char * group);
-// core::MultiVecDerivId newDerivId(core::objectmodel::BaseContext* ctx, const char * name, const char * group);
-
 template<core::VecType vtype>
 core::TMultiVecId<vtype, core::V_WRITE> newVecId(core::objectmodel::BaseContext* ctx, const std::string& name, const std::string& group)
 {

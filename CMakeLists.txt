@@ -10,9 +10,6 @@ find_package(Sofa.Component.SolidMechanics.Spring REQUIRED)
 find_package(Sofa.Component.SolidMechanics.FEM.Elastic REQUIRED)
 find_package(SofaImGui REQUIRED)
 
-## Optional dependencies
-#sofa_find_package(Sofa.GUI.Qt QUIET)
-#sofa_find_package(Qt5 COMPONENTS Core QUIET) # Dependency to Qt5Core (needed for qt5_wrap_cpp)
 
 # List all files
 set(SOFADIFF_SRC_DIR src/SofaDiff)
@@ -45,7 +42,6 @@ set(HEADER_FILES_TO_MOC
 )
 set(SOURCE_FILES
         ${SOFADIFF_SRC_DIR}/initSofaDiff.cpp
-        ${SOFADIFF_SRC_DIR}/utils.cpp
         ${SOFADIFF_SRC_DIR}/optimizers/OptimizationLoop.cpp
         ${SOFADIFF_SRC_DIR}/optimizers/GridSearchOptimizationLoop.cpp
         ${SOFADIFF_SRC_DIR}/optimizers/GradientBasedOptimizationLoop.cpp
@@ -78,10 +74,6 @@ add_library(${PROJECT_NAME} SHARED ${HEADER_FILES_TO_MOC} ${MOCCED_HEADER_FILES}
 
 # Link the plugin library to its dependency(ies).
 target_link_libraries(${PROJECT_NAME} Sofa.Framework Sofa.Component.Controller Sofa.Component.Mapping Sofa.Component.SolidMechanics.Spring Sofa.Component.SolidMechanics.FEM.Elastic SofaImGui)
-# Link with the optional GUI dependencies.
-#if(Qt5Core_FOUND AND Sofa.GUI.Qt_FOUND)
-#    target_link_libraries(${PROJECT_NAME} Sofa.GUI.Qt)
-#endif()
 
 find_package(SofaPython3 QUIET)
 if(SofaPython3_FOUND)
@@ -100,10 +92,3 @@ sofa_create_package_with_targets(
         INCLUDE_INSTALL_DIR ${PROJECT_NAME}
 )
 
-# Tests
-# If SOFA_BUILD_TESTS exists and is OFF, then these tests will be auto-disabled
-#cmake_dependent_option(SOFADIFF_BUILD_TESTS "Compile the automatic tests" ON "SOFA_BUILD_TESTS OR NOT DEFINED SOFA_BUILD_TESTS" OFF)
-#if(SOFADIFF_BUILD_TESTS)
-#    enable_testing()
-#    add_subdirectory(SofaDiff_test)
-#endif()
