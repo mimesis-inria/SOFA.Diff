@@ -1,0 +1,92 @@
+/******************************************************************************
+*                                 SOFA.Diff                                   *
+*                              (c) 2026 INRIA                                 *
+*                                                                             *
+* This program is free software; you can redistribute it and/or modify it     *
+* under the terms of the GNU Lesser General Public License as published by    *
+* the Free Software Foundation; either version 2.1 of the License, or (at     *
+* your option) any later version.                                             *
+*                                                                             *
+* This program is distributed in the hope that it will be useful, but WITHOUT *
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or       *
+* FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License *
+* for more details.                                                           *
+*                                                                             *
+* You should have received a copy of the GNU Lesser General Public License    *
+* along with this program. If not, see <http://www.gnu.org/licenses/>.        *
+*******************************************************************************
+* Authors: Léo Bois, Paul Baksic                                              *
+*                                                                             *
+* Contact information: contact@sofa-framework.org                             *
+******************************************************************************/
+#pragma once
+
+#include <unordered_set>
+
+#include <sofa/diff/config.h>
+#include <sofa/diff/Parameter.h>
+
+#include <sofa/core/objectmodel/BaseObject.h>
+#include <sofa/core/behavior/MultiVec.h>
+#include <sofa/core/behavior/ForceField.h>
+
+
+namespace sofadiff
+{
+
+class SOFA_SOFADIFF_API Parameterized: virtual public core::objectmodel::BaseObject
+{
+    SOFA_ABSTRACT_CLASS(Parameterized, core::objectmodel::BaseObject);
+
+public:
+    std::unordered_set<core::BaseData*> m_canBeTrained;
+
+    virtual void applyParametersJacobianTranspose(
+        const core::MechanicalParams* mparams,
+        core::MultiVecDerivId vecId
+    ) = 0;
+
+    ~Parameterized() override = default;
+
+protected:
+
+    static BaseParameter* getParentParameter(const core::BaseData * data);
+
+public:
+    template<class T>
+    Parameter<T> * initParameter(Data<T> & data);
+
+protected:
+    void checkForNotImplementedParameters(const type::vector<core::BaseData *> & dataFields) const;
+};
+
+
+template <class T>
+class ParameterizedForceField: public Parameterized, public core::behavior::ForceField<T>
+{
+public:
+    SOFA_ABSTRACT_CLASS(ParameterizedForceField, SOFA_TEMPLATE(core::behavior::ForceField, T))
+    // const core::BaseClass* getClass() const override { return core::behavior::ForceField<T>::getClass(); }
+};
+
+
+template<class T>
+Parameter<T> * Parameterized::initParameter(Data<T> &data)
+{
+    m_canBeTrained.insert(&data);
+
+    auto * parameter = getParentParameter(&data);
+    if (parameter == nullptr)
+        return nullptr;
+
+    auto * parameterVector = dynamic_cast<Parameter<T>*>(parameter);
+    if (parameterVector == nullptr)
+    {
+        msg_error() << data.getName() << " parameter must be a " << Parameter<T>::GetCustomClassName();
+        return nullptr;
+    }
+
+    return parameterVector;
+}
+
+}

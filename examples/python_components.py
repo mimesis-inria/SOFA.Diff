@@ -5,7 +5,7 @@ import Sofa
 import SofaRuntime
 import SofaImGui
 import Sofa.Gui
-import SofaDiff
+import sofadiff
 
 import numpy as np
 
@@ -13,16 +13,16 @@ import numpy as np
 # =====================================================================================================================
 # Custom optimizers in Python
 # =====================================================================================================================
-class RandomOptimizer(SofaDiff.OptimizationLoop):
+class RandomOptimizer(sofadiff.OptimizationLoop):
     """
     A Python optimizer that picks parameters randomly between their lower and upper bounds.
 
-    SofaDiff.OptimizationLoop has 3 methods that can be overridden:
+    sofadiff.OptimizationLoop has 3 methods that can be overridden:
         * allocate():          optional, perform operations that must happen at initialization only
         * initialize():        optional, perform operations that must happen at initialization and at reset
         * update_parameters(): required, compute the next value to be used for each optimized parameter
 
-    SofaDiff.OptimizationLoop provides the attribute `self.parameters`, a list of parameters to be optimized.
+    sofadiff.OptimizationLoop provides the attribute `self.parameters`, a list of parameters to be optimized.
     Each parameter in this list comes with the following interface:
         * parameter.value:      read-only, the current value of the parameter, as a flat array
         * parameter.size:       read-only, the size of parameter.value
@@ -32,16 +32,16 @@ class RandomOptimizer(SofaDiff.OptimizationLoop):
         * "key" in parameter:   whether the "key" hyperparameter was defined for this parameter
     Note that the parameters are not yet initialized in the __init__() method.
 
-    SofaDiff.OptimizationLoop also provides the attribute `self.start_with_update`, a boolean indicating whether the
+    sofadiff.OptimizationLoop also provides the attribute `self.start_with_update`, a boolean indicating whether the
     `update_parameters()` method should be called at the start of the optimization. If not, then the current value of
     the parameters will be used for the first iteration. This attribute is `False` by default, but can be changed at
     any point.
 
-    SofaDiff.OptimizationLoop comes with a built-in mechanism that stores the best set of parameters found so far, so
+    sofadiff.OptimizationLoop comes with a built-in mechanism that stores the best set of parameters found so far, so
     there is no need to implement that here.
     """
     def __init__(self, *args, **kwargs):
-        SofaDiff.OptimizationLoop.__init__(self, *args, **kwargs)  # Do not use super()
+        sofadiff.OptimizationLoop.__init__(self, *args, **kwargs)  # Do not use super()
         self.start_with_update = True  # Pick random values from the very beginning
         # Do not use `self.parameters` here, the parameters are not initialized yet.
 
@@ -62,12 +62,12 @@ class RandomOptimizer(SofaDiff.OptimizationLoop):
             parameter.next_value = random_value
 
 
-class PythonGradientDescent(SofaDiff.GradientBasedOptimizationLoop):
+class PythonGradientDescent(sofadiff.GradientBasedOptimizationLoop):
     """
     A simple gradient descent implemented in Python.
 
-    SofaDiff.GradientBasedOptimizationLoop inherits SofaDiff.OptimizationLoop, and shares the same interface.
-    In addition to what SofaDiff.OptimizationLoop does, it makes sure that the simulation is differentiable, and
+    sofadiff.GradientBasedOptimizationLoop inherits sofadiff.OptimizationLoop, and shares the same interface.
+    In addition to what sofadiff.OptimizationLoop does, it makes sure that the simulation is differentiable, and
     triggers the computation of the gradients once the loss is computed.
 
     The derivative of the loss with respect to each parameter can be accessed with `parameter.gradient` for each
@@ -92,14 +92,14 @@ class PythonGradientDescent(SofaDiff.GradientBasedOptimizationLoop):
 # =====================================================================================================================
 # Custom parameterized force field in Python
 # =====================================================================================================================
-class PythonForceField(SofaDiff.ParameterizedForceFieldVec3d):
+class PythonForceField(sofadiff.ParameterizedForceFieldVec3d):
     """
     A Python force field that adds zero-length springs between the vertices and the origin.
 
-    SofaDiff.ParameterizedForceFieldXXX inherits Sofa.Core.ForceFieldXXX and the usual interface: init(), addForce(),
+    sofadiff.ParameterizedForceFieldXXX inherits Sofa.Core.ForceFieldXXX and the usual interface: init(), addForce(),
     addDForce(), addKToMatrix(), ...
 
-    On top of that, SofaDiff.ParameterizedForceFieldXXX adds the possibility for the force field to be differentiated
+    On top of that, sofadiff.ParameterizedForceFieldXXX adds the possibility for the force field to be differentiated
     with respect to its parameters. Doing so involves two steps:
         1. Retrieving the Parameters passed by the user to the force field, if any.
            This is done in the `init()` method with `self.get_parameter(data_name, default=None)`.
@@ -115,7 +115,7 @@ class PythonForceField(SofaDiff.ParameterizedForceFieldVec3d):
     `self.get_parameter()` returns None.
     """
     def __init__(self, stiffness, *args, **kwargs):
-        SofaDiff.ParameterizedForceFieldVec3d.__init__(self, *args, **kwargs)  # Do not use super()
+        sofadiff.ParameterizedForceFieldVec3d.__init__(self, *args, **kwargs)  # Do not use super()
         # addData() must be called in init() (not __init__()) to support initialization with data="@/path/to.value",
         # therefore we need to store the argument here to access it later in `init()`.
         self.stiffness_arg = stiffness
@@ -210,7 +210,7 @@ def createScene(root):
 
     with Node("Plugins"):
         add_object("RequiredPlugin", pluginName=[
-            "SofaDiff",
+            "SOFA.Diff",
             "Sofa.Component.Visual",  # Needed to use components [VisualStyle]
             "Sofa.Component.LinearSolver.Iterative",  # Needed to use components [CGLinearSolver]
             "Sofa.Component.LinearSolver.Direct",  # Needed to use components [SparseLDLSolver]
@@ -241,7 +241,7 @@ def createScene(root):
         add_object("StaticSolver", name="static", newtonSolver="@newton")
         add_object("StaticAdjointSolver", name="adjoint")
 
-        add_object("MechanicalObject", template="Vec3d", name="state", position="0 -7 0  0 -7 0", showObject="true", drawMode="1", showObjectScale="0.1", showColor=(1, 0, 0))
+        add_object("MechanicalObject", template="Vec3d", name="state", position="0 -7 0  0 -7 0", showObject="true", drawMode="1", showObjectScale="0.1", showColor=(1, 0, 0, 1))
         add_object("UniformMass", template="Vec3d", name="mass", totalMass=10)
 
         # ================================ Zero-length springs with PythonForceField ==================================
@@ -249,7 +249,7 @@ def createScene(root):
         # =============================================================================================================
 
     with Node("Loss"):
-        add_object("MechanicalObject", template="Vec3d", name="state", position="0 -6 0  0 -8 0", showObject="true", drawMode="1", showObjectScale="0.08", showColor=(0, 0, 1))
+        add_object("MechanicalObject", template="Vec3d", name="state", position="0 -6 0  0 -8 0", showObject="true", drawMode="1", showObjectScale="0.08", showColor=(0, 0, 1, 1))
         with Node("Distance"):
             add_object("MechanicalObject", template="Vec1d", name="state", position="0")
             add_object("DistanceFromTargetMapping", input="@Physics/state", targetPositions="@/Loss/state.position")

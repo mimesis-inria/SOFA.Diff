@@ -1,0 +1,53 @@
+/******************************************************************************
+*                                 SOFA.Diff                                   *
+*                              (c) 2026 INRIA                                 *
+*                                                                             *
+* This program is free software; you can redistribute it and/or modify it     *
+* under the terms of the GNU Lesser General Public License as published by    *
+* the Free Software Foundation; either version 2.1 of the License, or (at     *
+* your option) any later version.                                             *
+*                                                                             *
+* This program is distributed in the hope that it will be useful, but WITHOUT *
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or       *
+* FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License *
+* for more details.                                                           *
+*                                                                             *
+* You should have received a copy of the GNU Lesser General Public License    *
+* along with this program. If not, see <http://www.gnu.org/licenses/>.        *
+*******************************************************************************
+* Authors: Léo Bois, Paul Baksic                                              *
+*                                                                             *
+* Contact information: contact@sofa-framework.org                             *
+******************************************************************************/
+#include <sofa/diff/ParameterizedForceField.h>
+
+
+namespace sofadiff
+{
+
+BaseParameter * Parameterized::getParentParameter(const core::BaseData *data)
+{
+    const auto * parent = data->getParent();
+    if (parent == nullptr)
+        return nullptr;
+
+    auto * parameter = dynamic_cast<BaseParameter*>(parent->getOwner());
+    if (parameter == nullptr)
+        return nullptr;
+
+    return parameter;
+}
+
+void Parameterized::checkForNotImplementedParameters(const type::vector<core::BaseData *> &dataFields) const
+{
+    for (const auto & data : dataFields)
+    {
+        if (getParentParameter(data) != nullptr && !m_canBeTrained.contains(data))
+        {
+            msg_error() << "Data " << data->getName() << " is not trainable.";
+        }
+    }
+}
+
+
+}

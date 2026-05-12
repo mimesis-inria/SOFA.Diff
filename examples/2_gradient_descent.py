@@ -56,7 +56,7 @@ def createScene(root):
 
     with Node("Plugins"):
         add_object("RequiredPlugin", pluginName=[
-            "SofaDiff",
+            "SOFA.Diff",
             "Sofa.Component.Visual",  # Needed to use components [VisualStyle]
             "Sofa.Component.LinearSolver.Direct",  # Needed to use components [SparseLDLSolver]
             "Sofa.Component.ODESolver.Backward",  # Needed to use components [NewtonRaphsonSolver, StaticSolver]

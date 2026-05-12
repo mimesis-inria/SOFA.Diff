@@ -5,7 +5,7 @@ import Sofa
 import SofaRuntime
 import SofaImGui
 import Sofa.Gui
-import SofaDiff
+import sofadiff
 
 import numpy as np
 import jax
@@ -66,9 +66,9 @@ def get_length_and_stiffness_gradient(position, length, stiffness, vector):
     return vjp(vector)  # note: vjp(vector) is the tuple (length_gradient, stiffness_gradient)
 
 
-class JaxForceField(SofaDiff.ParameterizedForceFieldVec3d):
+class JaxForceField(sofadiff.ParameterizedForceFieldVec3d):
     def __init__(self, length, stiffness, *args, **kwargs):
-        SofaDiff.ParameterizedForceFieldVec3d.__init__(self, *args, **kwargs)
+        sofadiff.ParameterizedForceFieldVec3d.__init__(self, *args, **kwargs)
         self.length_arg = length
         self.stiffness_arg = stiffness
         self.length_parameter = None
@@ -114,9 +114,9 @@ class JaxForceField(SofaDiff.ParameterizedForceFieldVec3d):
 # =====================================================================================================================
 # Custom gradient descent with optax (JAX)
 # =====================================================================================================================
-class OptaxGradientDescent(SofaDiff.GradientBasedOptimizationLoop):
+class OptaxGradientDescent(sofadiff.GradientBasedOptimizationLoop):
     def __init__(self, optax_optimizer, **kwargs):
-        SofaDiff.GradientBasedOptimizationLoop.__init__(self, **kwargs)
+        sofadiff.GradientBasedOptimizationLoop.__init__(self, **kwargs)
         self.optax_optimizer = optax_optimizer
         self.optimizers = []
         self.opt_states = []
@@ -184,13 +184,14 @@ def createScene(root):
 
     with Node("Plugins"):
         add_object("RequiredPlugin", pluginName=[
-            "SofaDiff",
+            "SOFA.Diff",
             "Sofa.Component.Visual",  # Needed to use components [VisualStyle]
             "Sofa.Component.LinearSolver.Iterative",  # Needed to use components [CGLinearSolver]
             "Sofa.Component.LinearSolver.Direct",  # Needed to use components [SparseLDLSolver]
             "Sofa.Component.ODESolver.Backward",  # Needed to use components [NewtonRaphsonSolver, StaticSolver]
             "Sofa.Component.StateContainer",  # Needed to use components [MechanicalObject]
             "Sofa.Component.Mass",  # Needed to use components [UniformMass]
+            "Sofa.Component.Mapping.NonLinear",  # Needed to use components [DistanceFromTargetMapping]
         ])
 
     add_object("VisualStyle", displayFlags="showBehavior showBehaviorModels showForceFields showMappings")
@@ -212,7 +213,7 @@ def createScene(root):
         add_object("StaticSolver", name="static", newtonSolver="@newton")
         add_object("StaticAdjointSolver", name="adjoint")
 
-        add_object("MechanicalObject", template="Vec3d", name="state", position="0 -7 0  0 -7 0", showObject="true", drawMode="1", showObjectScale="0.1", showColor=(1, 0, 0))
+        add_object("MechanicalObject", template="Vec3d", name="state", position="0 -7 0  0 -7 0", showObject="true", drawMode="1", showObjectScale="0.1", showColor=(1, 0, 0, 1))
         add_object("UniformMass", template="Vec3d", name="mass", totalMass=1)
 
         # ============================ Springs with stiffness equal to length, because why not ========================
@@ -220,7 +221,7 @@ def createScene(root):
         # =============================================================================================================
 
     with Node("Loss"):
-        add_object("MechanicalObject", template="Vec3d", name="state", position="0 -6 0  0 -8 0", showObject="true", drawMode="1", showObjectScale="0.08", showColor=(0, 0, 1))
+        add_object("MechanicalObject", template="Vec3d", name="state", position="0 -6 0  0 -8 0", showObject="true", drawMode="1", showObjectScale="0.08", showColor=(0, 0, 1, 1))
         with Node("Distance"):
             add_object("MechanicalObject", template="Vec1d", name="state", position="0")
             add_object("DistanceFromTargetMapping", input="@Physics/state", targetPositions="@/Loss/state.position")
