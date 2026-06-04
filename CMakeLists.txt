@@ -33,6 +33,7 @@ set(HEADER_FILES
         ${SOFA_DIFF_SRC_DIR}/visitors/MechanicalPropagateVecDeriv.h
         ${SOFA_DIFF_SRC_DIR}/visitors/StoreStateVisitor.h
         ${SOFA_DIFF_SRC_DIR}/visitors/RetrieveStateVisitor.h
+        ${SOFA_DIFF_SRC_DIR}/forcefields/ParameterizedRestShapeSpringsForceField.h
         ${SOFA_DIFF_SRC_DIR}/forcefields/ParameterizedSpringForceField.h
         ${SOFA_DIFF_SRC_DIR}/forcefields/ParameterizedTetrahedronFEMForceField.h
         ${SOFA_DIFF_SRC_DIR}/mappings/MeanSquaredErrorMapping.h
@@ -57,6 +58,7 @@ set(SOURCE_FILES
         ${SOFA_DIFF_SRC_DIR}/visitors/MechanicalPropagateVecDeriv.cpp
         ${SOFA_DIFF_SRC_DIR}/visitors/StoreStateVisitor.cpp
         ${SOFA_DIFF_SRC_DIR}/visitors/RetrieveStateVisitor.cpp
+        ${SOFA_DIFF_SRC_DIR}/forcefields/ParameterizedRestShapeSpringsForceField.cpp
         ${SOFA_DIFF_SRC_DIR}/forcefields/ParameterizedSpringForceField.cpp
         ${SOFA_DIFF_SRC_DIR}/forcefields/ParameterizedTetrahedronFEMForceField.cpp
         ${SOFA_DIFF_SRC_DIR}/mappings/MeanSquaredErrorMapping.cpp

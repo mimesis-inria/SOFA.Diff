@@ -32,6 +32,7 @@ namespace sofadiff
     extern void registerGradientDescentOptimizationLoop(sofa::core::ObjectFactory* factory);
     extern void registerDifferentiableAnimationLoop(sofa::core::ObjectFactory* factory);
     extern void registerStaticAdjointSolver(sofa::core::ObjectFactory* factory);
+    extern void registerParameterizedRestShapeSpringsForceField(sofa::core::ObjectFactory* factory);
     extern void registerParameterizedSpringForceField(sofa::core::ObjectFactory* factory);
     extern void registerTrainableParameter(sofa::core::ObjectFactory* factory);
     extern void registerLossState(sofa::core::ObjectFactory* factory);
@@ -67,7 +68,7 @@ namespace sofadiff
         }
     }
 
-        const char* getModuleName()
+    const char* getModuleName()
     {
         return MODULE_NAME;
     }
@@ -93,6 +94,7 @@ namespace sofadiff
         registerGradientDescentOptimizationLoop(factory);
         registerDifferentiableAnimationLoop(factory);
         registerStaticAdjointSolver(factory);
+        registerParameterizedRestShapeSpringsForceField(factory);
         registerParameterizedSpringForceField(factory);
         registerParameterizedTetrahedronFEMForceField(factory);
         registerTrainableParameter(factory);
