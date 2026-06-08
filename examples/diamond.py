@@ -1,8 +1,8 @@
-def createScene(root):
+def createScene(root, stiffness=10):
 
     with root.addChild("Plugins") as plugins:
         plugins.addObject("RequiredPlugin", pluginName=[
-            "SofaDiff",  # Needed to use components [TrainableParameterVector, ParameterizedSpringForceField, LossState]
+            "SOFA.Diff",  # Needed to use components [TrainableParameterVector, ParameterizedSpringForceField, LossState]
             "Sofa.Component.IO.Mesh",  # Needed to use components [MeshVTKLoader]
             "Sofa.Component.LinearSolver.Direct",  # Needed to use components [SparseLDLSolver]
             "Sofa.Component.LinearSolver.Iterative",  # Needed to use components [CGLinearSolver,ShewchukPCGLinearSolver]
@@ -24,20 +24,21 @@ def createScene(root):
 
     root.addObject("VisualStyle", displayFlags="showCollision showVisualModels showForceFields showInteractionForceFields")
 
-    root.addObject("GradientDescentOptimizationLoop", name="optimizer")
+    root.addObject("GradientDescentOptimizationLoop", name="optimizer", parameters="@/Parameters/springLengths")
     root.addObject("DifferentiableAnimationLoop", name="simulator", computeBoundingBox=False)
 
     with root.addChild("Parameters") as parameters:
         # length = 88.28363382  # length at rest configuration
         length2 = 97.52237356  # length of the solution with no springs
-        parameters.addObject("TrainableParameterVector", name="springLengths", value=[length2/2]*4, learningRate=0.5-0.5)
-        parameters.addObject("TrainableParameterVector", name="springStiffness", value=[1, 1, 1, 1], learningRate=0.1)
+        length3 = 1
+        parameters.addObject("TrainableParameterVector", name="springLengths", value=[length2]*4, learningRate=0.5, lowerBound=0.0)
+        parameters.addObject("TrainableParameterVector", name="springStiffness", value=[10, 10, stiffness, 10], learningRate=0.1, lowerBound=0.1)
 
     with root.addChild("PullPoints") as pull_points:
         pull_points.addObject("MechanicalObject", position=[[0, 10, 30], [-10, 0, 30], [0, -10, 30], [10, 0, 30]])
 
     with root.addChild("Robot") as robot:
-        robot.addObject("NewtonRaphsonSolver", name="newton", maxNbIterationsNewton="100", maxNbIterationsLineSearch="1", warnWhenLineSearchFails="false")
+        robot.addObject("NewtonRaphsonSolver", name="newton", maxNbIterationsNewton="10", maxNbIterationsLineSearch="1", warnWhenLineSearchFails="false", relativeSuccessiveStoppingThreshold=0, relativeInitialStoppingThreshold=0, absoluteResidualStoppingThreshold=0, relativeEstimateDifferenceThreshold=0, absoluteEstimateDifferenceThreshold=0)
         robot.addObject("StaticSolver", newtonSolver="@newton", name="static")
         robot.addObject("SparseLDLSolver", template="CompressedRowSparseMatrixd", name="solver")
         robot.addObject("StaticAdjointSolver", name="adjoint")
@@ -46,7 +47,7 @@ def createScene(root):
         robot.addObject("MeshTopology", src="@loader")
         robot.addObject("MechanicalObject", showIndicesScale=4e-5, rx=90, dz=35)
         robot.addObject("UniformMass", totalMass=0.5)
-        robot.addObject("TetrahedronFEMForceField", youngModulus=180, poissonRatio=0.45)
+        robot.addObject("TetrahedronLinearSmallStrainFEMForceField", youngModulus=180, poissonRatio=0.45)
         robot.addObject("BoxROI", box=[-15, -15, -40, 15, 15, 10], drawBoxes=True)
         robot.addObject("FixedProjectiveConstraint", indices="@BoxROI.indices")
 
@@ -78,7 +79,7 @@ def createScene(root):
 
     with root.addChild("Goal") as goal:
         visual_kwargs = dict(showObject="true", drawMode="1", showObjectScale="1", showColor="1 0.2 0 1")
-        goal.addObject("MechanicalObject", name="state", position=[[15, 10, 95]], **visual_kwargs)
+        goal.addObject("MechanicalObject", name="state", position=[[-20, -10, 100]], **visual_kwargs)
         # Before: 0, 0, 125
 
     with root.addChild("Loss") as loss:
@@ -90,4 +91,34 @@ def createScene(root):
                 mse.addObject("MeanSquaredErrorMapping")
 
     return root
+
+
+def write_loss_and_gradient(filename, stiffness_min, stiffness_max, n_points):
+    import Sofa
+
+    points = []
+    delta_stiffness = (stiffness_max - stiffness_min) / (n_points - 1)
+    for i in range(n_points):
+        stiffness = stiffness_min + i * delta_stiffness
+
+        root = Sofa.Core.Node("root")
+        createScene(root, stiffness=stiffness)
+        Sofa.Simulation.initRoot(root)
+        Sofa.Simulation.animate(root, root.dt.value)
+
+        residual = float(root.Robot.newton.residualGraph.getValue().split()[-1])
+        loss = root.Loss.Distance.MSE.state.value.getValue()[0, 0]
+        grad = root.Parameters.springStiffness.gradient[2]
+        points.append((stiffness, loss, grad, residual))
+
+    with open(f"outputs/{filename}.txt", "w") as file:
+        file.write("\n".join([f"{s} {l} {g} {r}" for s, l, g, r in points]))
+
+def main():
+    filename = "test_test"
+    write_loss_and_gradient(filename, stiffness_min=5, stiffness_max=30, n_points=41)
+
+
+if __name__ == "__main__":
+    main()
 

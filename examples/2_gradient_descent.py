@@ -93,7 +93,7 @@ def createScene(root):
 
     with Node("Physics"):
         add_object("SparseLDLSolver", template="CompressedRowSparseMatrixd", name="solver", printLog="false")
-        add_object("NewtonRaphsonSolver", name="newton", maxNbIterationsNewton="20", maxNbIterationsLineSearch="1", warnWhenLineSearchFails="false")
+        add_object("NewtonRaphsonSolver", name="newton", maxNbIterationsNewton="100", maxNbIterationsLineSearch="1", warnWhenLineSearchFails="false", relativeSuccessiveStoppingThreshold=0, relativeInitialStoppingThreshold=0, absoluteResidualStoppingThreshold=0, relativeEstimateDifferenceThreshold=0, absoluteEstimateDifferenceThreshold=0)
         add_object("StaticSolver", name="static", newtonSolver="@newton")
 
         # =========================================== 4. Add adjoint solver ===========================================
@@ -124,3 +124,12 @@ def createScene(root):
     # Above is a somewhat convoluted way of computing the mean squared error between the particle and the target
     # What is important here is that the final loss to be minimized is in a "LossState", not a "MechanicalObject"
     # =================================================================================================================
+
+
+def main():
+    from validation import validate_parameter_gradient, validate_force_gradient
+    validate_parameter_gradient(createScene, "Parameters.stiffness", "Loss.Distance.MSE.state", verbose=True)
+    # validate_force_gradient(createScene, "Physics", "Loss.Distance.MSE.state")
+
+if __name__ == "__main__":
+    main()

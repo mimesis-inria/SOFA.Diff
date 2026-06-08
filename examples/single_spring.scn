@@ -19,7 +19,7 @@
         <RequiredPlugin name="Sofa.Component.Mapping.NonLinear"/> <!-- Needed to use components [DistanceFromTargetMapping] -->
     </Node>
 
-    <GradientDescentOptimizationLoop name="optimizer"/>
+    <GradientDescentOptimizationLoop name="optimizer" parameters="@/Parameters/springLength @/Parameters/springStiffness"/>
     <DifferentiableAnimationLoop name="simulator" computeBoundingBox="false"/>
     <VisualStyle displayFlags="showBehavior showBehaviorModels showForceFields showMappings"/>
 

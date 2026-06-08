@@ -83,12 +83,12 @@ class WriteDataController(Sofa.Core.Controller):
 # =====================================================================================================================
 # Custom parameterized force field
 # =====================================================================================================================
-import SofaDiff  # Don't forget that
+import sofadiff  # Don't forget that
 import Sofa
 
-class MyForceField(SofaDiff.ParameterizedForceFieldVec3d):
+class MyForceField(sofadiff.ParameterizedForceFieldVec3d):
     def __init__(self, stiffness, *args, **kwargs):
-        SofaDiff.ParameterizedForceFieldVec3d.__init__(self, *args, **kwargs)
+        sofadiff.ParameterizedForceFieldVec3d.__init__(self, *args, **kwargs)
         # Store arguments for later initialization
         self.stiffness_arg = stiffness
         self.stiffness_parameter = None
@@ -122,9 +122,9 @@ class MyForceField(SofaDiff.ParameterizedForceFieldVec3d):
 # =====================================================================================================================
 # Custom gradient descent
 # =====================================================================================================================
-import SofaDiff  # Don't forget that
+import sofadiff  # Don't forget that
 
-class RandomOptimizer(SofaDiff.OptimizationLoop):
+class RandomOptimizer(sofadiff.OptimizationLoop):
     def initialize(self):
         self.start_with_update = True
 
@@ -132,9 +132,9 @@ class RandomOptimizer(SofaDiff.OptimizationLoop):
         for parameter in self.parameters:
             parameter.next_value = np.random.uniform(parameter["lowerBound"], parameter["upperBound"], size=parameter.size)
 
-class MyGradientDescent(SofaDiff.GradientBasedOptimizationLoop):
+class MyGradientDescent(sofadiff.GradientBasedOptimizationLoop):
     def __init__(self, *args, **kwargs):
-        SofaDiff.GradientBasedOptimizationLoop.__init__(self, *args, **kwargs)  # Do not use super()
+        sofadiff.GradientBasedOptimizationLoop.__init__(self, *args, **kwargs)  # Do not use super()
         # Here the parameters are not initialized yet...
 
     def initialize(self):
@@ -160,9 +160,9 @@ class MyGradientDescent(SofaDiff.GradientBasedOptimizationLoop):
 
 import optax
 
-class OptaxGradientDescent(SofaDiff.GradientBasedOptimizationLoop):
+class OptaxGradientDescent(sofadiff.GradientBasedOptimizationLoop):
     def __init__(self, optax_optimizer, **kwargs):
-        SofaDiff.GradientBasedOptimizationLoop.__init__(self, **kwargs)
+        sofadiff.GradientBasedOptimizationLoop.__init__(self, **kwargs)
         self.optax_optimizer = optax_optimizer
         self.optimizers = []
         self.opt_states = []
