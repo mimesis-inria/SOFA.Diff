@@ -47,8 +47,8 @@ void StaticAdjointSolver::init()
     AdjointSolver::init();
     LinearSolverAccessor::init();
 
-    m_positionGradientId = newVecId("gradient of the global loss wrt x");
-    m_forceGradientId = newVecId("gradient of the global loss wrt f");
+    m_positionGradientId = newVecId("positionGradient");
+    m_forceGradientId = newVecId("forceGradient");
 }
 
 void StaticAdjointSolver::resetGradients(const ExecParams * params)
