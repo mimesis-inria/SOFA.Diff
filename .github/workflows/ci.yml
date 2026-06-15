@@ -66,7 +66,7 @@ jobs:
             echo ${CCACHE_BASEDIR}
             ccache -s
           fi
-          cd cd "$WORKSPACE_BUILD_PATH/lib"
+          cd "$WORKSPACE_BUILD_PATH/lib"
           tree
 
       - name: Sanitize artifact name
