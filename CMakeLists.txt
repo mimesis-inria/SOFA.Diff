@@ -3,7 +3,9 @@ project(SOFA.Diff VERSION 0.1 LANGUAGES CXX)
 
 # Find and load CMake configuration of packages containing this plugin's dependencies
 ## Mandatory dependencies
-sofa_find_package(Sofa.Framework REQUIRED)
+if(NOT TARGET Sofa.Framework)
+    find_package(Sofa.Framework REQUIRED)
+endif()
 sofa_find_package(Sofa.Component.Controller REQUIRED)
 sofa_find_package(Sofa.Component.Mapping REQUIRED)
 sofa_find_package(Sofa.Component.SolidMechanics.Spring REQUIRED)
