@@ -39,8 +39,9 @@ namespace sofadiff
     extern void registerParameterizedTetrahedronFEMForceField(sofa::core::ObjectFactory* factory);
     extern void registerMeanSquaredErrorMapping(sofa::core::ObjectFactory* factory);
 
+#ifdef SOFA_DIFF_BUILD_GUI_COMPONENTS
     extern void registerLoopsControlsGUI();
-
+#endif
 
     extern "C" {
         SOFA_SOFADIFF_API void initExternalModule();
@@ -100,8 +101,10 @@ namespace sofadiff
         registerTrainableParameter(factory);
         registerLossState(factory);
         registerMeanSquaredErrorMapping(factory);
-
+#ifdef SOFA_DIFF_BUILD_GUI_COMPONENTS
         registerLoopsControlsGUI();
+#endif
+
     }
 
 }
