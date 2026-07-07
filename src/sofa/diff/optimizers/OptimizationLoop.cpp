@@ -101,11 +101,11 @@ void OptimizationLoop::step(const ExecParams *params, const SReal dt)
 
     this->enterParameterGroup();
 
+    m_currentOptimizationStep++;
     this->applyUpdate();
     this->computeLoss(params, dt);
     this->processSimulation(params, dt);
     this->updateParameters();
-    m_currentOptimizationStep++;
 
     this->leaveParameterGroup();
 
