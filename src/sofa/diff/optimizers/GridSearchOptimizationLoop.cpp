@@ -56,8 +56,8 @@ void GridSearchOptimizationLoop::_initialize()
 void GridSearchOptimizationLoop::_updateParameters()
 {
     const int currentStep = this->getCurrentOptimizationStep();
-    if (currentStep + 1 < m_gridSize)
-        this->setParameters(currentStep + 1);
+    if (currentStep < m_gridSize)
+        this->setParameters(currentStep);
 }
 
 void GridSearchOptimizationLoop::setParameters(const int iteration)
