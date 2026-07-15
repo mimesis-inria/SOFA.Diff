@@ -1,3 +1,11 @@
+"""
+SOFA.Diff components in JAX.
+
+Shows how to implement a ParameterizedForceField and a GradientDescentOptimizationLoop in JAX, leveraging
+JIT-compilation and automatic differentiation. The application consists of two independent particles (red) connected to
+the origin with springs, whose stiffness is equal to their length. These parameters are optimized to reach the two
+target points (blue). The optimizer can be used with the usual interface or after opening the "Loops Controls" panel.
+"""
 # =====================================================================================================================
 # Preamble
 # =====================================================================================================================

@@ -1,3 +1,12 @@
+"""
+SOFA.Diff components in Python.
+
+Shows how to implement an OptimizationLoop, a GradientBasedOptimizationLoop and a ParameterizedForceField in Python.
+The application consists of two independent particles (red) connected to the origin with zero-length springs, whose
+stiffness is optimized to reach the two target points (blue). Both optimizers can be used in combination after opening
+the "Loops Controls" panel: the RandomOptimizationLoop can be used to find a good initial guess for the
+PythonGradientDescent, that fine-tunes the result.
+"""
 # =====================================================================================================================
 # Preamble
 # =====================================================================================================================
