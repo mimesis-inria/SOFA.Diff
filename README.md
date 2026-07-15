@@ -6,8 +6,6 @@ Plugin for differentiable physics in SOFA.
 
 Cf installation of SOFA plugins.
 
-Note: the examples may rely on a change in `SpringForceField` that has not been pushed on the master branch of SOFA yet (TODO).
-
 ## Features
 
 Supports:
