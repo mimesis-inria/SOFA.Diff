@@ -37,6 +37,7 @@ namespace sofapython3
 
 PYBIND11_MODULE(sofadiff, m)
 {
+    py::module_::import("Sofa");
     moduleAddParameter(m);
     moduleAddOptimizationLoop(m);
     moduleAddGradientBasedOptimizationLoop(m);
