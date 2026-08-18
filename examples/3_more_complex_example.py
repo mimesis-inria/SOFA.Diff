@@ -126,7 +126,7 @@ def createScene(root):
         add_object("RegularGridTopology", name="grid", min=(-0.5, -0.5, -0.5), max=(0.5, 0.5, n-0.5), n=(r+1, r+1, n*r+1))
         add_object("MechanicalObject", template="Vec3d", name="state", position="@grid.position")
         add_object(
-            "HexahedronLinearSmallStrainFEMForceField",
+            "HexahedronFEMForceField",
             name="elasticity",
             youngModulus="100",
             poissonRatio=0.45,

@@ -28,20 +28,30 @@ using sofa::core::ObjectFactory;
 
 namespace sofadiff
 {
+    extern void registerTrainableParameter(sofa::core::ObjectFactory* factory);
+    extern void registerLossState(sofa::core::ObjectFactory* factory);
+
     extern void registerGridSearchOptimizationLoop(sofa::core::ObjectFactory* factory);
     extern void registerGradientDescentOptimizationLoop(sofa::core::ObjectFactory* factory);
     extern void registerDifferentiableAnimationLoop(sofa::core::ObjectFactory* factory);
-    extern void registerStaticAdjointSolver(sofa::core::ObjectFactory* factory);
-    extern void registerParameterizedRestShapeSpringsForceField(sofa::core::ObjectFactory* factory);
-    extern void registerParameterizedSpringForceField(sofa::core::ObjectFactory* factory);
-    extern void registerTrainableParameter(sofa::core::ObjectFactory* factory);
-    extern void registerLossState(sofa::core::ObjectFactory* factory);
-    extern void registerParameterizedTetrahedronFEMForceField(sofa::core::ObjectFactory* factory);
-    extern void registerMeanSquaredErrorMapping(sofa::core::ObjectFactory* factory);
 
-#ifdef SOFA_DIFF_BUILD_GUI_COMPONENTS
+    extern void registerStaticAdjointSolver(sofa::core::ObjectFactory* factory);
+
+    extern void registerParameterizedSpringForceField(sofa::core::ObjectFactory* factory);
+    extern void registerParameterizedRestShapeSpringsForceField(sofa::core::ObjectFactory* factory);
+    extern void registerParameterizedTetrahedronFEMForceField(sofa::core::ObjectFactory* factory);
+    extern void registerParameterizedBeamFEMForceField(sofa::core::ObjectFactory* factory);
+    extern void registerParameterizedHeterogeneousBeamFEMForceField(sofa::core::ObjectFactory* factory);
+    extern void registerParameterizedConstantForceField(sofa::core::ObjectFactory* factory);
+
+    extern void registerParameterizedFixedProjectiveConstraint(sofa::core::ObjectFactory* factory);
+
+    extern void registerMeanSquaredErrorMapping(sofa::core::ObjectFactory* factory);
+    extern void registerMeanSquaredErrorMultiMapping(sofa::core::ObjectFactory* factory);
+    extern void registerGeodesicPoseLossMapping(sofa::core::ObjectFactory* factory);
+
     extern void registerLoopsControlsGUI();
-#endif
+
 
     extern "C" {
         SOFA_SOFADIFF_API void initExternalModule();
@@ -91,20 +101,29 @@ namespace sofadiff
 
     void registerObjects(sofa::core::ObjectFactory* factory)
     {
+        registerTrainableParameter(factory);
+        registerLossState(factory);
+
         registerGridSearchOptimizationLoop(factory);
         registerGradientDescentOptimizationLoop(factory);
         registerDifferentiableAnimationLoop(factory);
-        registerStaticAdjointSolver(factory);
-        registerParameterizedRestShapeSpringsForceField(factory);
-        registerParameterizedSpringForceField(factory);
-        registerParameterizedTetrahedronFEMForceField(factory);
-        registerTrainableParameter(factory);
-        registerLossState(factory);
-        registerMeanSquaredErrorMapping(factory);
-#ifdef SOFA_DIFF_BUILD_GUI_COMPONENTS
-        registerLoopsControlsGUI();
-#endif
 
+        registerStaticAdjointSolver(factory);
+
+        registerParameterizedSpringForceField(factory);
+        registerParameterizedRestShapeSpringsForceField(factory);
+        registerParameterizedTetrahedronFEMForceField(factory);
+        registerParameterizedBeamFEMForceField(factory);
+        registerParameterizedHeterogeneousBeamFEMForceField(factory);
+        registerParameterizedConstantForceField(factory);
+
+        registerParameterizedFixedProjectiveConstraint(factory);
+
+        registerMeanSquaredErrorMapping(factory);
+        registerMeanSquaredErrorMultiMapping(factory);
+        registerGeodesicPoseLossMapping(factory);
+
+        registerLoopsControlsGUI();
     }
 
 }

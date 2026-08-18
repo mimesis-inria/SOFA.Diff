@@ -27,6 +27,8 @@
 
 namespace sofadiff
 {
+    using Rigid3VecDeriv = sofa::defaulttype::Rigid3Types::VecDeriv;
+    using Rigid3Deriv    = sofa::defaulttype::Rigid3Types::Deriv;
 
 // ==============================================================================
 // Base class methods
@@ -149,6 +151,47 @@ size_t Parameter<double>::getVectorSize() const
     return 1;
 }
 
+// ==============================================================================
+// Specialization for Rigid3d
+// ==============================================================================
+template<>
+std::string Parameter<Rigid3VecDeriv>::GetCustomClassName()
+{
+    return "TrainableParameterRigid3Vector";
+}
+
+template<>
+void Parameter<Rigid3VecDeriv>::vectorToData(
+    Data<Rigid3VecDeriv>& data,
+    const type::vector<SReal>& vector)
+{
+    Rigid3VecDeriv value(1);
+    for (unsigned int i = 0; i < 6; ++i)
+        value[0][i] = vector[i];
+    data.setValue(value);
+}
+
+template<>
+type::vector<SReal> Parameter<Rigid3VecDeriv>::dataToVector(
+    const Data<Rigid3VecDeriv>& data) const
+{
+    type::vector<SReal> result(6, 0.0);
+    const auto& value = data.getValue();
+
+    if (!value.empty())
+    {
+        for (unsigned int i = 0; i < 6; ++i)
+            result[i] = value[0][i];
+    }
+
+    return result;
+}
+
+template<>
+size_t Parameter<Rigid3VecDeriv>::getVectorSize() const
+{
+    return 6;
+}
 
 // ==============================================================================
 // Registering
@@ -157,7 +200,7 @@ void registerTrainableParameter(core::ObjectFactory* factory)
 {
     factory->registerObjects(core::ObjectRegistrationData("Trainable parameter of vector type.").add< Parameter<type::vector<SReal>> >());
     factory->registerObjects(core::ObjectRegistrationData("Trainable parameter of scalar type.").add< Parameter<SReal> >());
+    factory->registerObjects(core::ObjectRegistrationData("Trainable parameter of rigid force vector type.").add< Parameter<Rigid3VecDeriv> >());
 }
-
 
 }

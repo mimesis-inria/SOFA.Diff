@@ -84,13 +84,55 @@ void StaticAdjointSolver::solveForPhysicalGradient()
     static constexpr MatricesFactors::B b(0);
     static constexpr MatricesFactors::K k(-1);
     mop.setSystemMBKMatrix(m, b, k, linearSolver);
+    // mop.projectResponse(m_positionGradientId);
 
-    linearSolver->getLinearSystem()->setSystemSolution(m_forceGradientId);
-    linearSolver->getLinearSystem()->setRHS(m_positionGradientId);
-    linearSolver->solveSystem();  // Solve -df/dx * lambda = dy/dx
-    linearSolver->getLinearSystem()->dispatchSystemSolution(m_forceGradientId);
+    auto* system = linearSolver->getLinearSystem();
+    auto* matrix = system ? system->getSystemBaseMatrix() : nullptr;
 
-    mop.projectResponse(m_forceGradientId);  // Take the projective constraints into account
+    const sofa::SignedIndex rows = matrix->rowSize();
+    const sofa::SignedIndex cols = matrix->colSize();
+
+    if (rows <= 0 || rows != cols)
+    {
+        msg_error() << "Invalid adjoint matrix dimensions: "
+                    << rows << " x " << cols << ".";
+        return;
+    }
+
+    // Replace A by A^T.
+    for (sofa::SignedIndex i = 0; i < rows; ++i)
+    {
+        for (sofa::SignedIndex j = i + 1; j < cols; ++j)
+        {
+            const SReal aij = matrix->element(i, j);
+            const SReal aji = matrix->element(j, i);
+
+            if (aij == aji)
+                continue;
+
+            matrix->set(i, j, aji);
+            matrix->set(j, i, aij);
+        }
+    }
+
+    matrix->compress();
+
+    system->setSystemSolution(m_forceGradientId);
+    system->setRHS(m_positionGradientId);
+
+    // Solve A^T p = dL/dz.
+    linearSolver->solveSystem();
+    system->dispatchSystemSolution(m_forceGradientId);
+
+    mop.projectResponse(m_forceGradientId);
+
+
+//     linearSolver->getLinearSystem()->setSystemSolution(m_forceGradientId);
+//     linearSolver->getLinearSystem()->setRHS(m_positionGradientId);
+//     linearSolver->solveSystem();  // Solve -df/dx * lambda = dy/dx
+//     linearSolver->getLinearSystem()->dispatchSystemSolution(m_forceGradientId);
+
+//     mop.projectResponse(m_forceGradientId);  // Take the projective constraints into account
 }
 
 }
