@@ -35,6 +35,8 @@ namespace sofadiff
     extern void registerGradientDescentOptimizationLoop(sofa::core::ObjectFactory* factory);
     extern void registerDifferentiableAnimationLoop(sofa::core::ObjectFactory* factory);
     extern void registerStaticAdjointSolver(sofa::core::ObjectFactory* factory);
+
+    extern void registerParameterizedSpringForceField(sofa::core::ObjectFactory* factory);
     extern void registerParameterizedRestShapeSpringsForceField(sofa::core::ObjectFactory* factory);
     extern void registerParameterizedTetrahedronFEMForceField(sofa::core::ObjectFactory* factory);
     extern void registerParameterizedBeamFEMForceField(sofa::core::ObjectFactory* factory);
