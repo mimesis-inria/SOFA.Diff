@@ -23,7 +23,8 @@
 #include <sofa/diff/adjoints/AdjointSolver.h>
 
 #include <sofa/core/ObjectFactory.h>
-
+#include <sofa/simulation/Node.h>
+#include <sofa/core/ConstraintParams.h>
 
 namespace sofadiff
 {
@@ -46,12 +47,70 @@ void DifferentiableAnimationLoop::init()
     LinearSolverAccessor::init();
 }
 
-void DifferentiableAnimationLoop::step(const ExecParams* params, const SReal dt)
+void DifferentiableAnimationLoop::animate(const core::ExecParams* params, SReal dt) const
+{
+    const SReal startTime = m_node->getTime();
+    const SReal nextTime = startTime + dt;
+
+    sofa::core::MechanicalParams mparams(*params);
+    mparams.setDt(dt);
+
+    behaviorUpdatePosition(params, dt);
+    updateInternalData(params);
+
+    collisionDetection(params);
+
+    beginIntegration(params, dt);
+    
+    {
+        projectPositionAndVelocity(nextTime, mparams);
+        propagateOnlyPositionAndVelocity(nextTime, mparams);
+    
+        const core::ConstraintParams cparams;
+        accumulateMatrixDeriv(cparams);
+
+        solve(params, dt);
+
+        projectPositionAndVelocity(nextTime, mparams);
+        propagateOnlyPositionAndVelocity(nextTime, mparams);
+
+    }
+    endIntegration(params, dt);
+}
+
+void DifferentiableAnimationLoop::step(const ExecParams* params, SReal dt)
 {
     if (!isStepAllowed())
         return;
 
-    DefaultAnimationLoop::step(params, dt);
+    if (this->d_componentState.getValue() != sofa::core::objectmodel::ComponentState::Valid)
+    {
+        return;
+    }
+
+    m_node = dynamic_cast<sofa::simulation::Node*>(this->l_node.get());
+    assert(m_node);
+
+    if (dt == 0_sreal)
+    {
+        dt = m_node->getDt();
+    }
+
+#ifdef SOFA_DUMP_VISITOR_INFO
+    simulation::Visitor::printNode("Step");
+#endif
+
+    propagateAnimateBeginEvent(params, dt);
+    animate(params, dt);
+    updateSimulationContext(params, dt, m_node->getTime());
+    propagateAnimateEndEvent(params, dt);
+
+    updateMapping(params, dt);
+    computeBoundingBox(params);
+
+#ifdef SOFA_DUMP_VISITOR_INFO
+    simulation::Visitor::printCloseNode("Step");
+#endif
     m_currentSimulationStep++;
 }
 

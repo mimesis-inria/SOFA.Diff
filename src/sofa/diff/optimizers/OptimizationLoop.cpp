@@ -203,9 +203,9 @@ void OptimizationLoop::applyUpdate()
 
 void OptimizationLoop::computeLoss(const ExecParams *params, const SReal dt)
 {
-    dynamic_cast<simulation::Node*>(this->l_node.get())->setTime(m_startingTime);
-    RetrieveStateVisitor visitor(execparams::defaultInstance(), m_startingPositionId, m_startingVelocityId);
-    visitor.execute(this->getContext());
+    // dynamic_cast<simulation::Node*>(this->l_node.get())->setTime(m_startingTime);
+    // RetrieveStateVisitor visitor(execparams::defaultInstance(), m_startingPositionId, m_startingVelocityId);
+    // visitor.execute(this->getContext());
 
     if (auto * differentiableLoop = dynamic_cast<DifferentiableAnimationLoop*>(l_simulationLoop.get()))
         differentiableLoop->resetAdjoint(params);  // TODO: more like `resetForward()`

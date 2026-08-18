@@ -34,16 +34,13 @@ namespace sofadiff
     extern void registerGridSearchOptimizationLoop(sofa::core::ObjectFactory* factory);
     extern void registerGradientDescentOptimizationLoop(sofa::core::ObjectFactory* factory);
     extern void registerDifferentiableAnimationLoop(sofa::core::ObjectFactory* factory);
-
     extern void registerStaticAdjointSolver(sofa::core::ObjectFactory* factory);
-
-    extern void registerParameterizedSpringForceField(sofa::core::ObjectFactory* factory);
     extern void registerParameterizedRestShapeSpringsForceField(sofa::core::ObjectFactory* factory);
     extern void registerParameterizedTetrahedronFEMForceField(sofa::core::ObjectFactory* factory);
     extern void registerParameterizedBeamFEMForceField(sofa::core::ObjectFactory* factory);
     extern void registerParameterizedHeterogeneousBeamFEMForceField(sofa::core::ObjectFactory* factory);
     extern void registerParameterizedConstantForceField(sofa::core::ObjectFactory* factory);
-
+    
     extern void registerParameterizedFixedProjectiveConstraint(sofa::core::ObjectFactory* factory);
 
     extern void registerMeanSquaredErrorMapping(sofa::core::ObjectFactory* factory);
@@ -103,13 +100,12 @@ namespace sofadiff
     {
         registerTrainableParameter(factory);
         registerLossState(factory);
-
+        
         registerGridSearchOptimizationLoop(factory);
         registerGradientDescentOptimizationLoop(factory);
         registerDifferentiableAnimationLoop(factory);
 
         registerStaticAdjointSolver(factory);
-
         registerParameterizedSpringForceField(factory);
         registerParameterizedRestShapeSpringsForceField(factory);
         registerParameterizedTetrahedronFEMForceField(factory);
@@ -118,12 +114,14 @@ namespace sofadiff
         registerParameterizedConstantForceField(factory);
 
         registerParameterizedFixedProjectiveConstraint(factory);
-
+        
         registerMeanSquaredErrorMapping(factory);
         registerMeanSquaredErrorMultiMapping(factory);
         registerGeodesicPoseLossMapping(factory);
 
         registerLoopsControlsGUI();
+ 
+    
     }
 
 }

@@ -44,6 +44,7 @@ public:
 
 // Inherited methods
     void init() override;
+    void animate(const ExecParams* params, SReal dt) const;
     void step(const ExecParams* params, SReal dt) override;
 
 // New methods
