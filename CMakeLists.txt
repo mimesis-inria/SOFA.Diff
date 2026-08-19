@@ -50,7 +50,7 @@ set(HEADER_FILES
         ${SOFA_DIFF_SRC_DIR}/forcefields/ParameterizedConstantForceField.h
 
         ${SOFA_DIFF_SRC_DIR}/constraints/ParameterizedFixedProjectiveConstraint.h
-
+        
         ${SOFA_DIFF_SRC_DIR}/mappings/MeanSquaredErrorMapping.h
         ${SOFA_DIFF_SRC_DIR}/mappings/MeanSquaredErrorMultiMapping.h
         ${SOFA_DIFF_SRC_DIR}/mappings/GeodesicPoseLossMapping.h
@@ -90,7 +90,7 @@ set(SOURCE_FILES
         ${SOFA_DIFF_SRC_DIR}/forcefields/ParameterizedBeamFEMForceField.cpp
         ${SOFA_DIFF_SRC_DIR}/forcefields/ParameterizedHeterogeneousBeamFEMForceField.cpp
         ${SOFA_DIFF_SRC_DIR}/forcefields/ParameterizedConstantForceField.cpp
-
+        
         ${SOFA_DIFF_SRC_DIR}/constraints/ParameterizedFixedProjectiveConstraint.cpp
 
         ${SOFA_DIFF_SRC_DIR}/mappings/MeanSquaredErrorMapping.cpp
@@ -109,16 +109,13 @@ set(README_FILES
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES_TO_MOC} ${MOCCED_HEADER_FILES} ${HEADER_FILES} ${SOURCE_FILES} ${README_FILES})
 
 # Link the plugin library to its dependency(ies).
-target_link_libraries(${PROJECT_NAME} Sofa.Framework Sofa.Component.Controller Sofa.Component.Mapping Sofa.Component.SolidMechanics.Spring Sofa.Component.SolidMechanics.FEM.Elastic Sofa.Component.MechanicalLoad)
+target_link_libraries(${PROJECT_NAME} Sofa.Framework Sofa.Component.Controller Sofa.Component.Mapping Sofa.Component.SolidMechanics.Spring Sofa.Component.SolidMechanics.FEM.Elastic Sofa.Component.MechanicalLoad Sofa.Component.Constraint.Projective SofaImGui)
 
 find_package(SofaPython3 QUIET)
 
 if(SofaPython3_FOUND)
     add_subdirectory(src/sofa/diff/bindings/)
 endif()
-if (SOFA_DIFF_BUILD_GUI_COMPONENTS)
-    target_link_libraries(${PROJECT_NAME} SofaImGui)
-endif ()
 
 # Create package Config, Version & Target files.
 # Deploy the headers, resources, scenes & examples.
