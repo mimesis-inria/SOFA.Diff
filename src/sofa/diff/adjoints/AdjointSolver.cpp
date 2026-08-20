@@ -24,6 +24,7 @@
 #include <sofa/helper/ScopedAdvancedTimer.h>
 #include <sofa/simulation/VectorOperations.h>
 
+#include <sofa/component/solidmechanics/fem/elastic/BeamFEMForceField.h>
 
 namespace sofadiff
 {
@@ -63,11 +64,17 @@ void AdjointSolver::resetParametersGradient() const
         parameter->setDataFrom("gradient", 0);
 }
 
-void AdjointSolver::propagateGradientsThroughForceFields(const MechanicalParams * mparams, const MultiVecDerivId & forceGradientId) const
+void AdjointSolver::propagateGradientsThroughForceFields(const MechanicalParams* mparams, const MultiVecDerivId& forceGradientId) const
 {
     SCOPED_TIMER("AdjointSolver::propagateGradientsThroughForceFields");
-    for (const auto &forceField: m_parameterizedForceFields)
+
+    using BeamFF = sofa::component::solidmechanics::fem::elastic::BeamFEMForceField<sofa::defaulttype::Rigid3Types>;
+    for (const auto& forceField : m_parameterizedForceFields)
+    {
         forceField->applyParametersJacobianTranspose(mparams, forceGradientId);
+        if (auto* beam = dynamic_cast<BeamFF*>(forceField))
+            beam->reinit();
+    }
 }
 
 }
