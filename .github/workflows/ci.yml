@@ -103,6 +103,7 @@ jobs:
           sofa_version: ${{ steps.sofa.outputs.sofa_version }}
           src_dir: ${{ env.WORKSPACE_SRC_PATH }}
           build_dir: ${{ env.WORKSPACE_BUILD_PATH }}
+          python_path: ${{ env.WORKSPACE_BUILD_PATH }}/lib/python3/site-packages/
           python_exe: ${{ steps.sofa.outputs.python_exe }}
           output_dir: ${{ github.workspace }}/tests-results_dir
           nb_parallel_threads: '4'
