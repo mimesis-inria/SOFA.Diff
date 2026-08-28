@@ -81,7 +81,6 @@ def createScene(root):
     with Node("Plugins"):
         add_object("RequiredPlugin", pluginName=[
             "SOFA.Diff",
-            "Elasticity",  # Needed to use components [HexahedronLinearSmallStrainFEMForceField]
             "Sofa.Component.Visual",  # Needed to use components [VisualStyle]
             "Sofa.Component.LinearSolver.Iterative",  # Needed to use components [CGLinearSolver]
             "Sofa.Component.LinearSolver.Direct",  # Needed to use components [SparseLDLSolver]
@@ -98,7 +97,6 @@ def createScene(root):
             "Sofa.Component.Mapping.NonLinear",  # Needed to use components [DistanceFromTargetMapping]
             "Sofa.Component.Topology.Container.Dynamic",  # Needed to use components [TetrahedronSetGeometryAlgorithms,TetrahedronSetTopologyContainer,TetrahedronSetTopologyModifier]
             "Sofa.Component.Topology.Mapping",  # Needed to use components [Hexa2TetraTopologicalMapping]
-            "SofaMatrix",  # Needed to  use components [GlobalSystemMatrixExporter]
         ])
 
     add_object("VisualStyle", displayFlags="showBehavior showBehaviorModels showForceFields showMappings")
@@ -126,7 +124,8 @@ def createScene(root):
         add_object("RegularGridTopology", name="grid", min=(-0.5, -0.5, -0.5), max=(0.5, 0.5, n-0.5), n=(r+1, r+1, n*r+1))
         add_object("MechanicalObject", template="Vec3d", name="state", position="@grid.position")
         add_object(
-            "HexahedronLinearSmallStrainFEMForceField",
+            "LinearSmallStrainFEMForceField",
+            template="Vec3,Hexahedron",
             name="elasticity",
             youngModulus="100",
             poissonRatio=0.45,
