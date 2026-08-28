@@ -1,2 +1,5 @@
+ignore "0_debug_complex.py"
+ignore "0_debug_example.py"
 ignore "jax_components.py"
+ignore "validation.py"
 
