@@ -41,7 +41,7 @@ AdjointSolveVisitor::AdjointSolveVisitor(const ExecParams *params, const SReal _
 
 simulation::Visitor::Result AdjointSolveVisitor::processNodeTopDown(simulation::Node* node)
 {
-    if (! node->solver.empty())
+    if (! node->integrationScheme.empty())
     {
         // TODO: better way to get the adjoint?
         std::vector<AdjointSolver *> adjoints;

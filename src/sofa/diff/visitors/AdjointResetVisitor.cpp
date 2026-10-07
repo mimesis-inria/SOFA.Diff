@@ -37,7 +37,7 @@ AdjointResetVisitor::AdjointResetVisitor(const ExecParams *params): Visitor(para
 
 simulation::Visitor::Result AdjointResetVisitor::processNodeTopDown(simulation::Node* node)
 {
-    if (! node->solver.empty())
+    if (! node->integrationScheme.empty())
     {
         // TODO: better way to get the adjoint?
         std::vector<AdjointSolver *> adjoints;
