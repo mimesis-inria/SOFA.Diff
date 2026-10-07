@@ -59,7 +59,7 @@ def createScene(root):
             "SOFA.Diff",
             "Sofa.Component.Visual",  # Needed to use components [VisualStyle]
             "Sofa.Component.LinearSolver.Direct",  # Needed to use components [SparseLDLSolver]
-            "Sofa.Component.ODESolver.Backward",  # Needed to use components [NewtonRaphsonSolver, StaticSolver]
+            "Sofa.Component.IntegrationScheme.Backward",  # Needed to use components [StaticEquilibriumIntegrationScheme]
             "Sofa.Component.StateContainer",  # Needed to use components [MechanicalObject]
             "Sofa.Component.Mass",  # Needed to use components [UniformMass]
             "Sofa.Component.Mapping.NonLinear",  # Needed to use components [DistanceFromTargetMapping]
@@ -93,8 +93,7 @@ def createScene(root):
 
     with Node("Physics"):
         add_object("SparseLDLSolver", template="CompressedRowSparseMatrixd", name="solver", printLog="false")
-        add_object("NewtonRaphsonSolver", name="newton", maxNbIterationsNewton="100", maxNbIterationsLineSearch="1", warnWhenLineSearchFails="false", relativeSuccessiveStoppingThreshold=0, relativeInitialStoppingThreshold=0, absoluteResidualStoppingThreshold=0, relativeEstimateDifferenceThreshold=0, absoluteEstimateDifferenceThreshold=0)
-        add_object("StaticSolver", name="static", newtonSolver="@newton")
+        add_object("StaticEquilibriumIntegrationScheme", name="static", maxNbIterationsNewton=20, maxNbIterationsLineSearch=1, residueThreshold=0)
 
         # =========================================== 4. Add adjoint solver ===========================================
         add_object("StaticAdjointSolver", name="adjoint")

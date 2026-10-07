@@ -81,11 +81,10 @@ def createScene(root):
     with Node("Plugins"):
         add_object("RequiredPlugin", pluginName=[
             "SOFA.Diff",
-            "Elasticity",  # Needed to use components [HexahedronLinearSmallStrainFEMForceField]
             "Sofa.Component.Visual",  # Needed to use components [VisualStyle]
             "Sofa.Component.LinearSolver.Iterative",  # Needed to use components [CGLinearSolver]
             "Sofa.Component.LinearSolver.Direct",  # Needed to use components [SparseLDLSolver]
-            "Sofa.Component.ODESolver.Backward",  # Needed to use components [NewtonRaphsonSolver, StaticSolver]
+            "Sofa.Component.IntegrationScheme.Backward",  # Needed to use components [StaticEquilibriumIntegrationScheme]
             "Sofa.Component.StateContainer",  # Needed to use components [MechanicalObject]
             "Sofa.Component.Mass",  # Needed to use components [UniformMass]
             "Sofa.Component.MechanicalLoad",  # Needed to use components [ConstantForceField]
@@ -119,14 +118,15 @@ def createScene(root):
 
     with Node("Physics"):
         add_object("SparseLDLSolver", template="CompressedRowSparseMatrixMat3x3d", name="solver", printLog="false")
-        add_object("NewtonRaphsonSolver", name="newton", maxNbIterationsNewton=20, maxNbIterationsLineSearch=10, warnWhenLineSearchFails="false")#, relativeSuccessiveStoppingThreshold=0, relativeInitialStoppingThreshold=0, absoluteResidualStoppingThreshold=0, relativeEstimateDifferenceThreshold=0, absoluteEstimateDifferenceThreshold=0)
-        add_object("StaticSolver", name="static", newtonSolver="@newton")
+        add_object("StaticEquilibriumIntegrationScheme", name="static", maxNbIterationsNewton=20, maxNbIterationsLineSearch=10)
+
         add_object("StaticAdjointSolver", name="adjoint")
 
         add_object("RegularGridTopology", name="grid", min=(-0.5, -0.5, -0.5), max=(0.5, 0.5, n-0.5), n=(r+1, r+1, n*r+1))
         add_object("MechanicalObject", template="Vec3d", name="state", position="@grid.position")
         add_object(
-            "HexahedronLinearSmallStrainFEMForceField",
+            "LinearSmallStrainFEMForceField",
+            template="Vec3d,Hexahedron",
             name="elasticity",
             youngModulus="100",
             poissonRatio=0.45,
