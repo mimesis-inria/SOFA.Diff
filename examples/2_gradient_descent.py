@@ -93,7 +93,7 @@ def createScene(root):
 
     with Node("Physics"):
         add_object("SparseLDLSolver", template="CompressedRowSparseMatrixd", name="solver", printLog="false")
-        add_object("StaticEquilibriumIntegrationScheme", name="static", maxNbIterationsNewton=20, maxNbIterationsLineSearch=1, residueThreshold=0)
+        add_object("StaticEquilibriumIntegrationScheme", name="static", maxNbIterationsNewton=20, maxNbIterationsLineSearch=1, residualThreshold=0)
 
         # =========================================== 4. Add adjoint solver ===========================================
         add_object("StaticAdjointSolver", name="adjoint")

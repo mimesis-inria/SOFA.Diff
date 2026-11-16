@@ -89,7 +89,7 @@ def createScene(root):
 
     with Node("Physics"):
         add_object("SparseLDLSolver", template="CompressedRowSparseMatrixd", name="solver", printLog="false")
-        add_object("StaticEquilibriumIntegrationScheme", name="static", maxNbIterationsNewton=20, maxNbIterationsLineSearch=1, residueThreshold=0)
+        add_object("StaticEquilibriumIntegrationScheme", name="static", maxNbIterationsNewton=20, maxNbIterationsLineSearch=1, residualThreshold=0)
 
         add_object("MechanicalObject", template="Vec3d", name="state", position="0 0 0", showObject="true", drawMode="1", showObjectScale="0.1", showColor=(255, 0, 0, 255))
         add_object("UniformMass", template="Vec3d", name="mass", totalMass=1)
