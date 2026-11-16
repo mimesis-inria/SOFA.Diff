@@ -53,7 +53,7 @@ public:
 
     Size getSize() const override;
     void resize(Size vsize) override;
-
+    void computeBBox(const core::ExecParams* /*params*/, bool /*onlyVisible*/) override;
 };
 
 }

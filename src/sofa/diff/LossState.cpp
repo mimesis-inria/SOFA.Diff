@@ -97,6 +97,10 @@ void LossState::resize(Size vsize)
     SOFA_UNUSED(vsize);
 }
 
+void LossState::computeBBox(const core::ExecParams* /*params*/, bool /*onlyVisible*/)
+{
+    this->f_bbox.setValue(sofa::type::BoundingBox());
+}
 
 void registerLossState(core::ObjectFactory* factory)
 {
