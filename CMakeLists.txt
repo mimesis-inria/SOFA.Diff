@@ -46,7 +46,7 @@ set(HEADER_FILES
         ${SOFA_DIFF_SRC_DIR}/forcefields/ParameterizedSpringForceField.h
         ${SOFA_DIFF_SRC_DIR}/forcefields/ParameterizedTetrahedronFEMForceField.h
         ${SOFA_DIFF_SRC_DIR}/forcefields/ParameterizedBeamFEMForceField.h
-        ${SOFA_DIFF_SRC_DIR}/forcefields/ParameterizedHeterogeneousBeamFEMForceField.h
+        # ${SOFA_DIFF_SRC_DIR}/forcefields/ParameterizedHeterogeneousBeamFEMForceField.h
         ${SOFA_DIFF_SRC_DIR}/forcefields/ParameterizedConstantForceField.h
 
         ${SOFA_DIFF_SRC_DIR}/constraints/ParameterizedFixedProjectiveConstraint.h
@@ -88,7 +88,7 @@ set(SOURCE_FILES
         ${SOFA_DIFF_SRC_DIR}/forcefields/ParameterizedSpringForceField.cpp
         ${SOFA_DIFF_SRC_DIR}/forcefields/ParameterizedTetrahedronFEMForceField.cpp
         ${SOFA_DIFF_SRC_DIR}/forcefields/ParameterizedBeamFEMForceField.cpp
-        ${SOFA_DIFF_SRC_DIR}/forcefields/ParameterizedHeterogeneousBeamFEMForceField.cpp
+        # ${SOFA_DIFF_SRC_DIR}/forcefields/ParameterizedHeterogeneousBeamFEMForceField.cpp
         ${SOFA_DIFF_SRC_DIR}/forcefields/ParameterizedConstantForceField.cpp
         
         ${SOFA_DIFF_SRC_DIR}/constraints/ParameterizedFixedProjectiveConstraint.cpp

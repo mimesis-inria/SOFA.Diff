@@ -16,7 +16,6 @@
 #include <sofa/type/Quat.h>
 
 #include <array>
-#include <string>
 #include <type_traits>
 
 namespace sofadiff
@@ -69,12 +68,6 @@ public:
         sofa::core::MultiVecDerivId vecId) override;
 
 protected:
-    enum class FrameMode : unsigned char
-    {
-        Initial,
-        Tangent
-    };
-
     struct CommandFrame
     {
         Quat qBase;
@@ -107,49 +100,18 @@ protected:
         Coord& target,
         const Coord& initialControlled,
         const sofa::type::vector<SReal>& poseOffset,
-        sofa::Index parameterBase,
-        const Quat& tangentDelta,
-        bool tangentDeltaValid) const;
+        sofa::Index parameterBase) const;
 
     VectorN mapRawGradientToParameterGradient(
         const VectorN& rawGradient,
         const Coord& initialControlled,
         const sofa::type::vector<SReal>& poseOffset,
-        sofa::Index parameterBase,
-        const Quat& tangentDelta,
-        bool tangentDeltaValid) const;
-
-    void invalidateTangentCache();
-    bool promotePendingTangentCache();
-    bool refreshActiveTangentCacheFromCurrentState(const char* source);
-
-    bool updateTangentDeltaCacheIfNeeded(
-        const VecCoord& currentPositions,
-        sofa::Index constrainedIndex);
-
-    bool refreshActiveTangentDeltaFromState(
-        const VecCoord& currentPositions,
-        sofa::Index constrainedIndex,
-        const char* source);
-
-    bool storePendingTangentDeltaFromState(
-        const VecCoord& currentPositions,
-        sofa::Index constrainedIndex,
-        const char* source);
-
-    bool computeTangentDeltaFromState(
-        const VecCoord& currentPositions,
-        sofa::Index constrainedIndex,
-        Quat& tangentDelta,
-        sofa::Index& usedStartIndex,
-        sofa::Index& usedEndIndex) const;
+        sofa::Index parameterBase) const;
 
     CommandFrame computeCommandFrame(
         const Coord& initialControlled,
         const sofa::type::vector<SReal>& poseOffset,
-        sofa::Index parameterBase,
-        const Quat& tangentDelta,
-        bool tangentDeltaValid) const;
+        sofa::Index parameterBase) const;
 
     bool isParameterActive(unsigned int component) const;
 
@@ -167,23 +129,15 @@ protected:
 
     static bool isZeroBlock(const MatrixN& block);
 
-    FrameMode frameMode() const;
-
     static Mat3 identityMatrix();
     SReal parameterValue(const sofa::type::vector<SReal>& poseOffset, sofa::Index parameterBase, unsigned int component) const;
     Vec3 parameterTranslation(const sofa::type::vector<SReal>& poseOffset, sofa::Index parameterBase) const;
     Quat parameterRotation(const sofa::type::vector<SReal>& poseOffset, sofa::Index parameterBase) const;
     static Quat identityQuaternion();
-    static Quat normalizedQuaternion(Quat q);
-    static Quat inverseQuaternion(Quat q);
     static Mat3 quaternionToMatrix(const Quat& q);
     static Vec3 matVec(const Mat3& A, const Vec3& x);
     static Vec3 transposeMatVec(const Mat3& A, const Vec3& x);
     static Vec3 cross(const Vec3& a, const Vec3& b);
-    static Real dot(const Vec3& a, const Vec3& b);
-    static Real norm(const Vec3& v);
-    static Vec3 normalizedVector(const Vec3& v);
-    static Quat shortestArcQuaternion(const Vec3& from, const Vec3& to);
 
 protected:
     sofa::Data<sofa::type::vector<SReal>> d_poseOffset;
@@ -194,35 +148,8 @@ protected:
     // Rigid3d order: [tx ty tz rx ry rz]. Vec3d order: [x y z].
     sofa::Data<sofa::type::vector<bool>> d_componentFlags;
 
-    // Physical local-frame mode for Rigid3d:
-    //   "initial" : use the initial controlled-node frame.
-    //   "tangent" : transport the initial controlled-node frame by the geometric tangent change
-    //               measured from tangentStartIndex to tangentEndIndex.
-    // Follower/global/current/target modes are intentionally removed.
-    sofa::Data<std::string> d_frameMode;
-
-    // Geometric tangent window used in frameMode="tangent". The tangent is computed from
-    // center(tangentEndIndex) - center(tangentStartIndex). Avoid using the constrained node as start.
-    sofa::Data<int> d_tangentStartIndex;
-    sofa::Data<int> d_tangentEndIndex;
-
+    // Reference configuration captured at initialization.
     VecCoord m_initialPositions;
-
-    // Active tangent cache: frame used by the current forward/adjoint solve.
-    // It is frozen to avoid artificial feedback accumulation between the constrained node and guide tangent.
-    Quat m_cachedTangentDelta;
-    bool m_cachedTangentDeltaValid { false };
-    sofa::Index m_cachedConstrainedIndex { static_cast<sofa::Index>(-1) };
-    sofa::Index m_cachedTangentStartIndex { static_cast<sofa::Index>(-1) };
-    sofa::Index m_cachedTangentEndIndex { static_cast<sofa::Index>(-1) };
-
-    // Pending tangent cache: latest tangent frame observed during the current solve.
-    // It is NOT used immediately. reinit() promotes it to active for the next optimization step.
-    Quat m_pendingTangentDelta;
-    bool m_pendingTangentDeltaValid { false };
-    sofa::Index m_pendingConstrainedIndex { static_cast<sofa::Index>(-1) };
-    sofa::Index m_pendingTangentStartIndex { static_cast<sofa::Index>(-1) };
-    sofa::Index m_pendingTangentEndIndex { static_cast<sofa::Index>(-1) };
 
     sofa::type::vector<StoredConstrainedBlock> m_storedBlocks;
 };

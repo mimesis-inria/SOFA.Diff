@@ -40,7 +40,7 @@ namespace sofadiff
     extern void registerParameterizedRestShapeSpringsForceField(sofa::core::ObjectFactory* factory);
     extern void registerParameterizedTetrahedronFEMForceField(sofa::core::ObjectFactory* factory);
     extern void registerParameterizedBeamFEMForceField(sofa::core::ObjectFactory* factory);
-    extern void registerParameterizedHeterogeneousBeamFEMForceField(sofa::core::ObjectFactory* factory);
+    // extern void registerParameterizedHeterogeneousBeamFEMForceField(sofa::core::ObjectFactory* factory);
     extern void registerParameterizedConstantForceField(sofa::core::ObjectFactory* factory);
     
     extern void registerParameterizedFixedProjectiveConstraint(sofa::core::ObjectFactory* factory);
@@ -112,7 +112,7 @@ namespace sofadiff
         registerParameterizedRestShapeSpringsForceField(factory);
         registerParameterizedTetrahedronFEMForceField(factory);
         registerParameterizedBeamFEMForceField(factory);
-        registerParameterizedHeterogeneousBeamFEMForceField(factory);
+        // registerParameterizedHeterogeneousBeamFEMForceField(factory);
         registerParameterizedConstantForceField(factory);
 
         registerParameterizedFixedProjectiveConstraint(factory);
