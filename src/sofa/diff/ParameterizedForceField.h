@@ -39,7 +39,7 @@ class SOFA_SOFADIFF_API Parameterized: virtual public core::objectmodel::BaseObj
     SOFA_ABSTRACT_CLASS(Parameterized, core::objectmodel::BaseObject);
 
 public:
-    std::unordered_set<core::BaseData*> m_canBeTrained;
+    std::unordered_set<const core::BaseData*> m_canBeTrained;
 
     virtual void applyParametersJacobianTranspose(
         const core::MechanicalParams* mparams,
@@ -54,7 +54,7 @@ protected:
 
 public:
     template<class T>
-    Parameter<T> * initParameter(Data<T> & data);
+    Parameter<T> * initParameter(const Data<T> & data);
 
 protected:
     void checkForNotImplementedParameters(const type::vector<core::BaseData *> & dataFields) const;
@@ -71,7 +71,7 @@ public:
 
 
 template<class T>
-Parameter<T> * Parameterized::initParameter(Data<T> &data)
+Parameter<T> * Parameterized::initParameter(const Data<T> &data)
 {
     m_canBeTrained.insert(&data);
 

@@ -151,12 +151,59 @@ size_t Parameter<double>::getVectorSize() const
 
 
 // ==============================================================================
+// Specialization for type::vector<type::Vec3d>
+// ==============================================================================
+template<>
+std::string Parameter<type::vector<type::Vec3d>>::GetCustomClassName()
+{
+    return "TrainableParameterVector3d";
+}
+
+template<>
+void Parameter<type::vector<type::Vec3d>>::vectorToData(Data<type::vector<type::Vec3d>> & data, const type::vector<SReal> & vector)
+{
+    if (vector.size() % 3 != 0)
+    {
+        msg_error() << "Trying to make a Data<vector<Vec3d>> from a vector<SReal> with size not divisible by 3.";
+        return;
+    }
+
+    auto accessor = helper::getWriteOnlyAccessor(data);
+    accessor->resize(vector.size() / 3);
+    for (std::size_t i = 0; i < accessor->size(); ++i)
+    {
+        (*accessor)[i] = type::Vec3d(vector[3 * i], vector[3 * i + 1], vector[3 * i + 2]);
+    }
+}
+
+template<>
+type::vector<SReal> Parameter<type::vector<type::Vec3d>>::dataToVector(const Data<type::vector<type::Vec3d>> & data) const
+{
+    const auto accessor = helper::getReadAccessor(data);
+    type::vector<SReal> result;
+    result.reserve(accessor.size() * 3);
+    for (const auto& vec : accessor)
+    {
+        result.insert(result.end(), vec.begin(), vec.end());
+    }
+    return result;
+}
+
+template<>
+size_t Parameter<type::vector<type::Vec3d>>::getVectorSize() const
+{
+    return d_value.getValue().size() * 3;
+}
+
+
+// ==============================================================================
 // Registering
 // ==============================================================================
 void registerTrainableParameter(core::ObjectFactory* factory)
 {
     factory->registerObjects(core::ObjectRegistrationData("Trainable parameter of vector type.").add< Parameter<type::vector<SReal>> >());
     factory->registerObjects(core::ObjectRegistrationData("Trainable parameter of scalar type.").add< Parameter<SReal> >());
+    factory->registerObjects(core::ObjectRegistrationData("Trainable parameter of scalar type.").add< Parameter<type::vector<type::Vec3d>> >());
 }
 
 
