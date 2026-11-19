@@ -44,9 +44,8 @@ public:
     SOFA_CLASS(ParameterizedRestShapeSpringsForceField, RestShapeSpringsForceField<Vec3Types>);
 
     // TODO: Is a pointer the correct type to use here?
-    // Data<type::vector<SReal>> * m_lengthGradient;
-    // Data<type::vector<SReal>> * m_stiffnessGradient;
     Parameter<type::vector<SReal>> * m_stiffnessParameter;
+    Parameter<Vec3Types::VecCoord> * m_restPositionParameter;
 
     void init() override;
 

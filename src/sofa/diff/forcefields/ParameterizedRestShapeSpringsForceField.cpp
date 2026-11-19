@@ -33,13 +33,28 @@ void ParameterizedRestShapeSpringsForceField::init()
     RestShapeSpringsForceField::init();
     m_stiffnessParameter = initParameter(d_stiffness);
     checkForNotImplementedParameters(this->getDataFields());
+
+    if (l_restMState.get() != nullptr) {
+        const auto state = l_restMState.get();
+        const auto restPosition = state->read(core::vec_id::read_access::position);
+        m_restPositionParameter = initParameter(*restPosition);
+    }
+    else {
+        const auto state = this->getMState();
+        const auto restPosition = state->read(core::vec_id::write_access::restPosition);
+        m_restPositionParameter = initParameter(*restPosition);
+    }
+
+    // TODO: why does the following not work?
+    // const auto restPosition = this->getExtPosition();
+    // m_restPositionParameter = initParameter(*restPosition);
 }
 
 
 void ParameterizedRestShapeSpringsForceField::applyParametersJacobianTranspose(const core::MechanicalParams* mparams, const core::MultiVecDerivId vecId)
 {
     // Skip if there is nothing to optimize
-    if (m_stiffnessParameter == nullptr)
+    if (m_stiffnessParameter == nullptr && m_restPositionParameter == nullptr)
     {
         msg_warning() << "ParameterizedRestShapeSpringsForceField::applyParametersJacobianTranspose() skipped: no parameter to optimize. Consider using ParameterizedRestShapeSpringsForceField instead. Or not?";
         return;
@@ -73,10 +88,18 @@ void ParameterizedRestShapeSpringsForceField::applyParametersJacobianTranspose(c
         recomputeIndices();
     }
 
+    const VecReal& k = d_stiffness.getValue();
+
     for (Index i = 0; i < m_indices.size(); i++)
     {
         const Index index = m_indices[i];
-        const Index ext_index = m_indices[i];
+        Index ext_index = m_indices[i];
+        // if (useRestMState) // useRestMState is private in parent class :'(
+        if (l_restMState.get() != nullptr)
+            ext_index = m_ext_indices[i];
+
+        const auto stiffness = k[static_cast<std::size_t>(i < k.size()) * i];
+
         const auto activeDirections = d_activeDirections.getValue();
 
         // rigid case
@@ -92,8 +115,16 @@ void ParameterizedRestShapeSpringsForceField::applyParametersJacobianTranspose(c
                 if (!activeDirections[entryId])
                     dx[entryId] = 0;
             }
-            auto stiffnessGradient = helper::getWriteAccessor(m_stiffnessParameter->d_gradient);
-            stiffnessGradient[i] -= dot(dx, DataTypes::getDPos(v[index]));
+            if (m_stiffnessParameter != nullptr)
+            {
+                auto gradient = helper::getWriteAccessor(m_stiffnessParameter->d_gradient);
+                gradient[i] -= dot(dx, v[index]);
+            }
+            if (m_restPositionParameter != nullptr)
+            {
+                auto gradient = helper::getWriteAccessor(m_restPositionParameter->d_gradient);
+                gradient[i] += stiffness * v[index];
+            }
         }
     }
 }
